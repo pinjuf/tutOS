@@ -1,4 +1,10 @@
 void _kmain() {
+    // Setup our stack
+    asm (" \
+        mov $0x120000, %rsp; \
+        mov %rsp, %rbp; \
+            "); 
+
     char attr = 0x07;
     unsigned short * vga_buf = (unsigned short *) 0xB8000;
 
