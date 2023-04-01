@@ -47,7 +47,9 @@ reload_cs:
     add edi, 0x1000
     mov DWORD [edi], 0x9F000 | 0b11
     add edi, 0x1000
-    mov DWORD [edi], 0b11 | 1<<7
+    mov DWORD [edi], 0b11 | 1<<7    ; P, RW, PS
+    add edi, 8
+    mov DWORD [edi], 0x200000 | 0b11 | 1<<7
 
     ; Step 3: Enable PSE and PAE
     mov eax, cr4

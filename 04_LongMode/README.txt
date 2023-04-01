@@ -13,6 +13,16 @@ Long Mode has worked, allowing us to use 64-bit registers!
 
 FAQ:
     1) What's paging?
+        In 16/32-bit modes, selectors essentially define an offset
+        that translates virtual addresses (what the programs
+        believe they are accessing) to physical addresses (what the
+        programs are actually accessing). In Long Mode, paging is
+        used for this, by mapping virtual addresses to physical
+        addresses in chunks called pages. The highest bits define
+        an offset in a table, whose value there points to the next
+        table, where the next highest bits point to the next offset,
+        until an entry points to a physical address. The pages
+        have to be aligned to their size.
 
     2) Where's the Page Table?
         We use Page Size Extension (though not always necessary in
