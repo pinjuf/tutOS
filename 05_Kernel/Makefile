@@ -3,6 +3,10 @@ all: run
 run: img
 	qemu-system-x86_64 -hda img
 
+debug: img kernel/kernel.elf
+	qemu-system-x86_64 -hda img -s -S &
+	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel/kernel.elf"
+
 img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin
 	cat boot/boot.bin stage2/stage2.bin kernel/kernel.bin > img
 
@@ -14,3 +18,6 @@ stage2/stage2.bin: stage2
 
 kernel/kernel.bin: kernel
 	$(MAKE) -C kernel kernel.bin
+
+kernel/kernel.elf: kernel
+	$(MAKE) -C kernel kernel.elf
