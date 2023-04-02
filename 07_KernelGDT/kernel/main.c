@@ -9,11 +9,15 @@ void _kmain() {
         mov %rsp, %rbp; \
             "); 
 
+    // Set up VGA
     vga_enable_cursor(0, 16);
     vga_get_cursor();
+
+    kputs("KRN OK\n");
 
     init_kgdt();
     kputs("GDT OK\n");
 
+    kputs("KRN DN\n");
     while (1);
 }

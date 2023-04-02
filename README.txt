@@ -13,7 +13,7 @@ Debugging:
     Adding an ELF file to get symbol addresses might
     also be useful.
 
-Pinjuf's programming prescriptions:
+Pinjuf's programming prescriptions a.k.a the "credits":
     1) Your new bible is "Just For Fun".
     2) Your new bible is Intel Syntax Assembly.
     3) Your new bible is the OSDev wiki.
