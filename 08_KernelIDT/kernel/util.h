@@ -23,3 +23,5 @@ void itoa(uint64_t x, char * out, uint8_t base);
 
 void kputdec(uint64_t x);
 void kputhex(uint64_t x);
+
+void init_pit0(uint32_t freq);

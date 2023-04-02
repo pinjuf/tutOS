@@ -1,7 +1,7 @@
 [BITS 64]
 
-extern isr_noerr_exception, isr_err_exception, isr_default_int
-global isr_stub_table, isr_default_stub
+extern isr_noerr_exception, isr_err_exception, isr_default_int, isr_irq0
+global isr_stub_table, isr_default_stub, isr_irq0_stub
 
 %macro PIC_EOI 0
     push rax
@@ -59,6 +59,12 @@ isr_default_stub:
 
     PIC_EOI
 
+    iretq
+
+isr_irq0_stub:
+    call isr_irq0
+
+    PIC_EOI
     iretq
 
 isr_stub_table:

@@ -82,3 +82,11 @@ void itoa(uint64_t x, char * out, uint8_t base) {
         *p-- = tmp;
     }
 }
+
+void init_pit0(uint32_t freq) {
+    uint32_t divisor = 1193180 / freq;
+
+    outb(0x43, 0x36); // Configure mode for PIT0
+    outb(0x40, divisor & 0xFF); // Low PIT0 byte
+    outb(0x40, (divisor >> 8) & 0xFF); // High PIT0 byte
+}

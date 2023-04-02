@@ -26,6 +26,9 @@ void _kmain() {
     init_pic();
     kputs("PIC OK\n");
 
+    init_pit0(250); // Interrupt every 4ms
+    kputs("PIT OK\n");
+
     kputs("KRN DN\n");
 
     sti;

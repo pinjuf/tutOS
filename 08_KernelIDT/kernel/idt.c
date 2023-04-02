@@ -1,10 +1,12 @@
 #include "idt.h"
+#include "pic.h"
 
 idtr_t kidtr;
 idt_entry_t * kidt = (idt_entry_t *) IDT_BASE;
 
 extern void * isr_stub_table[];
 extern void isr_default_stub();
+extern void isr_irq0_stub();
 
 void fill_idt_desc(idt_entry_t * entry, void * isr, uint8_t flags, uint8_t selector) {
     entry->offset_low = (uint64_t)isr & 0xFFFF;
@@ -28,6 +30,8 @@ void init_idt(void) {
 
         }
     }
+
+    fill_idt_desc(&kidt[PIC_OFFSET+PIC_PIT], isr_irq0_stub, IDT_P | IDT_INT, 0x08);
 
     asm volatile ("lidt %0" : : "m" (kidtr));
 }
