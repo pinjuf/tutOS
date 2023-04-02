@@ -56,7 +56,7 @@ void isr_default_int(uint16_t n, uint64_t rip, uint64_t cs, uint64_t rflags, uin
 }
 
 void isr_irq0(void) {
-    pit0_ticks++;
     if (!(pit0_ticks % 250))
         kputs("Beep! See you in 1 second...\n");
+    pit0_ticks++;
 }
