@@ -6,7 +6,7 @@ CFLAGS = -Wall -Wextra -Wpedantic -nostdlib -ffreestanding -fno-pie -fno-stack-p
 LD = ld
 ASM = nasm
 
-OBJS = kentry.o main.o
+OBJS = vga.o kentry.o main.o util.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
