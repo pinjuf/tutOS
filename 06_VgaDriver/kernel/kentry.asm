@@ -5,4 +5,5 @@ extern _kmain
 
 SECTION .kentry
 _kentry:
+    cli
     jmp _kmain

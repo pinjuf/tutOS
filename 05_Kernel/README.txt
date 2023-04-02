@@ -15,3 +15,9 @@ FAQ:
         usage of some libraries can completely break a kernel,
         since the compiler expects to compile for a "normal"
         system.
+    3) Why do you compile without SSE?
+       SSE (a SIMD instruction extension) would need to be
+       checked for and enabled to allow its use. This is not
+       difficult, and other SSE versions/SIMD extensions are
+       generally equally simple to set up. But in this project,
+       that is simply not necessary. Also, fuck AVX-512.
