@@ -18,3 +18,8 @@ void qemu_puts(char * s);
 
 void memset(void * dest, uint8_t val, size_t len);
 void memcpy(void * dest, void * src, size_t len);
+
+void itoa(uint64_t x, char * out, uint8_t base);
+
+void kputdec(uint64_t x);
+void kputhex(uint64_t x);

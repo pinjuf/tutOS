@@ -49,7 +49,7 @@ isr_stub_%+%1:
 %endmacro
 
 isr_default_stub:
-    mov rdi, 0xFF       ; Interrupt number (unknown, because this is the default stub)
+    mov rdi, 0xFFFF     ; Interrupt number (unknown, because this is the default stub)
     mov rsi, [rsp]      ; RIP
     mov rdx, [rsp+8]    ; CS
     mov rcx, [rsp+16]   ; RFLAGS

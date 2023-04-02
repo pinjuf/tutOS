@@ -1,25 +1,36 @@
 #include "pic.h"
 #include "util.h"
 
-// TODO: Add DEFINE for all masks/ports/etc.
 void init_pic(void) {
     // ICW1
-	outb(0x20, 0x11); // 0b00010001 | edge trigger | cascade mode | ICW4 needed
-	outb(0xA0, 0x11);
+    outb(PIC1, ICW1_INIT | ICW1_ICW4);
+    outb(PIC2, ICW1_INIT | ICW1_ICW4);
 
-    // ICW2
-	outb(0x21, 0x20); // 0x20 = 32  | IRQ0-7 mapped to 0x20-0x27
-	outb(0xA1, 0x28); // 0x70 = 112 | IRQ8-15 mapped to 0x70-0x77
+    // ICW2 (offset)
+    outb(PIC1_DATA, 32); // HW-Ints 0-7 mapped 32-39
+    outb(PIC2_DATA, 40); // HW-Ints 8-15 mapped 40-47
 
-    // ICW3
-	outb(0x21, 0x04); // 0b00000100 | slave PIC at IRQ2
-	outb(0xA1, 0x02); // 0b00000010 | cascade identity
+    // ICW3 (cascade)
+    outb(PIC1_DATA, 4); // IRQ2 -> PIC2 (the PIC chips communicate over the IRQ2 line)
+    outb(PIC2_DATA, 2); // IRQ2 <- PIC2
 
     // ICW4
-	outb(0x21, 0x01); // 0b00000001 | not fully nested | not buffered | slave mode  | normal EOI
-	outb(0xA1, 0x01); // 0b00000001 | not fully nested | not buffered | master mode | normal EOI
+    outb(PIC1_DATA, ICW4_8086);
+    outb(PIC2_DATA, ICW4_8086);
 
-    // OCW1
-	outb(0x21, 0x0); // 0b00000000 | no interrupts masked
-	outb(0xA1, 0x0);
+    // OCW1 (IRQ masks)
+    outb(PIC1_DATA, 0);
+    outb(PIC2_DATA, 0);
+}
+
+void pic_setmask(uint16_t mask) {
+    outb(PIC1_DATA, mask & 0xFF);
+    outb(PIC2_DATA, (mask >> 8) & 0xFF);
+}
+
+uint16_t pic_getmask() {
+    uint16_t mask = 0;
+    mask |= inb(PIC1_DATA);
+    mask |= inb(PIC2_DATA) << 8;
+    return mask;
 }

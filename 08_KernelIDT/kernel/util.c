@@ -41,6 +41,19 @@ void kputs(char * s) {
     qemu_puts(s);
 }
 
+void kputdec(uint64_t x) {
+    char buf[32];
+    itoa(x, buf, 10);
+    kputs(buf);
+}
+
+void kputhex(uint64_t x) {
+    char buf[32];
+    itoa(x, buf, 16);
+    kputs(buf);
+}
+
+
 void memset(void * dest, uint8_t val, size_t len) {
     uint8_t *dst = (uint8_t *)dest;
     for (; len != 0; len--) *dst++ = val;
@@ -52,3 +65,20 @@ void memcpy(void * dest, void * src, size_t len) {
     for (; len != 0; len--) *d++ = *s++;
 }
 
+void itoa(uint64_t x, char * out, uint8_t base) {
+    char * p = out;
+    char * low = out;
+
+    do {
+        *p++ = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[x % base];
+        x /= base;
+    } while (x);
+
+    *p-- = '\0';
+
+    while (low < p) {
+        char tmp = *low;
+        *low++ = *p;
+        *p-- = tmp;
+    }
+}
