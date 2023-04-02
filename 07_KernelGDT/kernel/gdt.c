@@ -16,6 +16,12 @@ void fill_gdt_entry(gdt_entry_t * entry, uint32_t base, uint32_t limit, uint8_t 
     entry->flags  = flags;
 }
 
+void fill_gdt_sysentry(gdt_sysentry_t * entry, uint64_t base, uint32_t limit, uint8_t access, uint8_t flags) {
+    fill_gdt_entry((gdt_entry_t *) entry, base & 0xFFFFFFFF, limit, access, flags);
+    entry->base_high = (base >> 32) & 0xFFFFFFFF;
+    entry->reserved  = 0;
+}
+
 void init_kgdt() {
     kgdtr.size = sizeof(kgdt) - 1;
     kgdtr.offset  = (uint64_t)&kgdt;

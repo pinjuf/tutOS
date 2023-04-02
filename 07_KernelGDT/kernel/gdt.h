@@ -47,6 +47,13 @@ extern gdtr_t kgdtr;
 #define GDT_DB (1 << 2)     // Size flag
 #define GDT_L  (1 << 1)     // Long mode code
 
+// System access
+#define GDT_TSS16 (0x1)     // 16-bit TSS
+#define GDT_TSS32 (0x9)     // 32-bit TSS
+#define GDT_TSS64 (0x9)     // 64-bit TSS
+#define GDT_LDT   (0x2)     // LDT
+
 void fill_gdt_entry(gdt_entry_t * entry, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags);
+void fill_gdt_sysentry(gdt_sysentry_t * entry, uint64_t base, uint32_t limit, uint8_t access, uint8_t flags);
 
 void init_kgdt();
