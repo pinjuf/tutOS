@@ -1,6 +1,8 @@
 #include "vga.h"
 #include "util.h"
+#include "idt.h"
 #include "gdt.h"
+#include "pic.h"
 
 void _kmain() {
     // Set up our stack
@@ -18,6 +20,15 @@ void _kmain() {
     init_kgdt();
     kputs("GDT OK\n");
 
+    init_idt();
+    kputs("IDT OK\n");
+
+    init_pic();
+    kputs("PIC OK\n");
+
     kputs("KRN DN\n");
+
+    sti;
+
     while (1);
 }
