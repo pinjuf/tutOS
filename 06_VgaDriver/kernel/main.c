@@ -1,4 +1,5 @@
 #include "vga.h"
+#include "util.h"
 
 void _kmain() {
     // Set up our stack
@@ -11,7 +12,7 @@ void _kmain() {
     vga_get_cursor();
 
     char msg[] = "Hello,\n\tfrom the VGA driver!\n";
-    vga_puts(msg);
+    kputs(msg);
 
     while (1);
 }

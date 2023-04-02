@@ -1,10 +1,12 @@
+QEMUFLAGS = -hda img -debugcon stdio
+
 all: run
 
 run: img
-	qemu-system-x86_64 -hda img
+	qemu-system-x86_64 $(QEMUFLAGS)
 
 debug: img kernel/kernel.elf
-	qemu-system-x86_64 -hda img -s -S &
+	qemu-system-x86_64 $(QEMUFLAGS) -s -S &
 	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel/kernel.elf"
 
 img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin

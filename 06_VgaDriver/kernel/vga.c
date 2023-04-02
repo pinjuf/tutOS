@@ -57,9 +57,7 @@ void vga_scrolldown() {
 }
 
 void vga_puts(char * s) {
-    for (size_t i = 0; *s; i++) {
-        vga_putc(*(s++));
-    }
+    for (; *s; s++) vga_putc(*s);
 
     vga_update_cursor();
 }
