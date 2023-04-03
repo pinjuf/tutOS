@@ -23,7 +23,7 @@ typedef struct idt_entry_t {
 extern idtr_t kidtr;
 extern idt_entry_t * kitd;
 
-void fill_idt_desc(idt_entry_t * entry, void * isr, uint8_t flags, uint8_t selector);
+void fill_idt_desc(idt_entry_t * entry, void (* isr)(), uint8_t flags, uint8_t selector);
 void init_idt(void);
 
 #define IDT_P (1 << 7)      // Present
