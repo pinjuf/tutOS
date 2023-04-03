@@ -3,6 +3,60 @@
 extern isr_noerr_exception, isr_err_exception, isr_default_int, isr_irq0
 global isr_stub_table, isr_default_stub, isr_irq0_stub
 
+%define PUSH_ALL_SIZE (17*8)
+
+%macro PUSH_ALL 0
+    push rbp
+
+    push rax
+    push rbx
+    push rcx
+    push rdx
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+
+    push rsi
+    push rdi
+
+    mov rax, fs
+    push rax
+
+    mov rax, gs
+    push rax
+%endmacro
+
+%macro POP_ALL 0
+    pop rax
+    mov gs, rax
+
+    pop rax
+    mov fs, rax
+
+    pop rdi
+    pop rsi
+
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+
+    pop rbp
+%endmacro
+
 %macro PIC_EOI 0
     push rax
     mov al, 0x20
@@ -15,14 +69,18 @@ global isr_stub_table, isr_default_stub, isr_irq0_stub
 isr_stub_%+%1:
     cli
 
-    mov rdi, %1       ; Exception number
-    mov rsi, [rsp]    ; ERR
-    mov rdx, [rsp+8]  ; RIP
-    mov rcx, [rsp+16] ; CS
-    mov r8,  [rsp+24] ; RFLAGS
-    mov r9,  [rsp+32] ; RSP
+    PUSH_ALL
+
+    mov rdi, %1                     ; Exception number
+    mov rsi, [PUSH_ALL_SIZE+rsp]    ; ERR
+    mov rdx, [PUSH_ALL_SIZE+rsp+8]  ; RIP
+    mov rcx, [PUSH_ALL_SIZE+rsp+16] ; CS
+    mov r8,  [PUSH_ALL_SIZE+rsp+24] ; RFLAGS
+    mov r9,  [PUSH_ALL_SIZE+rsp+32] ; RSP
 
     call isr_err_exception
+
+    POP_ALL
 
     add rsp, 8 ; Pop ERR
 
@@ -33,15 +91,19 @@ isr_stub_%+%1:
 
 %macro isr_noerr_stub 1
 isr_stub_%+%1:
-    cli
+    cli ; This is a trap gate
 
-    mov rdi, %1       ; Exception number
-    mov rsi, [rsp]    ; RIP
-    mov rdx, [rsp+8]  ; CS
-    mov rcx, [rsp+16] ; RFLAGS
-    mov r8,  [rsp+24] ; RSP
+    PUSH_ALL
+
+    mov rdi, %1                     ; Exception number
+    mov rsi, [PUSH_ALL_SIZE+rsp]    ; RIP
+    mov rdx, [PUSH_ALL_SIZE+rsp+8]  ; CS
+    mov rcx, [PUSH_ALL_SIZE+rsp+16] ; RFLAGS
+    mov r8,  [PUSH_ALL_SIZE+rsp+24] ; RSP
 
     call isr_noerr_exception
+
+    POP_ALL
 
     PIC_EOI
 
@@ -49,20 +111,29 @@ isr_stub_%+%1:
 %endmacro
 
 isr_default_stub:
-    mov rdi, 0xFFFF     ; Interrupt number (unknown, because this is the default stub)
-    mov rsi, [rsp]      ; RIP
-    mov rdx, [rsp+8]    ; CS
-    mov rcx, [rsp+16]   ; RFLAGS
-    mov r8,  [rsp+24]   ; RSP
+    ; No cli needed, because this is an interrupt gate
+    PUSH_ALL
+
+    mov rdi, 0xFFFF                   ; Interrupt number (unknown, because this is the default stub)
+    mov rsi, [PUSH_ALL_SIZE+rsp]      ; RIP
+    mov rdx, [PUSH_ALL_SIZE+rsp+8]    ; CS
+    mov rcx, [PUSH_ALL_SIZE+rsp+16]   ; RFLAGS
+    mov r8,  [PUSH_ALL_SIZE+rsp+24]   ; RSP
 
     call isr_default_int
+
+    POP_ALL
 
     PIC_EOI
 
     iretq
 
 isr_irq0_stub:
+    PUSH_ALL
+
     call isr_irq0
+
+    POP_ALL
 
     PIC_EOI
     iretq
