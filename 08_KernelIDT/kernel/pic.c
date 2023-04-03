@@ -11,8 +11,8 @@ void init_pic(void) {
     outb(PIC2_DATA, 40); // HW-Ints 8-15 mapped 40-47
 
     // ICW3 (cascade)
-    outb(PIC1_DATA, 4); // IRQ2 -> PIC2 (the PIC chips communicate over the IRQ2 line)
-    outb(PIC2_DATA, 2); // IRQ2 <- PIC2
+    outb(PIC1_DATA, (1 << 2)); // IRQ2 -> PIC2 (the PIC chips communicate over the IRQ2 line)
+    outb(PIC2_DATA, 2); // This PIC is connected to the IRQ2 line
 
     // ICW4
     outb(PIC1_DATA, ICW4_8086);
