@@ -1,4 +1,5 @@
 #include "isr.h"
+#include "main.h"
 #include "util.h"
 
 uint64_t pit0_ticks = 0;
@@ -56,7 +57,7 @@ void isr_default_int(uint16_t n, uint64_t rip, uint64_t cs, uint64_t rflags, uin
 }
 
 void isr_irq0(void) {
-    if (!(pit0_ticks % 250))
+    if (!(pit0_ticks % PIT0_FREQ))
         kputs("Beep! See you in 1 second...\n");
     pit0_ticks++;
 }
