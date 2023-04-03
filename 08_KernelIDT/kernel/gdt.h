@@ -29,7 +29,7 @@ typedef struct gdt_sysentry_t {
     uint32_t reserved;
 }  __attribute__((packed)) gdt_sysentry_t;
 
-#define GDT_ENTRIES 16
+#define GDT_ENTRIES 64
 #define GDT_BASE 0x0
 extern gdt_entry_t * kgdt;
 extern gdtr_t kgdtr;

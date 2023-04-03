@@ -3,7 +3,7 @@
 #include "types.h"
 
 #define IDT_ENTRIES 256
-#define IDT_BASE 0x400
+#define IDT_BASE 0x200
 
 typedef struct idtr_t {
     uint16_t size;
