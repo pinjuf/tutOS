@@ -11,7 +11,7 @@ void init_mm(void) {
 bool mm_is_used(size_t chunk) {
     uint16_t m = mm_bitmap[chunk / 16];
     uint8_t  p = chunk % 16;
-    return (m & (1 << p));
+    return (m & (1 << p)) > 0;
 }
 
 void mm_set_used(size_t chunk, bool used) {
@@ -49,12 +49,18 @@ void * alloc_pages(size_t n) {
     return NULL;
 }
 
+void * calloc_pages(size_t n) {
+    void * o = alloc_pages(n);
+    memset(o, 0, n * PAGE_SIZE);
+    return o;
+}
+
 void free_pages(void * ptr, size_t n) {
     size_t i = ((uint64_t)ptr - HEAP_VIRT) / PAGE_SIZE;
 
     for (size_t j = 0; j < n; j++) {
         if (mm_bitmap[i + j] != 0xFFFF) {
-            kwarn(__FILE__, __LINE__, "page not in use");
+            kwarn(__FILE__, __func__, "(entire?) page not in use");
         }
 
         mm_bitmap[i + j] = 0x0000;
@@ -118,12 +124,18 @@ void * kmalloc(size_t n) {
     return NULL;
 }
 
+void * kcalloc(size_t n) {
+    void * o = kmalloc(n);
+    memset(o, 0, n);
+    return o;
+}
+
 void kfree(void * ptr) {
     ptr = (void*) ((uint64_t)ptr - sizeof(size_t));
     size_t n = *(uint64_t*)ptr;
     ptr = (void*) ((uint64_t)ptr - sizeof(uint32_t));
     if (*(uint32_t*)ptr != MM_MAGIC) {
-        kwarn(__FILE__,__LINE__,"no malloc signature");
+        kwarn(__FILE__,__func__,"no malloc signature");
     }
 
     size_t start = ((uint64_t)ptr - HEAP_VIRT) / MM_CHUNKSIZE;

@@ -19,3 +19,6 @@
 #define HEAP_VIRT ((uint64_t)0xB0000000)
 
 void init_paging(void);
+
+void * virt_to_phys(void * virt);
+void mmap_page(void * virt, void * phys, uint64_t attr);

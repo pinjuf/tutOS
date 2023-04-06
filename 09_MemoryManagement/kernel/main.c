@@ -9,7 +9,7 @@
 
 void _kmain() {
     // Set up our stack
-    asm (" \
+    asm volatile(" \
         mov $0x120000, %rsp; \
         mov %rsp, %rbp; \
             "); 
@@ -41,22 +41,58 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    void * a = alloc_pages(2);
-    void * b = kmalloc(0x100);
-    void * c = kmalloc(0x200);
+    // TODO: Write demo
 
-    kfree(b);
+    kputs("\nvirt_to_phys() demo:\n");
 
-    void * d = kmalloc(0x100);
+    kputs("Heap start virtual: 0x");
+    kputhex((uint64_t)HEAP_VIRT);
+    kputs("\nHeap end virtual: 0x");
+    kputhex((uint64_t)HEAP_VIRT + HEAP_PTS * PAGE_ENTRIES * PAGE_SIZE - 1);
+    kputs("\nHeap start physical: 0x");
+    kputhex((uint64_t)virt_to_phys((void*)HEAP_VIRT));
+    kputs("\nHeap end physical: 0x");
+    kputhex((uint64_t)virt_to_phys((void*)HEAP_VIRT + HEAP_PTS * PAGE_ENTRIES * PAGE_SIZE - 1));
+    kputs("\nHeap end +1 physical: 0x");
+    kputhex((uint64_t)virt_to_phys((void*)HEAP_VIRT + HEAP_PTS * PAGE_ENTRIES * PAGE_SIZE));
 
-    kputs("A=0x");
-    kputhex((uint64_t)a);
-    kputs("\nB=0x");
-    kputhex((uint64_t)b);
-    kputs("\nC=0x");
-    kputhex((uint64_t)c);
-    kputs("\nD=0x");
-    kputhex((uint64_t)d);
+    kputs("\n\nkmalloc() / kfree() demo:");
+
+    void * m1 = kmalloc(0x100);
+    kputs("\nAllocated 256 bytes m1 at 0x");
+    kputhex((uint64_t)m1);
+
+    void * m2 = kmalloc(0x20);
+    kputs("\nAllocated 32 bytes m2 at 0x");
+    kputhex((uint64_t)m2);
+
+    void * m3 = alloc_pages(1);
+    kputs("\nAllocated a page m3 at 0x");
+    kputhex((uint64_t)m3);
+
+    void * m4 = kmalloc(0x200);
+    kputs("\nAllocated 512 bytes m4 at 0x");
+    kputhex((uint64_t)m4);
+
+    void * m5 = kmalloc(0x1000);
+    kputs("\nAllocated 4096 bytes m5 at 0x");
+    kputhex((uint64_t)m5);
+
+    kfree(m2);
+    kputs("\nFreed m2");
+
+    void * m6 = kmalloc(0x50);
+    kputs("\nAllocated 80 bytes m6 at 0x");
+    kputhex((uint64_t)m6);
+
+    kfree(m4);
+    kputs("\nFreed m4");
+
+    void * m7 = kmalloc(0x10000);
+    kputs("\nAllocated 65536 bytes m7 at 0x");
+    kputhex((uint64_t)m7);
+
+    kputc('\n');
     kputc('\n');
 
     sti;

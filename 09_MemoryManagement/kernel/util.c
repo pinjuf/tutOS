@@ -92,12 +92,12 @@ void init_pit0(uint32_t freq) {
     outb(0x40, (divisor >> 8) & 0xFF); // High PIT0 byte
 }
 
-void kwarn(const char * source, const size_t line, const char * msg) {
+void kwarn(const char * source, const char * func, const char * msg) {
     kputs("[KWRN] ");
     kputs((char*)source);
     kputc(':');
-    kputdec(line);
-    kputs(" | ");
+    kputs((char*)func);
+    kputs("() | ");
     kputs((char*)msg);
     kputc('\n');
 }
@@ -123,4 +123,10 @@ void hexdump(void * ptr, size_t n) {
 
     if (n%16)
         kputc('\n');
+}
+
+size_t strlen(char * str) {
+    size_t o = 0;
+    for (;str[o];o++);
+    return o;
 }
