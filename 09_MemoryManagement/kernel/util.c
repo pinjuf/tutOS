@@ -91,3 +91,36 @@ void init_pit0(uint32_t freq) {
     outb(0x40, divisor & 0xFF); // Low PIT0 byte
     outb(0x40, (divisor >> 8) & 0xFF); // High PIT0 byte
 }
+
+void kwarn(const char * source, const size_t line, const char * msg) {
+    kputs("[KWRN] ");
+    kputs((char*)source);
+    kputc(':');
+    kputdec(line);
+    kputs(" | ");
+    kputs((char*)msg);
+    kputc('\n');
+}
+
+void hexdump(void * ptr, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        if (!(i % 16)) {
+            kputs("0x");
+            kputhex((uint64_t)ptr+i);
+            kputs(" | ");
+        }
+
+        uint8_t val = ((uint8_t*)ptr)[i];
+
+        if (val < 0x10)
+            kputc('0');
+        kputhex(val);
+        kputc(' ');
+
+        if (i%16 == 15)
+            kputc('\n');
+    }
+
+    if (n%16)
+        kputc('\n');
+}

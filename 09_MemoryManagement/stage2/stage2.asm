@@ -29,23 +29,23 @@ reload_cs:
     test edx, 1 << 29   ; LM Available bit
     jz no_lm
 
-    ; Step 2: Setup paging, directly below VGA
+    ; Step 2: Setup paging, directly below the EBDA
 
-    ; PML4T : 0x9D000 - 0x9DFFF
-    ; PDPT  : 0x9E000 - 0x9EFFF
-    ; PDT   : 0x9F000 - 0x9FFFF
+    ; PML4T : 0x7D000 - 0x7DFFF
+    ; PDPT  : 0x7E000 - 0x7EFFF
+    ; PDT   : 0x7F000 - 0x7FFFF
     ; PT    : (using size bit in the PDT)
 
-    mov edi, 0x9D000
+    mov edi, 0x7D000
     mov cr3, edi
     xor eax, eax
     mov ecx, 0xC00
     rep stosd
     mov edi, cr3
 
-    mov DWORD [edi], 0x9E000 | 0b11
+    mov DWORD [edi], 0x7E000 | 0b11
     add edi, 0x1000
-    mov DWORD [edi], 0x9F000 | 0b11
+    mov DWORD [edi], 0x7F000 | 0b11
     add edi, 0x1000
     mov DWORD [edi], 0b11 | 1<<7    ; P, RW, PS
     add edi, 8

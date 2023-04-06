@@ -24,4 +24,8 @@ void itoa(uint64_t x, char * out, uint8_t base);
 void kputdec(uint64_t x);
 void kputhex(uint64_t x);
 
+void hexdump(void * ptr, size_t n);
+
+void kwarn(const char * source, const size_t line, const char * msg);
+
 void init_pit0(uint32_t freq);

@@ -4,6 +4,7 @@
 #include "util.h"
 #include "idt.h"
 #include "gdt.h"
+#include "mm.h"
 #include "pic.h"
 
 void _kmain() {
@@ -29,6 +30,9 @@ void _kmain() {
     init_paging();
     kputs("PGN OK\n");
 
+    init_mm();
+    kputs("MM  OK\n");
+
     init_pic();
     kputs("PIC OK\n");
 
@@ -37,12 +41,23 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    char * my_msg = (char*)(HEAP_VIRT + (HEAP_PTS) * 512 * 0x1000) - 3;
-    my_msg[0] = '*'; // Star of life
-    my_msg[1] = '\n'; // Star of life
-    my_msg[2] = 0;
+    void * a = alloc_pages(2);
+    void * b = kmalloc(0x100);
+    void * c = kmalloc(0x200);
 
-    kputs(my_msg);
+    kfree(b);
+
+    void * d = kmalloc(0x100);
+
+    kputs("A=0x");
+    kputhex((uint64_t)a);
+    kputs("\nB=0x");
+    kputhex((uint64_t)b);
+    kputs("\nC=0x");
+    kputhex((uint64_t)c);
+    kputs("\nD=0x");
+    kputhex((uint64_t)d);
+    kputc('\n');
 
     sti;
 
