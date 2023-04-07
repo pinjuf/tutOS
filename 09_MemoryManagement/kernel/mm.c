@@ -134,6 +134,11 @@ void kfree(void * ptr) {
     ptr = (void*) ((uint64_t)ptr - sizeof(size_t));
     size_t n = *(uint64_t*)ptr;
     ptr = (void*) ((uint64_t)ptr - sizeof(uint32_t));
+
+    if ((uint64_t)ptr % MM_CHUNKSIZE) {
+        kwarn(__FILE__,__func__,"ptr not mm-chunk-aligned");
+    }
+
     if (*(uint32_t*)ptr != MM_MAGIC) {
         kwarn(__FILE__,__func__,"no malloc signature");
     }

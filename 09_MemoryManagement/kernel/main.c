@@ -41,8 +41,7 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    // TODO: Write demo
-
+    // Please ignore the copious newlines
     kputs("\nvirt_to_phys() demo:\n");
 
     kputs("Heap start virtual: 0x");
@@ -92,7 +91,48 @@ void _kmain() {
     kputs("\nAllocated 65536 bytes m7 at 0x");
     kputhex((uint64_t)m7);
 
-    kputc('\n');
+    kfree(m1);
+    free_pages(m3, 1);
+    kfree(m5);
+    kfree(m6);
+    kfree(m7);
+    kputs("\nFreed m1, m3, m5, m6, m7\n\n");
+
+    kputs("mmap_page demo:\n");
+
+    void * page = alloc_pages(1);
+    char msg[] = "Hello from mmapped memory!\n";
+
+    kputs("Allocated page at 0x");
+    kputhex((uint64_t)page);
+    kputs(" (phys=0x");
+    kputhex((uint64_t)virt_to_phys(page));
+    kputs(")\n");
+
+    memcpy(page, msg, strlen(msg));
+
+    kputs("Reading from page original virt:\n");
+    kputs(page);
+
+    void * my_virt1 = (void*)0xF0000000;
+    void * my_virt2 = (void*)0xF0001000;
+
+    mmap_page(my_virt1, virt_to_phys(page), PAGE_PRESENT|PAGE_RW);
+    kputs("Mapped 0x");
+    kputhex((uint64_t)my_virt1);
+    kputs(" to phys=0x");
+    kputhex((uint64_t)virt_to_phys(page));
+    kputs("\nReading from new virt:\n");
+    kputs(my_virt1);
+
+    mmap_page(my_virt2, virt_to_phys(page), PAGE_PRESENT|PAGE_RW);
+    kputs("Mapped 0x");
+    kputhex((uint64_t)my_virt2);
+    kputs(" to phys=0x");
+    kputhex((uint64_t)virt_to_phys(page));
+    kputs("\nReading from new virt:\n");
+    kputs(my_virt2);
+
     kputc('\n');
 
     sti;

@@ -132,7 +132,7 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
         pdpt = (uint64_t *)(pml4t[pml4t_index] & ~0xFFF);
 
         if ((uint64_t)pdpt >= 0x400000) { // If it is above kernel mem, it is part of the heap and must be translated to a virtual address
-            pdpt += - HEAP_PHYS + HEAP_VIRT;
+            pdpt = (void*)pdpt - HEAP_PHYS + HEAP_VIRT;
         }
     } else {
         pdpt = calloc_pages(1);
@@ -144,7 +144,7 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
         pdt = (uint64_t *)(pdpt[pdpt_index] & ~0xFFF);
 
         if ((uint64_t)pdt >= 0x400000) {
-            pdt += - HEAP_PHYS + HEAP_VIRT;
+            pdt = (void*)pdt - HEAP_PHYS + HEAP_VIRT;
         }
     } else {
         pdt = calloc_pages(1);
@@ -156,7 +156,7 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
         pt = (uint64_t *)(pdt[pdt_index] & ~0xFFF);
 
         if ((uint64_t)pt >= 0x400000) {
-            pt += - HEAP_PHYS + HEAP_VIRT;
+            pt = (void*)pt - HEAP_PHYS + HEAP_VIRT;
         }
     } else {
         pt = calloc_pages(1);
