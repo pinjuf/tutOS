@@ -11,3 +11,7 @@ memory management. There are many different algo-
 rithms for dynamic memory allocation, like a buddy
 system. In our case though, we will just use a bitmap
 to represent our memory.
+
+FAQ:
+    1) Why aren't there two separate heaps, one for the kernel, and one for the userland to come?
+        It won't make that much of a difference, and I'm too lazy.
