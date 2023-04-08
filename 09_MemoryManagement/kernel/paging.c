@@ -49,12 +49,19 @@ void * virt_to_phys(void * virt) {
 
     asm volatile("mov %%cr3, %0" : "=a" (pml4t));
 
+    if ((uint64_t)pml4t >= 0x400000)
+        pml4t = (void*)((uint64_t)pml4t_index - HEAP_PHYS + HEAP_VIRT);
+
     if (pml4t[pml4t_index] & PAGE_PRESENT) {
         if (pml4t[pml4t_index] & PAGE_PS) {
             return (void*) ((pml4t[pml4t_index] & ~0x7FFFFFFFFF) | ((uint64_t)virt & 0x7FFFFFFFFF));
         }
 
         pdpt = (void*) (pml4t[pml4t_index] & ~0xFFF);
+
+        if ((uint64_t)pdpt >= 0x400000) { // If it is above kernel mem, it is part of the heap and must be translated to a virtual address
+            pdpt = (void*)((uint64_t)pdpt - HEAP_PHYS + HEAP_VIRT);
+        }
     } else {
         return NULL;
     }
@@ -65,6 +72,10 @@ void * virt_to_phys(void * virt) {
         }
 
         pdt = (void*) (pdpt[pdpt_index] & ~0xFFF);
+
+        if ((uint64_t)pdt >= 0x400000) {
+            pdt = (void*)((uint64_t)pdt - HEAP_PHYS + HEAP_VIRT);
+        }
     } else {
         return NULL;
     }
@@ -75,6 +86,10 @@ void * virt_to_phys(void * virt) {
         }
 
         pt = (void*) (pdt[pdt_index] & ~0xFFF);
+
+        if ((uint64_t)pt >= 0x400000) {
+            pt = (void*)((uint64_t)pt - HEAP_PHYS + HEAP_VIRT);
+        }
     } else {
         return NULL;
     }
@@ -127,12 +142,15 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
 
     asm volatile("mov %%cr3, %0" : "=a"(pml4t));
 
+    if ((uint64_t)pml4t >= 0x400000)
+        pml4t = (void*)((uint64_t)pml4t_index - HEAP_PHYS + HEAP_VIRT);
+
     // Does the needed PDPT exist?
     if (pml4t[pml4t_index] & PAGE_PRESENT) {
         pdpt = (uint64_t *)(pml4t[pml4t_index] & ~0xFFF);
 
         if ((uint64_t)pdpt >= 0x400000) { // If it is above kernel mem, it is part of the heap and must be translated to a virtual address
-            pdpt = (void*)pdpt - HEAP_PHYS + HEAP_VIRT;
+            pdpt = (void*)((uint64_t)pdpt - HEAP_PHYS + HEAP_VIRT);
         }
     } else {
         pdpt = calloc_pages(1);
@@ -144,7 +162,7 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
         pdt = (uint64_t *)(pdpt[pdpt_index] & ~0xFFF);
 
         if ((uint64_t)pdt >= 0x400000) {
-            pdt = (void*)pdt - HEAP_PHYS + HEAP_VIRT;
+            pdt = (void*)((uint64_t)pdt - HEAP_PHYS + HEAP_VIRT);
         }
     } else {
         pdt = calloc_pages(1);
@@ -156,7 +174,7 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
         pt = (uint64_t *)(pdt[pdt_index] & ~0xFFF);
 
         if ((uint64_t)pt >= 0x400000) {
-            pt = (void*)pt - HEAP_PHYS + HEAP_VIRT;
+            pt = (void*)((uint64_t)pt - HEAP_PHYS + HEAP_VIRT);
         }
     } else {
         pt = calloc_pages(1);
@@ -167,4 +185,9 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
     pt[pt_index] = (uint64_t)phys | attr;
 
     asm volatile("invlpg (%0)" : : "r"(virt));
+}
+
+void mmap_pages(void * virt, void * phys, uint64_t attr, size_t count) {
+    for (size_t i = 0; i < count; i++)
+        mmap_page((void*)((uint64_t)virt + i * PAGE_SIZE), (void*)((uint64_t)phys + i * PAGE_SIZE), attr);
 }

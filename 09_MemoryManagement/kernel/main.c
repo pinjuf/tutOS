@@ -125,7 +125,7 @@ void _kmain() {
     kputs("\nReading from new virt:\n");
     kputs(my_virt1);
 
-    mmap_page(my_virt2, virt_to_phys(page), PAGE_PRESENT|PAGE_RW);
+    mmap_page(my_virt2, virt_to_phys(my_virt1), PAGE_PRESENT|PAGE_RW);
     kputs("Mapped 0x");
     kputhex((uint64_t)my_virt2);
     kputs(" to phys=0x");
@@ -134,8 +134,6 @@ void _kmain() {
     kputs(my_virt2);
 
     kputc('\n');
-
-    sti;
 
     kputs("KRN DN\n");
     while (1);

@@ -22,3 +22,4 @@ void init_paging(void);
 
 void * virt_to_phys(void * virt);
 void mmap_page(void * virt, void * phys, uint64_t attr);
+void mmap_pages(void * virt, void * phys, uint64_t attr, size_t count);
