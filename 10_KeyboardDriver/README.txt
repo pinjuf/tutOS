@@ -9,3 +9,9 @@ interrupts! Later on, we should be able to easily add
 mouse support!
 
 FAQ:
+    1) Why do you use the older Scan Code Set 1?
+        Altough SCS1 is older, translation makes sure it's
+        available even when the keyboard uses SCS2. Data
+        mangling should not be a problem, as all configuration
+        happens before this could become relevant.
+    2) Why don't you support PS/2 RESEND (0xFE) commands?

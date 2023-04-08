@@ -1,4 +1,6 @@
 #include "main.h"
+#include "kbd.h"
+#include "mm.h"
 #include "util.h"
 #include "vga.h"
 
@@ -212,23 +214,17 @@ void init_8042ps2() {
     write_ps2_port1(0x02); // Scancode set 2
     read_data_8042ps2(); // Get ACK
 
-    write_ps2_port1(0xF0);
-    read_data_8042ps2(); // Get ACK
-    write_ps2_port1(0x00); // Get current scan set
-    read_data_8042ps2(); // Get ACK
-    uint8_t r = read_data_8042ps2();
-    if (r != 0x02 && r != 0x41) { // OSDev wiki says to check for 0x41, but QEMU seems to give the direct number
-        kwarn(__FILE__,__func__,"ps/2 keyboard doesn't support scancode set 2");
-    }
+    kbd_bitmap = kmalloc(64);
 
     // Step 10: Clear buffer (again)
     while (read_status_8042ps2() & 1)
         read_data_8042ps2();
 
-    // Step 11: Enable IRQs for keyboard only
+    // Step 11: Enable IRQs for keyboard only, as well as translation to Scancode set 1
     write_comm_8042ps2(0x20);
     cfg = read_data_8042ps2();
-    cfg |= 1;
+    cfg |= 1; // Keyboard IRQs
+    cfg |= 1 << 6; // Translation
     write_comm_8042ps2(0x60);
     write_data_8042ps2(cfg);
 }
