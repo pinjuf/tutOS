@@ -14,4 +14,9 @@ FAQ:
         available even when the keyboard uses SCS2. Data
         mangling should not be a problem, as all configuration
         happens before this could become relevant.
-    2) Why don't you support PS/2 RESEND (0xFE) commands?
+    2) Why is there a kbd_bitmap?
+        Although most programs will only be interested in
+        the last key that was pressed's ASCII value, some
+        might want to know which key is currently being pressed
+        down. And keeping track of both normal and extended/special
+        keycodes only costs us 64 bytes!
