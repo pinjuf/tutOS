@@ -51,6 +51,9 @@ void _kmain() {
         kputc(kbd_get_last_ascii());
         //kputhex(kbd_get_last_scancode()); // Uncomment this for scancodes
         //kputc(' ');
+        //kbd_get_last_scancode();
+        //hexdump(kbd_bitmap, 64); // Uncomment this for the keyboard bitmap
+        //kputc('\n');
     }
 
     kputs("KRN DN\n");
