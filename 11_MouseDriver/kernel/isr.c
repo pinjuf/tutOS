@@ -143,12 +143,10 @@ void isr_irq12(void) {
     int16_t true_dx = x_raw;
     int16_t true_dy = y_raw;
 
-    if (mouse_flags & PS2_MOUSE_XSIGN) {
+    if (mouse_flags & PS2_MOUSE_XSIGN)
         true_dx -= 256;
-    }
-    if (mouse_flags & PS2_MOUSE_YSIGN) {
+    if (mouse_flags & PS2_MOUSE_YSIGN)
         true_dy -= 256;
-    }
 
     mouse_left = (mouse_flags & PS2_MOUSE_LEFT) != 0;
     mouse_middle = (mouse_flags & PS2_MOUSE_MDDL) != 0;
@@ -156,6 +154,16 @@ void isr_irq12(void) {
 
     mouse_x += true_dx * MOUSE_XSCALE;
     mouse_y += true_dy * MOUSE_YSCALE;
+
+    if (mouse_x > MOUSE_XLIM)
+        mouse_x = MOUSE_XLIM;
+    if (mouse_y > MOUSE_YLIM)
+        mouse_y = MOUSE_YLIM;
+
+    if (mouse_x < 0)
+        mouse_x = 0;
+    if (mouse_y < 0)
+        mouse_y = 0;
 
     mouse_scroll = scroll_raw;
 

@@ -23,6 +23,8 @@ extern bool mouse_right;
 
 #define MOUSE_XSCALE 0.1f
 #define MOUSE_YSCALE -0.05f
+#define MOUSE_XLIM   79
+#define MOUSE_YLIM   24
 
 extern float mouse_x;
 extern float mouse_y;

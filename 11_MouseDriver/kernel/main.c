@@ -45,29 +45,26 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
+    vga_clear();
+    vga_disable_cursor();
+
     sti;
 
     uint8_t x = mouse_x;
     uint8_t y = mouse_y;
-    uint8_t * buf = (uint8_t*)VGA_BUF;
-    uint8_t oldx, oldy;
+    uint8_t * buf = (uint8_t *) VGA_BUF;
     while (true) {
-        oldx = x;
-        oldy = y;
         x = mouse_x;
         y = mouse_y;
-        if ((oldx != x) || (oldy != y) || mouse_left || mouse_middle || mouse_right) {
-            buf[2*(oldx+VGA_COLS*oldy) + 1] = VGA_ATTR(VGA_WHITE, VGA_BLACK);
-            uint8_t attr = VGA_ATTR(VGA_WHITE, VGA_WHITE);
-            if (mouse_left) {
-                attr = VGA_ATTR(VGA_RED, VGA_RED);
-            } else if (mouse_middle) {
-                attr = VGA_ATTR(VGA_BLUE, VGA_BLUE);
-            } else if (mouse_right) {
-                attr = VGA_ATTR(VGA_GREEN, VGA_GREEN);
-            }
-            buf[2*(x+VGA_COLS*y) + 1] = attr;
+        uint8_t attr = VGA_ATTR(VGA_DARK_GREY, VGA_DARK_GREY);
+        if (mouse_left) {
+            attr = VGA_ATTR(VGA_WHITE, VGA_WHITE);
+        } else if (mouse_middle) {
+            attr = VGA_ATTR(VGA_RED, VGA_RED);
+        } else if (mouse_right) {
+            attr = VGA_ATTR(VGA_LIGHT_GREY, VGA_LIGHT_GREY);
         }
+        buf[2*(x+VGA_COLS*y) + 1] = attr;
     }
 
     kputs("KRN DN\n");
