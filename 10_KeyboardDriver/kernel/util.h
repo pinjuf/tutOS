@@ -39,5 +39,7 @@ uint8_t read_data_8042ps2();
 void write_data_8042ps2(uint8_t d);
 void write_comm_8042ps2(uint8_t d);
 
-#define write_ps2_port1(d) write_data_8042ps2(d)
+void write_ps2_port1(uint8_t d);
 void write_ps2_port2(uint8_t d);
+
+#define PS2_ACK 0xFA

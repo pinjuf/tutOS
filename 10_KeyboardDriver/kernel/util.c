@@ -195,13 +195,11 @@ void init_8042ps2() {
 
     // Step 8: Reset devices
     write_ps2_port1(0xFF);
-    read_data_8042ps2(); // Get ACK
     if (read_data_8042ps2() != 0xAA) {
         kwarn(__FILE__,__func__,"ps/2 port 1 device reset fail");
         return;
     }
     write_ps2_port2(0xFF);
-    read_data_8042ps2(); // Get ACK
     if (read_data_8042ps2() != 0xAA) {
         kwarn(__FILE__,__func__,"ps/2 port 2 device reset fail");
         return;
@@ -210,9 +208,7 @@ void init_8042ps2() {
 
     // Step 9: Setup keyboard
     write_ps2_port1(0xF0); // Set scancode set
-    read_data_8042ps2(); // Get ACK
     write_ps2_port1(0x02); // Scancode set 2
-    read_data_8042ps2(); // Get ACK
 
     kbd_bitmap = kmalloc(64);
 
@@ -247,7 +243,21 @@ void write_comm_8042ps2(uint8_t d) {
     outb(0x64, d);
 }
 
+void write_ps2_port1(uint8_t d) {
+    uint8_t r = 0;
+    do {
+        write_data_8042ps2(d);
+
+        r = read_data_8042ps2();
+    } while (r != PS2_ACK);
+}
+
 void write_ps2_port2(uint8_t d) {
-    write_comm_8042ps2(0xD4);
-    write_data_8042ps2(d);
+    uint8_t r = 0;
+    do {
+        write_comm_8042ps2(0xD4);
+        write_data_8042ps2(d);
+
+        r = read_data_8042ps2();
+    } while (r != PS2_ACK);
 }

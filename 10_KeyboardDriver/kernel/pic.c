@@ -21,6 +21,10 @@ void init_pic(void) {
     // OCW1 (IRQ masks)
     outb(PIC1_DATA, 0);
     outb(PIC2_DATA, 0);
+
+    // Send an EOI to clear them, just in case
+    outb(PIC1, PIC_EOI);
+    outb(PIC2, PIC_EOI);
 }
 
 void pic_setmask(uint16_t mask) {
