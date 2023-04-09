@@ -114,6 +114,10 @@ void isr_irq1(void) {
         }
     }
 
+    if (!release) {
+        kbd_last_scancode = c + special * 256;
+    }
+
     // Just to be sure, clear the 8042 output buffer
     while (read_status_8042ps2() & 1)
         read_data_8042ps2();

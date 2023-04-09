@@ -3,7 +3,9 @@
 #include "util.h"
 
 uint8_t * kbd_bitmap;
+
 char kbd_last_ascii;
+uint16_t kbd_last_scancode;
 
 void kbd_setkey(uint16_t key, bool status) {
     uint16_t i = key/8;
@@ -40,5 +42,12 @@ char kbd_get_last_ascii() {
     while (kbd_last_ascii == 0);
     char o = kbd_last_ascii;
     kbd_last_ascii = 0;
+    return o;
+}
+
+uint16_t kbd_get_last_scancode() {
+    while (kbd_last_scancode == 0);
+    uint16_t o = kbd_last_scancode;
+    kbd_last_scancode = 0;
     return o;
 }

@@ -49,6 +49,8 @@ void _kmain() {
 
     while (true) {
         kputc(kbd_get_last_ascii());
+        //kputhex(kbd_get_last_scancode()); // Uncomment this for scancodes
+        //kputc(' ');
     }
 
     kputs("KRN DN\n");
