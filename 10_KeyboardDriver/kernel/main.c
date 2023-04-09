@@ -6,6 +6,7 @@
 #include "gdt.h"
 #include "mm.h"
 #include "pic.h"
+#include "kbd.h"
 
 void _kmain() {
     // Set up our stack
@@ -45,6 +46,10 @@ void _kmain() {
     kputs("KRN MN\n");
 
     sti;
+
+    while (true) {
+        kputc(kbd_get_last_ascii());
+    }
 
     kputs("KRN DN\n");
     while (1);

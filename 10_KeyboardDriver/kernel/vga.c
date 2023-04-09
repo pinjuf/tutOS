@@ -27,6 +27,12 @@ void vga_putc(char c) {
         case '\t':
             vga_x += 4 - (vga_x % 4);
             break;
+        case '\b':
+            if (vga_x > 0) {
+                vga_x--;
+                buf[vga_y * VGA_COLS + vga_x] = VGA_CHAR(' ');
+            }
+            break;
         default:
             buf[vga_x + vga_y * VGA_COLS] = VGA_CHAR(c);
             vga_x++;
