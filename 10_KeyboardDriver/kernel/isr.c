@@ -113,4 +113,8 @@ void isr_irq1(void) {
             kbd_last_ascii = is_shift ? scancode_shift_to_ascii(c) : scancode_to_ascii(c);
         }
     }
+
+    // Just to be sure, clear the 8042 output buffer
+    while (read_status_8042ps2() & 1)
+        read_data_8042ps2();
 }

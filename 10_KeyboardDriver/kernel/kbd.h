@@ -20,7 +20,7 @@ char kbd_get_last_ascii();
 
 #define KBD_DEFAULT_TRANSLATOR scs1_usqwerty
 // First column is normal, second is with shift
-static uint8_t scs1_usqwerty[] = {
+static uint8_t scs1_usqwerty[] __attribute__((unused)) = {
     0x00, 0x00,
 	0x1B, 0x1B,	/* esc (0x01)  */
 	'1', '!',

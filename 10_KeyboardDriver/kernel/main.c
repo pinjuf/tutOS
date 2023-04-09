@@ -41,7 +41,7 @@ void _kmain() {
     kputs("PIT OK\n");
 
     init_8042ps2();
-    kputs("KBD OK\n");
+    kputs("PS2 OK\n");
 
     kputs("KRN MN\n");
 

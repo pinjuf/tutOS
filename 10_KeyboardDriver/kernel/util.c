@@ -220,7 +220,7 @@ void init_8042ps2() {
     write_comm_8042ps2(0x20);
     cfg = read_data_8042ps2();
     cfg |= 1; // Keyboard IRQs
-    cfg |= 1 << 6; // Translation
+    cfg |= 1 << 6; // Translation for Port 1
     write_comm_8042ps2(0x60);
     write_data_8042ps2(cfg);
 }
@@ -249,7 +249,7 @@ void write_ps2_port1(uint8_t d) {
         write_data_8042ps2(d);
 
         r = read_data_8042ps2();
-    } while (r != PS2_ACK);
+    } while (r == PS2_RESEND);
 }
 
 void write_ps2_port2(uint8_t d) {
@@ -259,5 +259,5 @@ void write_ps2_port2(uint8_t d) {
         write_data_8042ps2(d);
 
         r = read_data_8042ps2();
-    } while (r != PS2_ACK);
+    } while (r == PS2_RESEND);
 }
