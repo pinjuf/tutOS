@@ -47,6 +47,8 @@ void _kmain() {
 
     vga_clear();
     vga_disable_cursor();
+    vga_x = 0;
+    vga_y = 0;
 
     sti;
 
@@ -65,6 +67,9 @@ void _kmain() {
             attr = VGA_ATTR(VGA_LIGHT_GREY, VGA_LIGHT_GREY);
         }
         buf[2*(x+VGA_COLS*y) + 1] = attr;
+
+        if (kbd_last_ascii)
+            kputc(kbd_get_last_ascii());
     }
 
     kputs("KRN DN\n");

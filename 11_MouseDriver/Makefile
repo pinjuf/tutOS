@@ -1,4 +1,4 @@
-QEMUFLAGS = -hda img -debugcon stdio -m 320M
+QEMUFLAGS = -hda img -debugcon stdio -m 320M -audiodev pa,id=audio0 -machine pcspk-audiodev=audio0
 
 all: run
 
