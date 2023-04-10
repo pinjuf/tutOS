@@ -7,3 +7,7 @@ a non-keyboard-elitist stuck at the brain capacity and social
 competence of a Hallucigenia)
 
 FAQ:
+    1) What are these QEMU audio options?
+        They replace the old -soundhw pcspk (that I honestly
+        prefer), and allow us to play sound via the PIT, channel
+        2. But this is a story for later.
