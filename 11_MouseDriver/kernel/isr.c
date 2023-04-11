@@ -165,7 +165,8 @@ void isr_irq12(void) {
     if (mouse_y < 0)
         mouse_y = 0;
 
-    mouse_scroll = scroll_raw;
+    if (scroll_raw)
+        mouse_scroll = scroll_raw;
 
     while (read_status_8042ps2() & 1)
         read_data_8042ps2();

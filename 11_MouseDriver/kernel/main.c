@@ -45,31 +45,44 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    vga_clear();
-    vga_disable_cursor();
-    vga_x = 0;
-    vga_y = 0;
+    uint8_t * buf = (uint8_t *) VGA_BUF;
+    uint8_t curr = VGA_LIGHT_GREY;
+    uint8_t old = VGA_BLACK;
+
+    uint16_t x = 0, y = 0, old_x, old_y;
 
     sti;
 
-    uint8_t x = mouse_x;
-    uint8_t y = mouse_y;
-    uint8_t * buf = (uint8_t *) VGA_BUF;
+    vga_attr = VGA_ATTR(VGA_BLACK, VGA_BLACK);
+    vga_disable_cursor();
+    vga_clear();
+
     while (true) {
+        old_x = x;
+        old_y = y;
+
         x = mouse_x;
         y = mouse_y;
-        uint8_t attr = VGA_ATTR(VGA_DARK_GREY, VGA_DARK_GREY);
-        if (mouse_left) {
-            attr = VGA_ATTR(VGA_WHITE, VGA_WHITE);
-        } else if (mouse_middle) {
-            attr = VGA_ATTR(VGA_RED, VGA_RED);
-        } else if (mouse_right) {
-            attr = VGA_ATTR(VGA_LIGHT_GREY, VGA_LIGHT_GREY);
-        }
-        buf[2*(x+VGA_COLS*y) + 1] = attr;
 
-        if (kbd_last_ascii)
-            kputc(kbd_get_last_ascii());
+        if (mouse_scroll == PS2_MOUSE_SCRL_DOWN) {
+            curr--;
+            mouse_scroll = 0;
+        } else if (mouse_scroll == PS2_MOUSE_SCRL_UP) {
+            curr++;
+            mouse_scroll = 0;
+        }
+
+        if (old_x != x || old_y != y) {
+            if (!mouse_left)
+                buf[2*(old_x+VGA_COLS*old_y)+1] = VGA_ATTR(old & 0xF, old & 0xF);
+            old = buf[2*(x+VGA_COLS*y)+1];
+        }
+
+        buf[2*(x+VGA_COLS*y)+1] = VGA_ATTR(curr & 0xF, curr & 0xF);
+
+        if (mouse_right) {
+            vga_clear();
+        }
     }
 
     kputs("KRN DN\n");

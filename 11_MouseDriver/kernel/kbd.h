@@ -11,10 +11,11 @@
 #define PS2_MOUSE_XOVFL (1<<6) // X overflow
 #define PS2_MOUSE_YOVFL (1<<7) // Y overflow
 
+// Vertical Scroll SEEEMS to be inverted
 #define PS2_MOUSE_SCRL_NONE 0
-#define PS2_MOUSE_SCRL_UP 1
+#define PS2_MOUSE_SCRL_UP 0xF
 #define PS2_MOUSE_SCRL_RIGHT 2
-#define PS2_MOUSE_SCRL_DOWN 0xF
+#define PS2_MOUSE_SCRL_DOWN 1
 #define PS2_MOUSE_SCRL_LEFT 0xE
 
 extern bool mouse_left;
