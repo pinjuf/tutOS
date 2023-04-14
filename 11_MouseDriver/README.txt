@@ -11,3 +11,6 @@ FAQ:
         They replace the old -soundhw pcspk (that I honestly
         prefer), and allow us to play sound via the PIT, channel
         2. But this is a story for later.
+    2) Why did you just activate the scroll wheel?
+        PS/2 Mice take the gigachad approach of requiring a magic
+        sequence of sampling freqs to activate extra features.

@@ -49,11 +49,11 @@ void _kmain() {
     uint8_t curr = VGA_LIGHT_GREY;
     uint8_t old = VGA_BLACK;
 
-    uint16_t x = 0, y = 0, old_x, old_y;
+    uint16_t x = mouse_x, y = mouse_y, old_x, old_y;
 
     sti;
 
-    vga_attr = VGA_ATTR(VGA_BLACK, VGA_BLACK);
+    vga_attr = VGA_ATTR(old, old);
     vga_disable_cursor();
     vga_clear();
 
@@ -82,6 +82,7 @@ void _kmain() {
 
         if (mouse_right) {
             vga_clear();
+            mouse_right = false;
         }
     }
 
