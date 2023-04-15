@@ -2,6 +2,9 @@
 
 #include "types.h"
 
+#define SECTOR_SIZE 0x200
+#define ATA_MAX_SECTORS (1<<16)
+
 static const uint16_t ATA_IO_PORTS[] = {
     0x1F0,
     0x170,
@@ -36,7 +39,10 @@ enum ATA_IO_REGS {
 #define ATA_RDY   (1<<6) // Drive Ready
 #define ATA_BSY   (1<<7) // Busy
 
-typedef uint8_t Drive;
+typedef uint8_t drive_t;
 
-int ata_read48(Drive drive, uint64_t lba, uint16_t count, void * buf);
-int ata_write48(Drive drive, uint64_t lba, uint16_t count, void * buf);
+int ata_read48(drive_t drive, uint64_t lba, uint16_t count, void * buf);
+int ata_write48(drive_t drive, uint64_t lba, uint16_t count, void * buf);
+
+int drive_read(drive_t drive, size_t start, size_t count, void * buf);
+int drive_write(drive_t drive, size_t start, size_t count, void * buf);

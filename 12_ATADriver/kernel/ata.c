@@ -1,7 +1,8 @@
 #include "ata.h"
 #include "util.h"
+#include "mm.h"
 
-int ata_common48(Drive drive, uint64_t lba, uint16_t count) {
+int ata_common48(drive_t drive, uint64_t lba, uint16_t count) {
     bool slave = drive & 1;
     uint16_t port = ATA_IO_PORTS[drive >> 1];
 
@@ -38,7 +39,7 @@ int ata_common48(Drive drive, uint64_t lba, uint16_t count) {
     return 0;
 }
 
-int ata_read48(Drive drive, uint64_t lba, uint16_t count, void * buf) {
+int ata_read48(drive_t drive, uint64_t lba, uint16_t count, void * buf) {
     uint16_t port = ATA_IO_PORTS[drive >> 1];
 
     uint8_t c = ata_common48(drive, lba, count);
@@ -64,7 +65,7 @@ int ata_read48(Drive drive, uint64_t lba, uint16_t count, void * buf) {
     return 0;
 }
 
-int ata_write48(Drive drive, uint64_t lba, uint16_t count, void * buf) {
+int ata_write48(drive_t drive, uint64_t lba, uint16_t count, void * buf) {
     uint16_t port = ATA_IO_PORTS[drive >> 1];
 
     uint8_t c = ata_common48(drive, lba, count);
@@ -97,6 +98,78 @@ int ata_write48(Drive drive, uint64_t lba, uint16_t count, void * buf) {
 
         if (!(s & ATA_BSY)) break;
     }
+
+    return 0;
+}
+
+// Like ata_read48, but with bytes for start/count instead of sectors
+int drive_read(drive_t drive, size_t start, size_t count, void * buf) {
+    // When calculating the amount of sectors to read, start needs to be considered too.
+    // Imagine the following scenario: We are reading 512 bytes, starting at byte 256.
+    // Doing just count / SECTOR_SIZE would yield 1 sector, and the %-check wouldn't engage.
+    // However, such a read would require 2 sectors, as our read-area overlaps a sector border!
+
+    uint64_t lba = start / SECTOR_SIZE;
+    uint64_t sectors = (start % SECTOR_SIZE + count) / SECTOR_SIZE;
+    if ((start % SECTOR_SIZE + count) % SECTOR_SIZE) sectors++;
+
+    char * tmp_buf = (char*)kmalloc(sectors * SECTOR_SIZE);
+    char * curr_tmp_buf = tmp_buf;
+
+    size_t full_reads = sectors / ATA_MAX_SECTORS;
+    for (size_t i = 0; i < full_reads; i++) {
+        int result = ata_read48(drive, lba + i * ATA_MAX_SECTORS, 0, curr_tmp_buf); // 0 sectors actually means 65536 sectors
+        if (result != 0)
+            return result;
+        curr_tmp_buf += ATA_MAX_SECTORS * SECTOR_SIZE;
+    }
+
+    int result = ata_read48(drive, lba + full_reads * ATA_MAX_SECTORS, sectors % ATA_MAX_SECTORS, curr_tmp_buf);
+    if (result != 0)
+        return result;
+
+    memcpy(buf, tmp_buf + start % SECTOR_SIZE, count);
+    kfree(tmp_buf);
+
+    return 0;
+}
+
+int drive_write(drive_t drive, size_t start, size_t count, void * buf) {
+    uint64_t lba = start / SECTOR_SIZE;
+    uint64_t sectors = (start % SECTOR_SIZE + count) / SECTOR_SIZE;
+    if ((start % SECTOR_SIZE + count) % SECTOR_SIZE) sectors++;
+
+    char * tmp_buf = (char*)kmalloc(sectors * SECTOR_SIZE);
+    char * curr_tmp_buf = tmp_buf;
+
+    // Read the original sectors around the area we want to write to
+    size_t full_rws = sectors / ATA_MAX_SECTORS;
+    for (size_t i = 0; i < full_rws; i++) {
+        int result = ata_read48(drive, lba + i * ATA_MAX_SECTORS, 0, curr_tmp_buf); // 0 sectors actually means 65536 sectors
+        if (result != 0)
+            return result;
+        curr_tmp_buf += ATA_MAX_SECTORS * SECTOR_SIZE;
+    }
+
+    int result = ata_read48(drive, lba + full_rws * ATA_MAX_SECTORS, sectors % ATA_MAX_SECTORS, curr_tmp_buf);
+    if (result != 0)
+        return result;
+
+    memcpy(tmp_buf + start % SECTOR_SIZE, buf, count);
+
+    curr_tmp_buf = tmp_buf;
+    for (size_t i = 0; i < full_rws; i++) {
+        int result = ata_write48(drive, lba + i * ATA_MAX_SECTORS, 0, curr_tmp_buf);
+        if (result != 0)
+            return result;
+        curr_tmp_buf += ATA_MAX_SECTORS * SECTOR_SIZE;
+    }
+
+    result = ata_write48(drive, lba + full_rws * ATA_MAX_SECTORS, sectors % ATA_MAX_SECTORS, curr_tmp_buf);
+    if (result != 0)
+        return result;
+
+    kfree(tmp_buf);
 
     return 0;
 }

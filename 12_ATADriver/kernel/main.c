@@ -50,9 +50,11 @@ void _kmain() {
 
     pic_setmask(pic_getmask() | (3<<14)); // Disable Both ATA interrupts
 
-    void * buf = kcalloc(0x200 * 0x80);
-    while (ata_write48(0, 0, 1, buf));
-    //hexdump(buf, 0x200);
+    void * buf = kcalloc(4);
+
+    *(uint32_t*)buf = 0xFFFF6969;
+
+    while (drive_write(0, 510, 4, buf));
 
     kputs("KRN DN\n");
     while (1);
