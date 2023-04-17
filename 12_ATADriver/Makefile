@@ -1,8 +1,11 @@
-QEMUFLAGS = -hda img -debugcon stdio -m 320M -audiodev pa,id=audio0 -machine pcspk-audiodev=audio0
+QEMUFLAGS = -hda img -hdb c.img -debugcon stdio -m 320M -audiodev pa,id=audio0 -machine pcspk-audiodev=audio0
+
+.PHONY: all run debug .FORCE
+.FORCE:
 
 all: run
 
-run: img
+run: img c.img
 	qemu-system-x86_64 $(QEMUFLAGS)
 
 debug: img kernel/kernel.elf
@@ -11,6 +14,9 @@ debug: img kernel/kernel.elf
 
 img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin
 	cat boot/boot.bin stage2/stage2.bin kernel/kernel.bin > img
+
+c.img: .FORCE
+	dd if=/dev/zero of=c.img bs=512 count=64
 
 boot/boot.bin: boot
 	$(MAKE) -C boot boot.bin

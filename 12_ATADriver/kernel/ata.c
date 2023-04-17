@@ -2,11 +2,13 @@
 #include "util.h"
 #include "mm.h"
 
+uint8_t drive_bitmap;
+
 int ata_common48(drive_t drive, uint64_t lba, uint16_t count) {
     bool slave = drive & 1;
     uint16_t port = ATA_IO_PORTS[drive >> 1];
 
-    // Send IDENTIFY
+    // Send IDENTIFY, just to check it's actually present & ready
     outb(port + ATA_DRIVE, 0xA0 | (slave << 4));
     outb(port + ATA_SECTOR_COUNT, 0);
     outb(port + ATA_LBA_LOW, 0);
@@ -172,4 +174,40 @@ int drive_write(drive_t drive, size_t start, size_t count, void * buf) {
     kfree(tmp_buf);
 
     return 0;
+}
+
+void ata_checkdrives() {
+    for (size_t i = 0; i < 2 * sizeof(ATA_IO_PORTS)/sizeof(ATA_IO_PORTS[0]); i++) {
+        bool slave = i & 1;
+        uint16_t port = ATA_IO_PORTS[i >> 1];
+
+        outb(port + ATA_DRIVE, 0xA0 | (slave << 4));
+        outb(port + ATA_SECTOR_COUNT, 0);
+        outb(port + ATA_LBA_LOW, 0);
+        outb(port + ATA_LBA_MID, 0);
+        outb(port + ATA_LBA_HIGH, 0);
+        outb(port + ATA_COMMAND, 0xEC);
+        while (true) {
+            uint8_t s;
+            for (size_t j = 0; j < 15; j++)
+                s = inb(port + ATA_STATUS);
+
+            if (s == 0) { // Not responding
+                drive_bitmap &= ~(1<<i);
+                break;
+            }
+
+            if ((s & ATA_ERR) || (s & ATA_DF)) {
+                drive_bitmap &= ~(1<<i);
+                break;
+            }
+
+            if ((s & ATA_DRQ) && !(s & ATA_BSY)) {
+                drive_bitmap |= 1<<i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < 256; i++) inw(port); // Discard actual IDENTIFY data
+    }
 }

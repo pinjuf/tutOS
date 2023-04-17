@@ -44,17 +44,13 @@ void _kmain() {
     init_8042ps2();
     kputs("PS2 OK\n");
 
+    pic_setmask(pic_getmask() | (3<<14)); // Disable Both ATA interrupts
+    ata_checkdrives();
+    kputs("ATA OK\n");
+
     kputs("KRN MN\n");
 
     sti;
-
-    pic_setmask(pic_getmask() | (3<<14)); // Disable Both ATA interrupts
-
-    void * buf = kcalloc(4);
-
-    *(uint32_t*)buf = 0xFFFF6969;
-
-    while (drive_write(0, 510, 4, buf));
 
     kputs("KRN DN\n");
     while (1);

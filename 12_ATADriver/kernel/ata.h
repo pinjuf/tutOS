@@ -41,8 +41,12 @@ enum ATA_IO_REGS {
 
 typedef uint8_t drive_t;
 
+extern uint8_t drive_bitmap;
+
 int ata_read48(drive_t drive, uint64_t lba, uint16_t count, void * buf);
 int ata_write48(drive_t drive, uint64_t lba, uint16_t count, void * buf);
 
 int drive_read(drive_t drive, size_t start, size_t count, void * buf);
 int drive_write(drive_t drive, size_t start, size_t count, void * buf);
+
+void ata_checkdrives();
