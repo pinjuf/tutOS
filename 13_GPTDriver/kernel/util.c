@@ -128,8 +128,16 @@ void hexdump(void * ptr, size_t n) {
         kputhex(val);
         kputc(' ');
 
-        if (i%16 == 15)
+        if (i%16 == 15) {
+            for (size_t j = 0; j < 16; j++) {
+                uint8_t val = ((uint8_t*)ptr)[i - 15 + j];
+                if (val < 0x20 || val > 0x7E)
+                    val = '.';
+                kputc(val);
+            }
+
             kputc('\n');
+        }
     }
 
     if (n%16)
