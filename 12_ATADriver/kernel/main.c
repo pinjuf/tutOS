@@ -54,11 +54,30 @@ void _kmain() {
     kputs("KRN MN\n");
     sti;
 
-    uint8_t * buf = (uint8_t *)kmalloc(256);
+    for (uint8_t i = 0; i < ATA_DRIVES; i++) {
+        if (drive_bitmap & (1 << i)) {
+            kputs("Drive #");
+            kputdec(i);
+            kputs(" detected!\n");
+        }
+    }
 
-    buf[0] = 'X';
+    // We assume that: Drive #0 = boot drive | #1 = data drive
+    char * buf = (char *)kmalloc(0x200 * 64);
+    while (drive_read(0, 0, 512, buf));
+    kputs("Dumping own boot sector:\n");
+    hexdump(buf, 512);
 
-    while (drive_write(1, 0, 1, buf));
+    kputs("\nWriting test pattern to drive #1...");
+    for (size_t i = 1; i <= 64; i++) {
+        memset(buf, 0, 0x200*64);
+        for (size_t j = 0; j < i; j++) {
+            buf[j] = i;
+        }
+
+        while (drive_write(1, (i*(i-1))/2, i, buf));
+    }
+    kputs(" done (run \"hexdump -C c.img\")\n");
 
     kputs("KRN DN\n");
     while (1);

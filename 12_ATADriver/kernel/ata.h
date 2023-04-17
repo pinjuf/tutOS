@@ -8,7 +8,7 @@
 static const uint16_t ATA_IO_PORTS[] = {
     0x1F0,
     0x170,
-    0x1E8,
+    0x1E8, // Ports 2 & 3 are not standard, but likely (see OSDev wiki)
     0x168,
 };
 
@@ -18,6 +18,8 @@ static const uint16_t ATA_CTRL_PORTS[] = {
     0x3E6,
     0x366,
 };
+
+#define ATA_DRIVES (2*sizeof(ATA_IO_PORTS)/sizeof(uint16_t))
 
 enum ATA_IO_REGS {
     ATA_DATA = 0,

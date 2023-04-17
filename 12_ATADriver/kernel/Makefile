@@ -2,7 +2,7 @@ all: kernel.bin kernel.elf
 
 CC = gcc
 CFLAGS = -Wall -Wextra -Wpedantic -nostdlib -ffreestanding -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables \
-		 -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -mcmodel=large -fomit-frame-pointer -O3 -g
+		 -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -mcmodel=large -fomit-frame-pointer -Os -g
 LD = ld
 ASM = nasm
 

@@ -177,7 +177,7 @@ int drive_write(drive_t drive, size_t start, size_t count, void * buf) {
 }
 
 void ata_checkdrives() {
-    for (size_t i = 0; i < 2 * sizeof(ATA_IO_PORTS)/sizeof(ATA_IO_PORTS[0]); i++) {
+    for (size_t i = 0; i < ATA_DRIVES; i++) {
         bool slave = i & 1;
         uint16_t port = ATA_IO_PORTS[i >> 1];
 
@@ -219,7 +219,7 @@ void ata_resetdrive(drive_t drive) {
     port |= 1 << 2; // SRST (Software reset, affects both drives on the bus)
     outb(port, status);
 
-    // We should have our 5us
+    // We should have our 5us by now
 
     status = inb(port);
     port &= ~(1 << 2);
