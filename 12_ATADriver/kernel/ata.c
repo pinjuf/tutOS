@@ -211,3 +211,17 @@ void ata_checkdrives() {
         for (int i = 0; i < 256; i++) inw(port); // Discard actual IDENTIFY data
     }
 }
+
+void ata_resetdrive(drive_t drive) {
+    uint16_t port = ATA_CTRL_PORTS[drive >> 1];
+
+    uint8_t status = inb(port);
+    port |= 1 << 2; // SRST (Software reset, affects both drives on the bus)
+    outb(port, status);
+
+    // We should have our 5us
+
+    status = inb(port);
+    port &= ~(1 << 2);
+    outb(port, status);
+}

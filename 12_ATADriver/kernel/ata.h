@@ -12,6 +12,13 @@ static const uint16_t ATA_IO_PORTS[] = {
     0x168,
 };
 
+static const uint16_t ATA_CTRL_PORTS[] = {
+    0x3F6,
+    0x376,
+    0x3E6,
+    0x366,
+};
+
 enum ATA_IO_REGS {
     ATA_DATA = 0,
     ATA_ERROR = 1,
@@ -50,3 +57,4 @@ int drive_read(drive_t drive, size_t start, size_t count, void * buf);
 int drive_write(drive_t drive, size_t start, size_t count, void * buf);
 
 void ata_checkdrives();
+void ata_resetdrive(drive_t drive);

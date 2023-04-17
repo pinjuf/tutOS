@@ -45,12 +45,20 @@ void _kmain() {
     kputs("PS2 OK\n");
 
     pic_setmask(pic_getmask() | (3<<14)); // Disable Both ATA interrupts
+    for (uint8_t i = 0; i < 8; i++) {
+        ata_resetdrive(i);
+    }
     ata_checkdrives();
     kputs("ATA OK\n");
 
     kputs("KRN MN\n");
-
     sti;
+
+    uint8_t * buf = (uint8_t *)kmalloc(256);
+
+    buf[0] = 'X';
+
+    while (drive_write(1, 0, 1, buf));
 
     kputs("KRN DN\n");
     while (1);
