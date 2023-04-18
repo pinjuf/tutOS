@@ -28,6 +28,16 @@ part_t * get_part(drive_t d, uint32_t n) {
             return NULL;
     }
 
+    bool zero = true;
+    for (uint8_t i = 0; i < sizeof(guid_t); i++) {
+        if (((char*)(&gpt[n].type_guid))[i]) {
+            zero = false;
+        }
+    }
+    if (zero) {
+        kwarn(__FILE__,__func__,"part unused");
+    }
+
     part_t * out = (part_t*)kmalloc(sizeof(part_t));
     out->d = d;
     out->n = n;
@@ -102,4 +112,20 @@ void kputguid(guid_t guid) {
             kputc('0');
         kputhex(c);
     }
+}
+
+int part_read(part_t * p, uint64_t start, uint64_t count, void * buf) {
+    if (start >= p->size * SECTOR_SIZE) {
+        kwarn(__FILE__,__func__,"read out of bounds");
+    }
+
+    return drive_read(p->d, p->start_lba * SECTOR_SIZE + start, count, buf);
+}
+
+int part_write(part_t * p, uint64_t start, uint64_t count, void * buf) {
+    if (start >= p->size * SECTOR_SIZE) {
+        kwarn(__FILE__,__func__,"write out of bounds");
+    }
+
+    return drive_write(p->d, p->start_lba * SECTOR_SIZE + start, count, buf);
 }
