@@ -3,6 +3,16 @@
 OFILE=$1
 INFILES=${@:2}
 
+if [[ -z "$OFILE" ]]; then
+    echo "$0: arg1 must be output file"
+    exit 1
+fi
+
+if [[ -z "$INFILES" ]]; then
+    echo "$0: arg2: must be input files"
+    exit 1
+fi
+
 # Build a blank image, with some buffer space for us
 totalsectors=$(wc -c $INFILES | tail -n1 | awk '{print $1}')
 totalsectors=$(( ($totalsectors + 65536) / 512 ))

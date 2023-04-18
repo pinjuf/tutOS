@@ -8,6 +8,7 @@
 #include "pic.h"
 #include "ata.h"
 #include "kbd.h"
+#include "gpt.h"
 
 void _kmain() {
     // Set up our stack
@@ -54,30 +55,17 @@ void _kmain() {
     kputs("KRN MN\n");
     sti;
 
-    for (uint8_t i = 0; i < ATA_DRIVES; i++) {
-        if (drive_bitmap & (1 << i)) {
-            kputs("Drive #");
-            kputdec(i);
-            kputs(" detected!\n");
-        }
-    }
+    part_t * p = get_part(1, 0);
 
-    // We assume that: Drive #0 = boot drive | #1 = data drive
-    char * buf = (char *)kmalloc(0x200 * 64);
-    while (drive_read(0, 0, 512, buf));
-    kputs("Dumping own boot sector:\n");
-    hexdump(buf, 512);
-
-    kputs("\nWriting test pattern to drive #1...");
-    for (size_t i = 1; i <= 64; i++) {
-        memset(buf, 0, 0x200*64);
-        for (size_t j = 0; j < i; j++) {
-            buf[j] = i;
-        }
-
-        while (drive_write(1, (i*(i-1))/2, i, buf));
-    }
-    kputs(" done (run \"hexdump -C c.img\")\n");
+    kputs("Starting LBA: ");
+    kputdec(p->start_lba);
+    kputs("\nSize: ");
+    kputdec(p->size * SECTOR_SIZE);
+    kputs("\nGUID:\n");
+    kputguid(p->guid);
+    kputs("\nType GUID:\n");
+    kputguid(p->type);
+    kputc('\n');
 
     cli;
     kputs("KRN DN\n");
