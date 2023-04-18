@@ -16,7 +16,7 @@ img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin
 	cat boot/boot.bin stage2/stage2.bin kernel/kernel.bin > img
 
 c.img: .FORCE
-	dd if=/dev/zero of=c.img bs=512 count=64
+	./mkgpt.sh $@ img kernel/kernel.elf
 
 boot/boot.bin: boot
 	$(MAKE) -C boot boot.bin
