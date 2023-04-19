@@ -55,7 +55,7 @@ void _kmain() {
     kputs("KRN MN\n");
     sti;
 
-    part_t * p = get_part(1, 1); // Disk #1, partition #1
+    part_t * p = get_part(1, 0); // Disk #1, partition #1
 
     kputs("Starting LBA: ");
     kputdec(p->start_lba);
@@ -67,7 +67,7 @@ void _kmain() {
     kputguid(p->type);
     kputs("\nReading from this partition:\n");
     void * buf = kmalloc(512);
-    part_read(p, 5000, 512, buf);
+    part_read(p, 0, 512, buf);
     hexdump(buf, 512);
 
     cli;

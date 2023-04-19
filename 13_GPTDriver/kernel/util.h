@@ -43,5 +43,7 @@ void write_comm_8042ps2(uint8_t d);
 void write_ps2_port1(uint8_t d);
 void write_ps2_port2(uint8_t d);
 
+void kputleadingzeroes_hex(uint64_t val, uint8_t len);
+
 #define PS2_ACK 0xFA
 #define PS2_RESEND 0xFE

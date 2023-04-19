@@ -296,3 +296,13 @@ void write_ps2_port2(uint8_t d) {
         r = read_data_8042ps2();
     } while (r == PS2_RESEND);
 }
+
+void kputleadingzeroes_hex(uint64_t val, uint8_t len) {
+    for (uint8_t i = len - 1; i < UINT8_MAX; i--) {
+        uint8_t v = val >> (i * 4) & 0xF;
+        if (!v)
+            kputc('0');
+        else
+            break;
+    }
+}
