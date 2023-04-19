@@ -137,6 +137,8 @@ void hexdump(void * ptr, size_t n) {
             }
 
             kputc('\n');
+        } else if (i%16 == 7) {
+            kputc(' '); // Middle delimiter
         }
     }
 
