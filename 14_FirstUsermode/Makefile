@@ -8,9 +8,12 @@ all: run
 run: img c.img
 	qemu-system-x86_64 $(QEMUFLAGS)
 
-debug: img kernel/kernel.elf
+debug: img c.img kernel/kernel.elf
 	qemu-system-x86_64 $(QEMUFLAGS) -s -S &
 	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel/kernel.elf"
+
+bochs: img c.img
+	bochs -q
 
 img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin
 	cat boot/boot.bin stage2/stage2.bin kernel/kernel.bin > img

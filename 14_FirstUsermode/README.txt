@@ -8,3 +8,7 @@ instead have to go through the kernel to do so. For this, we need
 our code to run in "Ring 3", which is reflected in CS.
 
 FAQ:
+    1) Why do you check for the U/S flag while page mapping?
+        Because of the U/S hierarchy direction, all HIGHER LEVEL
+        table entries must have U/S set in order for LOWER LEVEL
+        table entries to actually have a valid U/S flag.

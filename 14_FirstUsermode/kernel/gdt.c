@@ -38,34 +38,41 @@ void init_kgdt() {
             0,
             0,
             GDT_P | GDT_S | GDT_E | GDT_RW,
-            GDT_G | GDT_L
+            GDT_L
     ); // kcode
 
     fill_gdt_entry(&kgdt[2],
             0,
             0,
             GDT_P | GDT_S | GDT_DC | GDT_RW,
-            GDT_G
-    );
+            0
+    ); // kstack
 
     fill_gdt_sysentry((gdt_sysentry_t*)&kgdt[3],
             (uint64_t)&ktss,
-            sizeof(tss_t)-1,
+            sizeof(tss_t),
             GDT_P | GDT_TSS64,
             0
     ); // ktss
+
+    fill_gdt_entry(&kgdt[5],
+            0,
+            0,
+            GDT_P | GDT_DPL | GDT_S | GDT_DC | GDT_RW,
+            0
+    ); // ustack
 
     fill_gdt_entry(&kgdt[6],
             0,
             0,
             GDT_P | GDT_DPL | GDT_S | GDT_E | GDT_RW,
-            GDT_G | GDT_L
+            GDT_L
     ); // ucode
 
     asm volatile ("lgdt %0" : : "m"(kgdtr));
     asm volatile ("ltr %%ax" : : "a"(3 * 0x8));
 
-    // Long mode essentially only uses CS
+    // Long mode essentially only uses CS (and sometimes SS)
     asm volatile ("\
             xor %ax, %ax; \
             movw %ax, %ds; \

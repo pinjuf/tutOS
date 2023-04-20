@@ -6,6 +6,7 @@ Memory layout:
     9000   -  A000  | Stage2            | IDMAP
     A000   - 19000  | Kernel            | IDMAP
     7D000  - 7FFFF  | PML4T/PDPT/PDT    | IDMAP
+    110000 -  DOWN  | Int-Syscall stack | IDMAP
     120000 -  DOWN  | Kernel stack      | IDMAP
     120000 - 140000 | Heap pages        | IDMAP
     140000 -   ...  | Memory bitmap     | IDMAP

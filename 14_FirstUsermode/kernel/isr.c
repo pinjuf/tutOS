@@ -11,6 +11,7 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
     (void)cs;
     (void)rflags;
     (void)rsp;
+    (void)ss;
 
     kputs("EXC ");
     kputdec(n);
@@ -28,6 +29,7 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
     (void)cs;
     (void)rflags;
     (void)rsp;
+    (void)ss;
 
     kputs("EXC ");
     kputdec(n);
@@ -46,6 +48,7 @@ void isr_default_int(uint16_t n, uint64_t rip, uint64_t cs, uint64_t rflags, uin
     (void)cs;
     (void)rflags;
     (void)rsp;
+    (void)ss;
 
     kputs("INT ");
     if (n == 0xFFFF)

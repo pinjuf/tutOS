@@ -10,6 +10,10 @@
 #include "kbd.h"
 #include "gpt.h"
 
+void usermode_code() {
+    while (1);
+}
+
 void _kmain() {
     // Set up our stack
     asm volatile(" \
@@ -53,9 +57,21 @@ void _kmain() {
     kputs("ATA OK\n");
 
     kputs("KRN MN\n");
-    sti;
 
-    asm volatile ("movq $0, %rax; divq %rax;");
+    void * code_buf = alloc_pages(1);
+    void * stack_buf = alloc_pages(1);
+
+    memcpy(code_buf, (void*)(uint64_t)usermode_code, 0x1000);
+
+    asm volatile(" \
+        push $0x2B; \
+        push %0; \
+        push $0x202; \
+        push $0x33; \
+        push %1; \
+        iretq;"
+        :: "r"(stack_buf), "r"(code_buf)
+    );
 
     cli;
     kputs("KRN DN\n");

@@ -21,6 +21,8 @@ void init_paging(void) {
         pdpt = (uint64_t *)HEAP_PAGETABLES_START;
         pdt = (uint64_t*)(HEAP_PAGETABLES_START + PAGE_SIZE);
         pml4t[heap_pml4t_index] = (uint64_t)pdpt | HEAP_FLAGS;
+    } else if (HEAP_FLAGS & PAGE_USER) {
+        pml4t[heap_pml4t_index] |= PAGE_USER;
     }
 
     size_t pdts = HEAP_PTS/PAGE_ENTRIES + 1; // How many PDTs will we need, at least? (we need to enter them into the PDPT)
@@ -147,6 +149,9 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
 
     // Does the needed PDPT exist?
     if (pml4t[pml4t_index] & PAGE_PRESENT) {
+        if (attr & PAGE_USER)
+            pml4t[pml4t_index] |= PAGE_USER;
+
         pdpt = (uint64_t *)(pml4t[pml4t_index] & ~0xFFF);
 
         if ((uint64_t)pdpt >= 0x400000) { // If it is above kernel mem, it is part of the heap and must be translated to a virtual address
@@ -159,6 +164,9 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
     }
 
     if (pdpt[pdpt_index] & PAGE_PRESENT) {
+        if (attr & PAGE_USER)
+            pdpt[pdpt_index] |= PAGE_USER;
+
         pdt = (uint64_t *)(pdpt[pdpt_index] & ~0xFFF);
 
         if ((uint64_t)pdt >= 0x400000) {
@@ -171,6 +179,9 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
     }
 
     if (pdt[pdt_index] & PAGE_PRESENT) {
+        if (attr & PAGE_USER)
+            pdt[pdt_index] |= PAGE_USER;
+
         pt = (uint64_t *)(pdt[pdt_index] & ~0xFFF);
 
         if ((uint64_t)pt >= 0x400000) {
