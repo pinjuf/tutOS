@@ -8,6 +8,9 @@ global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq12
 %macro PUSH_ALL 0
     push rbp
 
+    mov rbp, rsp
+    add rbp, 8     ; because we already pushed RBP
+
     push rax
     push rbx
     push rcx
@@ -29,6 +32,11 @@ global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq12
 
     mov rax, gs
     push rax
+
+    push rax
+    mov rax, 0x10
+    mov ss, rax
+    pop rax
 %endmacro
 
 %macro POP_ALL 0
