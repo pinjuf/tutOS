@@ -11,12 +11,7 @@
 #include "gpt.h"
 #include "syscall.h"
 
-void usermode_code() {
-    asm volatile ("syscall");
-    asm volatile ("syscall");
-    while (1);
-}
-
+__attribute__((noreturn))
 void _kmain() {
     // Set up our stack
     asm volatile(" \
@@ -64,22 +59,25 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    void * code_buf = alloc_pages(1);
-    void * stack_buf = alloc_pages(1);
+    part_t * usercode_part = get_part(1, 0);
+    size_t usercode_pages = usercode_part->size / 2;
+    if (usercode_part->size & 1) usercode_pages++;
+    void * usercode = calloc_pages(usercode_pages);
 
-    memcpy(code_buf, (void*)(uint64_t)usermode_code, 0x1000);
+    mmap_pages((void*)0x400000, virt_to_phys(usercode), PAGE_PRESENT | PAGE_RW | PAGE_USER, usercode_pages);
+    while (part_read(usercode_part, 0, usercode_part->size * 512, (void*)0x400000));
+
+    void * userstack = (void*)((uint64_t)calloc_pages(1) + PAGE_SIZE * 1);
 
     asm volatile(" \
-        push $0x2B; \
-        push %0; \
-        push $0x202; \
-        push $0x33; \
-        push %1; \
-        iretq;"
-        :: "r"(stack_buf), "r"(code_buf)
-    );
+            push $0x2B; \
+            push %0; \
+            push $0x202; \
+            push $0x33; \
+            push %1; \
+            mov %0, %%rbp ; \
+            iretq;" :: "r"(userstack), "r"((void*)0x400000));
 
-    cli;
     kputs("KRN DN\n");
     while (1);
 }

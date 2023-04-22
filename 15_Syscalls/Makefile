@@ -1,4 +1,4 @@
-QEMUFLAGS = -hda img -hdb c.img -debugcon stdio -m 320M -audiodev pa,id=audio0 -machine pcspk-audiodev=audio0
+QEMUFLAGS = -hda img -hdb c.img -m 320M -audiodev pa,id=audio0 -machine pcspk-audiodev=audio0
 
 .PHONY: all run debug .FORCE
 .FORCE:
@@ -6,7 +6,7 @@ QEMUFLAGS = -hda img -hdb c.img -debugcon stdio -m 320M -audiodev pa,id=audio0 -
 all: run
 
 run: img c.img
-	qemu-system-x86_64 $(QEMUFLAGS)
+	qemu-system-x86_64 $(QEMUFLAGS) -debugcon stdio
 
 debug: img c.img kernel/kernel.elf
 	qemu-system-x86_64 $(QEMUFLAGS) -s -S &
@@ -18,8 +18,8 @@ bochs: img c.img
 img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin
 	cat boot/boot.bin stage2/stage2.bin kernel/kernel.bin > img
 
-c.img: .FORCE
-	./mkgpt.sh $@ img kernel/kernel.elf
+c.img: .FORCE userland/out.bin
+	./mkgpt.sh $@ userland/out.bin
 
 boot/boot.bin: boot
 	$(MAKE) -C boot boot.bin
@@ -32,3 +32,6 @@ kernel/kernel.bin: kernel
 
 kernel/kernel.elf: kernel
 	$(MAKE) -C kernel kernel.elf
+
+userland/out.bin: userland
+	$(MAKE) -C userland out.bin
