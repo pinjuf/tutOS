@@ -9,10 +9,12 @@
 #include "ata.h"
 #include "kbd.h"
 #include "gpt.h"
+#include "syscall.h"
 
 void usermode_code() {
-    for (size_t i = 0; i < 99999999; i++) asm volatile ("nop");
-    asm volatile ("cli");
+    asm volatile ("syscall");
+    asm volatile ("syscall");
+    while (1);
 }
 
 void _kmain() {
@@ -56,6 +58,9 @@ void _kmain() {
     }
     ata_checkdrives();
     kputs("ATA OK\n");
+
+    init_syscalls();
+    kputs("SCL OK\n");
 
     kputs("KRN MN\n");
 

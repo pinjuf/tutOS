@@ -306,3 +306,21 @@ void kputleadingzeroes_hex(uint64_t val, uint8_t len) {
             break;
     }
 }
+
+void _rdmsr(uint32_t msr, uint32_t * lo, uint32_t * hi) {
+    asm volatile ("rdmsr" : "=a" (*lo), "=d" (*hi) : "c" (msr));
+}
+
+void _wrmsr(uint32_t msr, uint32_t lo, uint32_t hi) {
+    asm volatile ("wrmsr" : : "a" (lo), "d" (hi), "c" (msr));
+}
+
+uint64_t rdmsr(uint32_t msr) {
+    uint32_t lo, hi;
+    _rdmsr(msr, &lo, &hi);
+    return ((uint64_t)hi << 32) | lo;
+}
+
+void wrmsr(uint32_t msr, uint64_t val) {
+    _wrmsr(msr, val & 0xFFFFFFFF, val >> 32);
+}

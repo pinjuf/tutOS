@@ -45,5 +45,10 @@ void write_ps2_port2(uint8_t d);
 
 void kputleadingzeroes_hex(uint64_t val, uint8_t len);
 
+void _rdmsr(uint32_t msr, uint32_t * lo, uint32_t * hi);
+void _wrmsr(uint32_t msr, uint32_t lo, uint32_t hi);
+uint64_t rdmsr(uint32_t msr);
+void wrmsr(uint32_t msr, uint64_t val);
+
 #define PS2_ACK 0xFA
 #define PS2_RESEND 0xFE
