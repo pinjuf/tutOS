@@ -11,7 +11,8 @@
 #include "gpt.h"
 
 void usermode_code() {
-    while (1);
+    for (size_t i = 0; i < 99999999; i++) asm volatile ("nop");
+    asm volatile ("cli");
 }
 
 void _kmain() {

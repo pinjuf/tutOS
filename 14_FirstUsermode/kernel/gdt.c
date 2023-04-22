@@ -50,7 +50,7 @@ void init_kgdt() {
 
     fill_gdt_sysentry((gdt_sysentry_t*)&kgdt[3],
             (uint64_t)&ktss,
-            sizeof(tss_t),
+            sizeof(tss_t)-1,
             GDT_P | GDT_TSS64,
             0
     ); // ktss

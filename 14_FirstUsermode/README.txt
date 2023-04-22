@@ -12,3 +12,6 @@ FAQ:
         Because of the U/S hierarchy direction, all HIGHER LEVEL
         table entries must have U/S set in order for LOWER LEVEL
         table entries to actually have a valid U/S flag.
+    2) Why is there a #GP after some time?
+        That is wanted (see usermode_code()), and shows that
+        Ring-3 code cannot use some instructions (cli in this case).
