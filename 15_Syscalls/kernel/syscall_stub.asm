@@ -10,7 +10,7 @@ syscall_stub:
     mov [us_rbp], rbp
 
     mov rsp, 0x110000
-    mov rbp, 0x110000
+    mov rbp, rsp
 
     push rcx ; Save passed on user RIP & RFLAGS
     push r11

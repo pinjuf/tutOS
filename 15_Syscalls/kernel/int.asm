@@ -1,7 +1,7 @@
 [BITS 64]
 
-extern isr_noerr_exception, isr_err_exception, isr_default_int, isr_irq0, isr_irq1, isr_irq12
-global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq12_stub
+extern isr_noerr_exception, isr_err_exception, isr_default_int, isr_irq0, isr_irq1, isr_irq12, handle_syscall
+global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq12_stub, isr_syscall_stub
 
 %define PUSH_ALL_SIZE (17*8)
 
@@ -163,6 +163,27 @@ isr_irq12_stub:
     POP_ALL
 
     PIC_EOI
+    iretq
+
+isr_syscall_stub:
+    push rbp
+    mov rbp, rsp
+
+    push r9
+
+    mov rcx, rdx
+    mov rdx, rsi
+    mov rsi, rdi
+    mov rdi, rax
+    mov r9, r8
+    mov r8, r10
+
+    call handle_syscall
+
+    add rsp, 0x8
+
+    pop rbp
+
     iretq
 
 isr_stub_table:

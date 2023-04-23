@@ -12,6 +12,7 @@ syscall:
     mov rdx, rcx
     mov r9, [rsp+8]
 
-    syscall
+    ;syscall
+    int 0x80
 
     ret
