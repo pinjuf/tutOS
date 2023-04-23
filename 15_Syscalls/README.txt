@@ -11,3 +11,10 @@ of the request, execute it, and return some data. For us, it
 is now time to integrate this.
 
 FAQ:
+    1) Why do you support int 0x80?
+        "int 0x80" was the generally accepted way of triggering
+        syscalls on x86, and is still used by Linux (even on
+        x86_64!). And simply because we can, we support it.
+    2) Why do you set up x86/IA32-syscall-handlers?
+        I find it cleaner to set them up, altough them being
+        execute would probably Triple Fault us.
