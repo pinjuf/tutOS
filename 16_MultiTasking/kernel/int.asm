@@ -138,6 +138,8 @@ isr_default_stub:
 isr_irq0_stub:
     PUSH_ALL
 
+    mov rdi, rsp ; Register frame base address
+
     call isr_irq0
 
     POP_ALL

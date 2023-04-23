@@ -1,6 +1,7 @@
 #include "isr.h"
 #include "kbd.h"
 #include "main.h"
+#include "schedule.h"
 #include "util.h"
 
 uint64_t pit0_ticks = 0;
@@ -60,8 +61,12 @@ void isr_default_int(uint16_t n, uint64_t rip, uint64_t cs, uint64_t rflags, uin
     kputs("\n");
 }
 
-void isr_irq0(void) {
+void isr_irq0(void * regframe) {
     pit0_ticks++;
+
+    if (!(pit0_ticks % TICKS_PER_SCHEDULE)) {
+        schedule(regframe);
+    }
 }
 
 void isr_irq1(void) {

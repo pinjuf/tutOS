@@ -1,3 +1,3 @@
 #pragma once
 
-#define PIT0_FREQ 250
+#define PIT0_FREQ 2000
