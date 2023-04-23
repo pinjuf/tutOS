@@ -4,6 +4,8 @@ global syscall_stub
 extern handle_syscall
 
 syscall_stub:
+    ; The syscall triggerer is responsible for saving the registers, not the kernel
+
     mov [us_rsp], rsp ; Save user RSP & RBP
     mov [us_rbp], rbp
 
@@ -13,29 +15,26 @@ syscall_stub:
     push rcx ; Save passed on user RIP & RFLAGS
     push r11
 
-    ; Args are passed like on Linux:
-    ; rax=num, rdi=arg0, rsi=arg1, rdx, r10, r8, r9
+    ; Linux
+    ; RAX | RDI | RSI | RDX | R10 | R8  | R9
+    ; N   | a0  | a1  | a2  | a3  | a4  | a5
+    ; RDI | RSI | RDX | RCX | R8  | R9  | (stack)
+    ; SysV ABI
 
     ; Juggle the arguments from Linux convention to SysV 64-bit calling convention
-    push r9  ; arg5
-    push r8  ; arg4
-    push r10 ; arg3
-    push rdx ; arg2
-    push rsi ; arg1
-    push rdi ; arg0
-    push rax ; n
 
-    pop rdi  ; n
-    pop rsi  ; arg0
-    pop rdx  ; arg1
-    pop rcx  ; arg2
-    pop r8   ; arg3
-    pop r9   ; arg4
-    ; arg5 is on the stack
+    push r9
+
+    mov rcx, rdx
+    mov rdx, rsi
+    mov rsi, rdi
+    mov rdi, rax
+    mov r9, r8
+    mov r8, r10
 
     call handle_syscall
 
-    add rsp, 0x8 ; pop arg5
+    add rsp, 0x8 ; pop arg5 (from r9)
 
     ; return value is in rax
 

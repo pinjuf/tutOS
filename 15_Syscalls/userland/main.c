@@ -7,12 +7,8 @@ void my_main();
 
 __attribute__((noreturn))
 void _start() {
-    my_main();
-
-    while (1);
-}
-
-void my_main() {
     uint64_t result = syscall(1, 2, 3, 4, 5, 6, 7);
     syscall(result, result, result, result, result, result, result);
+
+    while (1);
 }

@@ -93,8 +93,6 @@ isr_stub_%+%1:
 
     add rsp, 8 ; Pop ERR
 
-    PIC_EOI
-
     iretq
 %endmacro
 
@@ -114,8 +112,6 @@ isr_stub_%+%1:
     call isr_noerr_exception
 
     POP_ALL
-
-    PIC_EOI
 
     iretq
 %endmacro

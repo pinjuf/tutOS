@@ -38,5 +38,5 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                  }
     }
 
-    return 0;
+    return 0x42; // The one true meaning of life, the universe, and everything (and also 66 in decimal)
 }
