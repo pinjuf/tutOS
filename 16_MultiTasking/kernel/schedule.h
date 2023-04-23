@@ -6,6 +6,7 @@
 
 // Structure describing the PUSH_ALL stack frame during an interrupt
 typedef struct int_regframe_t {
+    uint64_t cr3;
     uint64_t gs;
     uint64_t fs;
     uint64_t rdi;
@@ -30,4 +31,30 @@ typedef struct int_regframe_t {
     uint64_t ss;
 } __attribute__((packed)) int_regframe_t;
 
-void schedule(void * regframe);
+typedef enum PROCESS_STATE {
+    PROCESS_NONE = 0,
+    PROCESS_NOT_RUNNING,
+    PROCESS_RUNNING,
+} PROCESS_STATE;
+
+typedef struct pagemap_t {
+    void * phys;
+    void * virt;
+    size_t n;
+} pagemap_t;
+
+typedef struct process_t {
+    PROCESS_STATE state;
+    pagemap_t * pagemaps;
+    int_regframe_t regs;
+} process_t;
+
+typedef uint16_t pid_t;
+
+#define MAX_PROCESSES 256
+
+extern process_t * processes;
+extern process_t * current_process;
+
+void init_scheduling(void);
+void schedule(void * regframe_ptr);

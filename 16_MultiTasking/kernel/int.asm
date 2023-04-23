@@ -3,7 +3,7 @@
 extern isr_noerr_exception, isr_err_exception, isr_default_int, isr_irq0, isr_irq1, isr_irq12, handle_syscall
 global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq12_stub, isr_syscall_stub
 
-%define PUSH_ALL_SIZE (17*8)
+%define PUSH_ALL_SIZE (18*8)
 
 %macro PUSH_ALL 0
     push rbp
@@ -33,13 +33,17 @@ global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq12
     mov rax, gs
     push rax
 
+    mov rax, cr3
     push rax
+
     mov rax, 0x10
     mov ss, rax
-    pop rax
 %endmacro
 
 %macro POP_ALL 0
+    pop rax
+    mov cr3, rax
+
     pop rax
     mov gs, rax
 
