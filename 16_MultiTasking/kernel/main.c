@@ -83,6 +83,7 @@ void _kmain() {
     processes[0].regs.cs = 0x33;
     processes[0].regs.rflags = 0x202;
     processes[0].regs.rsp = (uint64_t)userstack1;
+    processes[1].regs.rbp = (uint64_t)userstack1;
     processes[0].regs.ss = 0x2B;
     processes[0].regs.cr3 = 0x7D000; // TODO: get this from current cr3
 
@@ -106,6 +107,7 @@ void _kmain() {
     processes[1].regs.cs = 0x33;
     processes[1].regs.rflags = 0x202;
     processes[1].regs.rsp = (uint64_t)userstack2;
+    processes[1].regs.rbp = (uint64_t)userstack2;
     processes[1].regs.ss = 0x2B;
     processes[1].regs.cr3 = 0x7D000;
 

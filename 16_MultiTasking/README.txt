@@ -7,3 +7,5 @@ every process runs for some time, before the kernel jumps
 to the next one.
 
 FAQ:
+    1) Why don't you use a linked list to keep track of processes?
+        We don't need it. Yet.
