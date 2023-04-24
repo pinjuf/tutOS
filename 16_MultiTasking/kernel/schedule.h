@@ -40,12 +40,14 @@ typedef enum PROCESS_STATE {
 typedef struct pagemap_t {
     void * phys;
     void * virt;
+    uint64_t attr;
     size_t n;
 } pagemap_t;
 
 typedef struct process_t {
     PROCESS_STATE state;
     pagemap_t * pagemaps;
+    size_t pagemaps_n;
     int_regframe_t regs;
 } process_t;
 
@@ -58,3 +60,5 @@ extern process_t * current_process;
 
 void init_scheduling(void);
 void schedule(void * regframe_ptr);
+
+#define PROC_PTR_TO_PID(ptr) (pid_t)(((uint64_t)ptr - (uint64_t)processes)/sizeof(process_t))
