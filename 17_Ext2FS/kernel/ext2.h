@@ -124,6 +124,7 @@ typedef struct ext2fs_t {
     part_t p;
     ext2_superblock sb;
     size_t blocksize;
+    size_t groups_n;
 } ext2fs_t;
 
 ext2fs_t * get_ext2fs(part_t * p);

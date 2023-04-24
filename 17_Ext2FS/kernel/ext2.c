@@ -11,8 +11,14 @@ ext2fs_t * get_ext2fs(part_t * p) {
             return NULL;
     }
 
-    kputhex(out->sb.s_magic);
-    kputc('\n');
+    if (out->sb.s_magic != EXT2_SUPER_MAGIC)
+        kwarn(__FILE__,__func__,"wrong superblock magic");
+
+    memcpy(&out->p, p, sizeof(part_t));
+    out->blocksize = 1024 << out->sb.s_log_block_size;
+    out->groups_n = out->sb.s_blocks_count / out->sb.s_blocks_per_group;
+    if (out->sb.s_blocks_count % out->sb.s_blocks_per_group)
+        out->groups_n++;
 
     return out;
 }
