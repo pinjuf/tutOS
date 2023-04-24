@@ -121,6 +121,9 @@ typedef struct ext2_inode {
 
 // A simple handle for an entire ext2fs
 typedef struct ext2fs_t {
-    part_t * p;
+    part_t p;
     ext2_superblock sb;
+    size_t blocksize;
 } ext2fs_t;
+
+ext2fs_t * get_ext2fs(part_t * p);

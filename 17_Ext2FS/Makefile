@@ -18,8 +18,8 @@ bochs: img c.img
 img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin
 	cat boot/boot.bin stage2/stage2.bin kernel/kernel.bin > img
 
-c.img: .FORCE userland/out1.bin userland/out2.bin
-	./mkgpt.sh $@ userland/out1.bin userland/out2.bin
+c.img: .FORCE userland.img
+	./mkgpt.sh $@ userland.img
 
 boot/boot.bin: boot
 	$(MAKE) -C boot boot.bin
@@ -33,8 +33,6 @@ kernel/kernel.bin: kernel
 kernel/kernel.elf: kernel
 	$(MAKE) -C kernel kernel.elf
 
-userland/out1.bin: userland
-	$(MAKE) -C userland out1.bin
-
-userland/out2.bin: userland
-	$(MAKE) -C userland out2.bin
+userland.img: .FORCE userland
+	dd if=/dev/zero of=$@ bs=1048576 count=4
+	mkfs.ext2 -d userland $@

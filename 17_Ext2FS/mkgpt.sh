@@ -15,7 +15,7 @@ fi
 
 # Build a blank image, with some buffer space for us
 totalsectors=$(wc -c $INFILES | tail -n1 | awk '{print $1}')
-totalsectors=$(( ($totalsectors + 65536) / 512 ))
+totalsectors=$(( ($totalsectors * 3/2) / 512 ))
 dd if=/dev/zero of=$OFILE bs=512 count=$totalsectors
 
 filesizes=$(wc --total=never -c $INFILES | awk '{print $1}')

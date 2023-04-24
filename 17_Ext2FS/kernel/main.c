@@ -64,5 +64,10 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
+    part_t * my_part = get_part(1, 0);
+    ext2fs_t * my_fs = get_ext2fs(my_part);
+
+    kputs("KRN DN\n");
+
     while (1);
 }
