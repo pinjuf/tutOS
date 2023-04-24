@@ -3,4 +3,4 @@
 *.elf
 *.lock
 img
-c.img
+*.img
