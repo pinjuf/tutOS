@@ -1,4 +1,4 @@
-Chapter 15 - Multitasking
+Chapter 16 - Multitasking
 
 Of course, an OS needs to be able to be handle multiple
 processes at once. In our case, we will do this using
