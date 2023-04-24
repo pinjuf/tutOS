@@ -51,6 +51,8 @@ typedef struct part_t {
 
 #define GPT_SIGN 0x5452415020494645
 
+#define GPT_WHOLEDISK UINT16_MAX
+
 part_t * get_part(drive_t d, uint32_t n);
 
 void kputguid(guid_t guid);

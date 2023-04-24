@@ -5,6 +5,19 @@
 part_t * get_part(drive_t d, uint32_t n) {
     gpt_pth_t * gpt_pth = (gpt_pth_t*)kmalloc(sizeof(gpt_pth_t));
 
+    // GPT_WHOLEDISK means to use the whole disk
+    if (n == GPT_WHOLEDISK) {
+        part_t * out = (part_t*)kmalloc(sizeof(part_t));
+        out->d = d;
+        out->n = n;
+        out->start_lba = 0;
+        out->size = UINT64_MAX;
+
+        kfree(gpt_pth);
+
+        return out;
+    }
+
     int res = 1;
     while ((res = drive_read(d, 1*SECTOR_SIZE, sizeof(gpt_pth_t), gpt_pth))) {
         if (res == 2)
