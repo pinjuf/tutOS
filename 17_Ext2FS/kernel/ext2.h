@@ -133,6 +133,15 @@ typedef struct ext2_dirent_t {
     char name[];
 } __attribute__((packed)) ext2_dirent_t;
 
+#define EXT2_FT_UNKNOWN  0
+#define EXT2_FT_REG_FILE 1
+#define EXT2_FT_DIR      2
+#define EXT2_FT_CHRDEV   3
+#define EXT2_FT_BLKDEV   4
+#define EXT2_FT_FIFO     5
+#define EXT2_FT_SOCK     6
+#define EXT2_FT_SYMLINK  7
+
 // A simple handle for an entire ext2fs
 typedef struct ext2fs_t {
     part_t p;
@@ -146,3 +155,4 @@ typedef struct ext2fs_t {
 ext2fs_t * get_ext2fs(part_t * p);
 ext2_inode_t * get_inode(ext2fs_t * fs, uint32_t inode);
 void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf);
+char * ext2_lsdir(ext2fs_t * fs, ext2_inode_t * inode);

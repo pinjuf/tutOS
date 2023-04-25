@@ -67,12 +67,18 @@ void _kmain() {
     part_t * my_part = get_part(1, 0);
     ext2fs_t * my_fs = get_ext2fs(my_part);
 
-    ext2_inode_t * my_inode = get_inode(my_fs, 14);
+    ext2_inode_t * root_dir = get_inode(my_fs, 2);
 
-    void * buf = kmalloc(my_inode->i_size);
-    ext2_read_inode(my_fs, my_inode, buf);
+    char * root_ls = ext2_lsdir(my_fs, root_dir);
 
-    hexdump(buf + 0x400 * 12, 64);
+    kputs("Listing files in root:\n");
+    while (strlen(root_ls)) {
+        kputs(root_ls);
+        kputc(' ');
+
+        root_ls += strlen(root_ls) + 1;
+    }
+    kputc('\n');
 
     kputs("KRN DN\n");
 
