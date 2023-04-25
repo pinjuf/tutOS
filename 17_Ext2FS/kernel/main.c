@@ -85,6 +85,17 @@ void _kmain() {
     kputdec(test_index);
     kputc('\n');
 
+    ext2_inode_t * test_inode = get_inode(my_fs, test_index);
+    kputs("Size of test.txt: ");
+    kputdec(test_inode->i_size);
+    kputc('\n');
+
+    char * buf = (char *) kmalloc(test_inode->i_size + 1); // Null byte is not included in text file
+    buf[test_inode->i_size] = 0;
+    ext2_read_inode(my_fs, test_inode, buf);
+    kputs("Contents of test.txt:\n");
+    kputs(buf);
+
     kputs("KRN DN\n");
 
     while (1);

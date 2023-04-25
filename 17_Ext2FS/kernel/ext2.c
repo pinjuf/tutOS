@@ -71,7 +71,7 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
             memset(curr, 0, to_read);
         }
 
-        curr += to_read;
+        curr = (char*)curr + to_read;
         read += to_read;
 
         if (read >= inode->i_size) // We are done reading
@@ -95,7 +95,7 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
                 memset(curr, 0, to_read);
             }
 
-            curr += to_read;
+            curr = (char*)curr + to_read;
             read += to_read;
 
             if (read >= inode->i_size) {
@@ -129,7 +129,7 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
                     memset(curr, 0, to_read);
                 }
 
-                curr += to_read;
+                curr = (char*)curr + to_read;
                 read += to_read;
 
                 if (read >= inode->i_size) {
@@ -172,7 +172,7 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
                         memset(curr, 0, to_read);
                     }
 
-                    curr += to_read;
+                    curr = (char*)curr + to_read;
                     read += to_read;
 
                     if (read >= inode->i_size) {
@@ -216,7 +216,7 @@ char * ext2_lsdir(ext2fs_t * fs, ext2_inode_t * inode) {
 
         memcpy(out_curr, entry->name, entry->name_len);
 
-        curr += entry->rec_len;
+        curr = (char*)curr + entry->rec_len;
         read += entry->rec_len;
 
         out_curr += entry->name_len;
@@ -250,8 +250,8 @@ uint32_t ext2_get_inode(ext2fs_t * fs, ext2_inode_t * inode, char * name) {
             return entry->ino;
         }
 
+        curr = (char*)curr + entry->rec_len;
         read += entry->rec_len;
-        curr += entry->rec_len;
     }
 
     kfree(buf);
