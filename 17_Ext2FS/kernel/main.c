@@ -69,9 +69,10 @@ void _kmain() {
 
     ext2_inode_t * my_inode = get_inode(my_fs, 12);
 
-    kputs("Inode size: ");
-    kputdec(my_inode->i_size);
-    kputc('\n');
+    void * buf = kmalloc(my_inode->i_size);
+    ext2_read_inode(my_fs, my_inode, buf);
+
+    kputs(buf);
 
     kputs("KRN DN\n");
 

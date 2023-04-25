@@ -145,3 +145,4 @@ typedef struct ext2fs_t {
 
 ext2fs_t * get_ext2fs(part_t * p);
 ext2_inode_t * get_inode(ext2fs_t * fs, uint32_t inode);
+void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf);

@@ -52,3 +52,64 @@ ext2_inode_t * get_inode(ext2fs_t * fs, uint32_t inode) {
 
     return out;
 }
+
+void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
+    void * curr = buf;
+    size_t read = 0;
+
+    const size_t ptrs_per_block = fs->blocksize/sizeof(uint32_t);
+
+    // Read direct pointers
+    for (size_t i = 0; i < 12; i++) {
+        size_t to_read = fs->blocksize;
+        if (inode->i_size - read < to_read)
+            to_read = inode->i_size - read;
+
+        if (inode->i_block[i]) {
+            part_read(&fs->p, inode->i_block[i] * fs->blocksize, to_read, curr);
+        } else {
+            memset(curr, 0, to_read);
+        }
+
+        curr += to_read;
+        read += to_read;
+
+        if (read >= inode->i_size)
+            return;
+    }
+
+    // Read indirect block pointer
+    if (inode->i_block[12]) {
+        uint32_t * indirect = (uint32_t *) kmalloc(fs->blocksize);
+
+        part_read(&fs->p, inode->i_block[12] * fs->blocksize, fs->blocksize, indirect);
+
+        for (size_t i = 0; i < ptrs_per_block; i++) {
+            size_t to_read = fs->blocksize;
+            if (inode->i_size - read < to_read)
+                to_read = inode->i_size - read;
+
+            if (inode->i_block[i]) {
+                part_read(&fs->p, indirect[i], to_read, curr);
+            } else {
+                memset(curr, 0, to_read);
+            }
+
+            curr += to_read;
+            read += to_read;
+
+            if (read >= inode->i_size) {
+                kfree(indirect);
+                return;
+            }
+        }
+
+        kfree(indirect);
+    } else {
+        size_t to_read = ptrs_per_block * fs->blocksize;
+
+        memset(curr, 0, to_read);
+        curr += to_read;
+        read += to_read;
+    }
+}
