@@ -230,3 +230,31 @@ char * ext2_lsdir(ext2fs_t * fs, ext2_inode_t * inode) {
 
     return out;
 }
+
+uint32_t ext2_get_inode(ext2fs_t * fs, ext2_inode_t * inode, char * name) {
+    if (!(inode->i_mode & EXT2_S_IFDIR)) {
+        kwarn(__FILE__,__func__,"non-directory inode");
+    }
+
+    void * buf = kmalloc(inode->i_size);
+    ext2_read_inode(fs, inode, buf);
+
+    size_t read = 0;
+    void * curr = buf;
+
+    while (read < inode->i_size) {
+        ext2_dirent_t * entry = (ext2_dirent_t *) curr;
+
+        if (!strncmp(name, entry->name, entry->name_len)) {
+            kfree(buf);
+            return entry->ino;
+        }
+
+        read += entry->rec_len;
+        curr += entry->rec_len;
+    }
+
+    kfree(buf);
+
+    return 0;
+}

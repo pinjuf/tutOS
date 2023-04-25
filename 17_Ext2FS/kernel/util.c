@@ -56,7 +56,6 @@ void kputhex(uint64_t x) {
     kputs(buf);
 }
 
-
 void memset(void * dest, uint8_t val, size_t len) {
     uint8_t *dst = (uint8_t *)dest;
     for (; len != 0; len--) *dst++ = val;
@@ -323,4 +322,25 @@ uint64_t rdmsr(uint32_t msr) {
 
 void wrmsr(uint32_t msr, uint64_t val) {
     _wrmsr(msr, val & 0xFFFFFFFF, val >> 32);
+}
+
+int strcmp(char * s1, char * s2) {
+    while (*s1 && *s2 && *s1 == *s2) {
+        s1++;
+        s2++;
+    }
+
+    return *s1 - *s2;
+}
+
+int strncmp(char * s1, char * s2, size_t n) {
+    char * a = s1;
+    char * b = s2;
+
+    for (size_t i = 0; i < n; i++) {
+        if (a[i] != b[i])
+            return a[i] - b[i];
+    }
+
+    return 0;
 }

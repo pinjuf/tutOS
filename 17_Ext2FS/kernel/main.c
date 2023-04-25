@@ -80,6 +80,11 @@ void _kmain() {
     }
     kputc('\n');
 
+    uint32_t test_index = ext2_get_inode(my_fs, root_dir, "test.txt");
+    kputs("Inode N of test.txt: ");
+    kputdec(test_index);
+    kputc('\n');
+
     kputs("KRN DN\n");
 
     while (1);
