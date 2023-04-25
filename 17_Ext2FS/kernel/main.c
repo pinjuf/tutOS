@@ -43,7 +43,7 @@ void _kmain() {
     init_pic();
     kputs("PIC OK\n");
 
-    init_pit0(PIT0_FREQ); // Interrupt every 4ms
+    init_pit0(PIT0_FREQ);
     kputs("PIT OK\n");
 
     init_8042ps2();
@@ -66,6 +66,12 @@ void _kmain() {
 
     part_t * my_part = get_part(1, 0);
     ext2fs_t * my_fs = get_ext2fs(my_part);
+
+    ext2_inode_t * my_inode = get_inode(my_fs, 12);
+
+    kputs("Inode size: ");
+    kputdec(my_inode->i_size);
+    kputc('\n');
 
     kputs("KRN DN\n");
 

@@ -6,7 +6,7 @@
 // See https://www.nongnu.org/ext2-doc/ext2.html for standard & docs
 
 // The superblock contains infos about the entire FS
-typedef struct ext2_superblock {
+typedef struct ext2_superblock_t {
     uint32_t s_inodes_count;
     uint32_t s_blocks_count;
     uint32_t s_r_blocks_count;
@@ -32,8 +32,14 @@ typedef struct ext2_superblock {
     uint32_t s_rev_level;
     uint16_t s_def_resuid;
     uint16_t s_def_resgid;
-    // TODO: perhaps add EXT2_DYNAMIC_REV specific stuff
-} __attribute__((packed)) ext2_superblock;
+    uint32_t s_first_ino;
+    uint16_t s_inode_size;
+    uint16_t s_block_group_nr;
+    uint32_t s_feature_compat;
+    uint32_t s_feature_incompat;
+    uint32_t s_feature_ro_compat;
+    uint8_t s_uuid[16];
+} __attribute__((packed)) ext2_superblock_t;
 
 // s_magic
 #define EXT2_SUPER_MAGIC 0xEF53
@@ -58,7 +64,7 @@ typedef struct ext2_superblock {
 #define EXT2_GOOD_OLD_REV 0
 #define EXT2_DYNAMIC_REV  1
 
-typedef struct ext2_blockgroupdescriptor {
+typedef struct ext2_blockgroupdescriptor_t {
     uint32_t bg_block_bitmap;
     uint32_t bg_inode_bitmap;
     uint32_t bg_inode_table;
@@ -67,9 +73,9 @@ typedef struct ext2_blockgroupdescriptor {
     uint16_t bg_used_dirs_count;
     uint16_t bg_pad;
     uint32_t bg_reserved[3];
-} __attribute__((packed)) ext2_blockgroupdescriptor;
+} __attribute__((packed)) ext2_blockgroupdescriptor_t;
 
-typedef struct ext2_inode {
+typedef struct ext2_inode_t {
     uint16_t i_mode;
     uint16_t i_uid;
     uint32_t i_size;
@@ -88,7 +94,7 @@ typedef struct ext2_inode {
     uint32_t i_dir_acl;
     uint32_t i_faddr;
     uint8_t  i_osd2[12];
-} __attribute__((packed)) ext2_inode;
+} __attribute__((packed)) ext2_inode_t;
 
 // reserved inodes
 #define EXT2_BAD_INO         1
@@ -119,12 +125,23 @@ typedef struct ext2_inode {
 #define EXT2_S_IWOTH  0x0002
 #define EXT2_S_IXOTH  0x0001
 
+typedef struct ext2_dirent_t {
+    uint32_t ino;
+    uint16_t rec_len;
+    uint8_t name_len;
+    uint8_t file_type;
+    char name[];
+} __attribute__((packed)) ext2_dirent_t;
+
 // A simple handle for an entire ext2fs
 typedef struct ext2fs_t {
     part_t p;
-    ext2_superblock sb;
+    ext2_superblock_t sb;
     size_t blocksize;
     size_t groups_n;
+    size_t inode_size;
+    ext2_blockgroupdescriptor_t * grps;
 } ext2fs_t;
 
 ext2fs_t * get_ext2fs(part_t * p);
+ext2_inode_t * get_inode(ext2fs_t * fs, uint32_t inode);
