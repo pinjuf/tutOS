@@ -74,7 +74,7 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
         curr += to_read;
         read += to_read;
 
-        if (read >= inode->i_size)
+        if (read >= inode->i_size) // We are done reading
             return;
     }
 
@@ -89,8 +89,8 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
             if (inode->i_size - read < to_read)
                 to_read = inode->i_size - read;
 
-            if (inode->i_block[i]) {
-                part_read(&fs->p, indirect[i], to_read, curr);
+            if (indirect[i]) {
+                part_read(&fs->p, indirect[i] * fs->blocksize, to_read, curr);
             } else {
                 memset(curr, 0, to_read);
             }

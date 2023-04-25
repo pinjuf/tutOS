@@ -67,12 +67,12 @@ void _kmain() {
     part_t * my_part = get_part(1, 0);
     ext2fs_t * my_fs = get_ext2fs(my_part);
 
-    ext2_inode_t * my_inode = get_inode(my_fs, 12);
+    ext2_inode_t * my_inode = get_inode(my_fs, 14);
 
     void * buf = kmalloc(my_inode->i_size);
     ext2_read_inode(my_fs, my_inode, buf);
 
-    kputs(buf);
+    hexdump(buf + 0x400 * 12, 64);
 
     kputs("KRN DN\n");
 
