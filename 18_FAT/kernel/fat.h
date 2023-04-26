@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "gpt.h"
 
 // BIOS Parameter Block
 typedef struct fat_bpb_t {
@@ -63,3 +64,29 @@ typedef struct fat_longname_t {
     uint16_t res;
     uint16_t name_2[2];
 } __attribute__((packed)) fat_longname_t;
+
+// A simple handle for a FAT32 FS
+typedef struct fat32fs_t {
+    part_t p;
+    fat_bpb_t bpb;
+    fat_ebr32_t ebr;
+    fat_dirent83_t root_dir;
+    size_t sectors;
+    size_t cluster_size;
+    size_t fat_size;
+    size_t data_sector;
+} fat32fs_t;
+
+fat32fs_t * get_fat32fs(part_t * p);
+size_t fat32_get_clusters(fat32fs_t * fs, uint32_t start);
+void fat32_read(fat32fs_t * fs, fat_dirent83_t * entry, void * buf);
+
+#define FAT_READONLY 0x01
+#define FAT_HIDDEN   0x02
+#define FAT_SYSTEM   0x04
+#define FAT_VOLUME   0x08
+#define FAT_DIR      0x10
+#define FAT_ARCHIVE  0x20
+#define FAT_LFN      0x0F
+
+#define FAT_LFN_LAST 0x40

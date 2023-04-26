@@ -34,6 +34,6 @@ kernel/kernel.elf: kernel
 	$(MAKE) -C kernel kernel.elf
 
 userland.img: .FORCE userland
-	dd if=/dev/zero of=$@ bs=1048576 count=4
+	dd if=/dev/zero of=$@ bs=1048576 count=16
 	mkfs.fat -F32 $@
 	mcopy -i $@ -s userland/* ::

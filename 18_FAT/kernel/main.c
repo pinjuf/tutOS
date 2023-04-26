@@ -12,6 +12,7 @@
 #include "gpt.h"
 #include "syscall.h"
 #include "schedule.h"
+#include "fat.h"
 
 __attribute__((noreturn))
 void _kmain() {
@@ -65,36 +66,14 @@ void _kmain() {
     kputs("KRN MN\n");
 
     part_t * my_part = get_part(1, 0);
-    ext2fs_t * my_fs = get_ext2fs(my_part);
+    fat32fs_t * my_fs = get_fat32fs(my_part);
 
-    ext2_inode_t * root_dir = ext2_get_inode(my_fs, EXT2_ROOT_INO);
+    my_fs->root_dir.size = 25;
 
-    char * root_ls = ext2_lsdir(my_fs, root_dir);
+    void * buf = kmalloc(my_fs->root_dir.size);
+    fat32_read(my_fs, &my_fs->root_dir, buf);
 
-    kputs("Listing files in root:\n");
-    while (strlen(root_ls)) {
-        kputs(root_ls);
-        kputc(' ');
-
-        root_ls += strlen(root_ls) + 1;
-    }
-    kputc('\n');
-
-    uint32_t test_index = ext2_get_inode_by_name(my_fs, root_dir, "test.txt");
-    kputs("Inode N of test.txt: ");
-    kputdec(test_index);
-    kputc('\n');
-
-    ext2_inode_t * test_inode = ext2_get_inode(my_fs, test_index);
-    kputs("Size of test.txt: ");
-    kputdec(test_inode->i_size);
-    kputc('\n');
-
-    char * buf = (char *) kmalloc(test_inode->i_size + 1); // Null byte is not included in text file
-    buf[test_inode->i_size] = 0;
-    ext2_read_inode(my_fs, test_inode, buf);
-    kputs("Contents of test.txt:\n");
-    kputs(buf);
+    hexdump(buf, 256);
 
     kputs("KRN DN\n");
 
