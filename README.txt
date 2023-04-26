@@ -23,4 +23,5 @@ Pinjuf's programming prescriptions a.k.a the "credits":
     7) If you don't understand something and I don't explain it,
           google/ddg it. DON'T REFUSE UNDERSTANDING!
     8) Write down EVERYTHING! What every few lines do, your memory layout, etc.!
-    9) You're not hallucinating, Terry A. Davis really is talking to you, and you definitively should mess with the glowies!
+    9) You're learning french, do it for Michelizza's tutorial!
+    10) You're not hallucinating, Terry A. Davis really is talking to you, and you definitively should mess with the glowies!

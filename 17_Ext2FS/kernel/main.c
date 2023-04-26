@@ -67,7 +67,7 @@ void _kmain() {
     part_t * my_part = get_part(1, 0);
     ext2fs_t * my_fs = get_ext2fs(my_part);
 
-    ext2_inode_t * root_dir = get_inode(my_fs, 2);
+    ext2_inode_t * root_dir = ext2_get_inode(my_fs, EXT2_ROOT_INO);
 
     char * root_ls = ext2_lsdir(my_fs, root_dir);
 
@@ -80,12 +80,12 @@ void _kmain() {
     }
     kputc('\n');
 
-    uint32_t test_index = ext2_get_inode(my_fs, root_dir, "test.txt");
+    uint32_t test_index = ext2_get_inode_by_name(my_fs, root_dir, "test.txt");
     kputs("Inode N of test.txt: ");
     kputdec(test_index);
     kputc('\n');
 
-    ext2_inode_t * test_inode = get_inode(my_fs, test_index);
+    ext2_inode_t * test_inode = ext2_get_inode(my_fs, test_index);
     kputs("Size of test.txt: ");
     kputdec(test_inode->i_size);
     kputc('\n');

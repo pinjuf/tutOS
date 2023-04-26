@@ -36,7 +36,7 @@ ext2fs_t * get_ext2fs(part_t * p) {
     return out;
 }
 
-ext2_inode_t * get_inode(ext2fs_t * fs, uint32_t inode) {
+ext2_inode_t * ext2_get_inode(ext2fs_t * fs, uint32_t inode) {
     size_t group = (inode - 1) / fs->sb.s_inodes_per_group;
     size_t index = (inode - 1) % fs->sb.s_inodes_per_group;
 
@@ -231,7 +231,7 @@ char * ext2_lsdir(ext2fs_t * fs, ext2_inode_t * inode) {
     return out;
 }
 
-uint32_t ext2_get_inode(ext2fs_t * fs, ext2_inode_t * inode, char * name) {
+uint32_t ext2_get_inode_by_name(ext2fs_t * fs, ext2_inode_t * inode, char * name) {
     if (!(inode->i_mode & EXT2_S_IFDIR)) {
         kwarn(__FILE__,__func__,"non-directory inode");
     }
