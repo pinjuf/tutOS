@@ -39,8 +39,8 @@ typedef struct fat_ebr32_t {
 } __attribute__((packed)) fat_ebr32_t;
 
 typedef struct fat_dirent83_t {
-    char     name[8];
-    char     ext[3];      // File extension
+    uint8_t  name[8];
+    uint8_t  ext[3];      // File extension
     uint8_t  attr;
     uint8_t  res;
     uint8_t  cr_ds;       // Creation time in tenths of seconds
@@ -80,6 +80,7 @@ typedef struct fat32fs_t {
 fat32fs_t * get_fat32fs(part_t * p);
 size_t fat32_get_clusters(fat32fs_t * fs, uint32_t start);
 void fat32_read(fat32fs_t * fs, fat_dirent83_t * entry, void * buf);
+char * fat32_lsdir(fat32fs_t * fs, fat_dirent83_t * entry);
 
 #define FAT_READONLY 0x01
 #define FAT_HIDDEN   0x02
@@ -90,3 +91,4 @@ void fat32_read(fat32fs_t * fs, fat_dirent83_t * entry, void * buf);
 #define FAT_LFN      0x0F
 
 #define FAT_LFN_LAST 0x40
+#define FAT_UNUSED   0xE5

@@ -71,7 +71,16 @@ void _kmain() {
     void * buf = kmalloc(my_fs->root_dir.size);
     fat32_read(my_fs, &my_fs->root_dir, buf);
 
-    hexdump(buf, 256);
+    char * root_ls = fat32_lsdir(my_fs, &my_fs->root_dir);
+
+    kputs("Contents of root directory:\n");
+    while (strlen(root_ls)) {
+        kputs(root_ls);
+        kputc(' ');
+
+        root_ls += strlen(root_ls) + 1;
+    }
+    kputc('\n');
 
     kputs("KRN DN\n");
 
