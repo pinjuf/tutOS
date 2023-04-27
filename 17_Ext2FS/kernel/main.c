@@ -96,6 +96,18 @@ void _kmain() {
     kputs("Contents of test.txt:\n");
     kputs(buf);
 
+    uint32_t test_findex = ext2_get_inode_by_name(my_fs, root_dir, "my_test_folder");
+    ext2_inode_t * test_finode = ext2_get_inode(my_fs, test_findex);
+    char * test_fls = ext2_lsdir(my_fs, test_finode);
+    kputs("Contents of my_test_folder:\n");
+    while (strlen(test_fls)) {
+        kputs(test_fls);
+        kputc(' ');
+
+        test_fls += strlen(test_fls) + 1;
+    }
+    kputc('\n');
+
     kputs("KRN DN\n");
 
     while (1);

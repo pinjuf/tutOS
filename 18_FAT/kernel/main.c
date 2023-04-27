@@ -68,8 +68,6 @@ void _kmain() {
     part_t * my_part = get_part(1, 0);
     fat32fs_t * my_fs = get_fat32fs(my_part);
 
-    my_fs->root_dir.size = 25;
-
     void * buf = kmalloc(my_fs->root_dir.size);
     fat32_read(my_fs, &my_fs->root_dir, buf);
 
