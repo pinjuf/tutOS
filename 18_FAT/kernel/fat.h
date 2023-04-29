@@ -81,6 +81,7 @@ fat32fs_t * get_fat32fs(part_t * p);
 size_t fat32_get_clusters(fat32fs_t * fs, uint32_t start);
 void fat32_read(fat32fs_t * fs, fat_dirent83_t * entry, void * buf);
 char * fat32_lsdir(fat32fs_t * fs, fat_dirent83_t * entry);
+fat_dirent83_t * fat32_get_dirent_by_name(fat32fs_t * fs, fat_dirent83_t * entry, char * name);
 
 #define FAT_READONLY 0x01
 #define FAT_HIDDEN   0x02

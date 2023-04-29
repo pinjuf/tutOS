@@ -1,1 +1,2 @@
-Hello from ext2fs!
+Hello from FAT32!
+(by microsooft windblows)

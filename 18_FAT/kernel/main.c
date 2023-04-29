@@ -82,6 +82,16 @@ void _kmain() {
     }
     kputc('\n');
 
+    fat_dirent83_t * test1_dirent = fat32_get_dirent_by_name(my_fs, &my_fs->root_dir, "TEST.TXT");
+    kputs("Size of TEST.TXT: ");
+    kputdec(test1_dirent->size);
+    kputc('\n');
+
+    void * test1_buf = kcalloc(test1_dirent->size + 1); // Null byte not included in the file
+    fat32_read(my_fs, test1_dirent, test1_buf);
+
+    kputs(test1_buf);
+
     kputs("KRN DN\n");
 
     while (1);

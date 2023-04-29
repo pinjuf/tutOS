@@ -84,6 +84,7 @@ char * fat32_lsdir(fat32fs_t * fs, fat_dirent83_t * entry) {
     fat_dirent83_t * curr = buf;
     char * curr_out = out;
 
+    // A NULL byte at the start means End Of Directory
     while (curr->name[0]) {
         memset(filename, 0, 256);
 
@@ -147,4 +148,89 @@ char * fat32_lsdir(fat32fs_t * fs, fat_dirent83_t * entry) {
     kfree(filename);
 
     return out;
+}
+
+fat_dirent83_t * fat32_get_dirent_by_name(fat32fs_t * fs, fat_dirent83_t * entry, char * name) {
+    void * buf = kmalloc(entry->size);
+    char * filename = kmalloc(256);
+
+    if (!(entry->attr & FAT_DIR)) {
+        kwarn(__FILE__,__func__,"non-directory direntry");
+    }
+
+    fat32_read(fs, entry, buf);
+
+    fat_dirent83_t * curr = buf;
+
+    // A NULL byte at the start means End Of Directory
+    while (curr->name[0]) {
+        memset(filename, 0, 256);
+
+        // Unused entry
+        if (curr->name[0] == FAT_UNUSED) {
+            curr++;
+            continue;
+        }
+
+        // Long filename entry
+        if (curr->attr == FAT_LFN) {
+            while (curr->attr == FAT_LFN) {
+                fat_longname_t * lfn = (fat_longname_t *) curr;
+
+                size_t offset = ((lfn->seq & 0xF) - 1) * 13;
+
+                for (size_t i = 0; i < 5; i++) {
+                    filename[offset + i] = lfn->name_0[i];
+                }
+
+                for (size_t i = 0; i < 6; i++) {
+                    filename[offset + 5 + i] = lfn->name_1[i];
+                }
+
+                for (size_t i = 0; i < 2; i++) {
+                    filename[offset + 11 + i] = lfn->name_2[i];
+                }
+
+                curr++;
+            }
+        } else { // Normal entry
+            char * c = filename;
+
+            // Name
+            for (size_t i = 0; i < 8; i++) {
+                if (curr->name[i] == ' ') // discard padding
+                    break;
+
+                *(c++) = curr->name[i];
+            }
+
+            *(c++) = '.';
+
+            // Extension
+            for (size_t i = 0; i < 3; i++) {
+                if (curr->ext[i] == ' ')
+                    break;
+
+                *(c++) = curr->ext[i];
+            }
+        }
+
+        if (strcmp(name, filename) == 0) {
+            fat_dirent83_t * out = kmalloc(sizeof(fat_dirent83_t));
+
+            memcpy(out, curr, sizeof(fat_dirent83_t));
+
+            kfree(buf);
+            kfree(filename);
+
+            return out;
+        }
+
+        curr++;
+    }
+
+    kfree(buf);
+    kfree(filename);
+
+    return NULL;
 }

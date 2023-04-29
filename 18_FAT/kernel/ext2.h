@@ -38,7 +38,7 @@ typedef struct ext2_superblock_t {
     uint32_t s_feature_compat;
     uint32_t s_feature_incompat;
     uint32_t s_feature_ro_compat;
-    uint8_t s_uuid[16];
+    guid_t   s_uuid;
 } __attribute__((packed)) ext2_superblock_t;
 
 // s_magic
