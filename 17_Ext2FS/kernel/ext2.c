@@ -5,11 +5,7 @@
 ext2fs_t * get_ext2fs(part_t * p) {
     ext2fs_t * out = (ext2fs_t*)kmalloc(sizeof(ext2fs_t));
 
-    int res = 1;
-    while ((res = part_read(p, 1024, sizeof(ext2_superblock_t), &out->sb))) {
-        if (res == 2)
-            return NULL;
-    }
+    part_read(p, 1024, sizeof(ext2_superblock_t), &out->sb);
 
     if (out->sb.s_magic != EXT2_SUPER_MAGIC)
         kwarn(__FILE__,__func__,"wrong superblock magic");
@@ -27,11 +23,7 @@ ext2fs_t * get_ext2fs(part_t * p) {
     size_t grp_offset = out->blocksize == 1024 ? 2 : 1;
     out->grps = (ext2_blockgroupdescriptor_t *) kmalloc(sizeof(ext2_blockgroupdescriptor_t) * out->groups_n);
 
-    res = 1;
-    while ((res = part_read(p, grp_offset * out->blocksize, sizeof(ext2_blockgroupdescriptor_t) * out->groups_n, out->grps))) {
-        if (res == 2)
-            return NULL;
-    };
+    part_read(p, grp_offset * out->blocksize, sizeof(ext2_blockgroupdescriptor_t) * out->groups_n, out->grps);
 
     return out;
 }
@@ -44,11 +36,7 @@ ext2_inode_t * ext2_get_inode(ext2fs_t * fs, uint32_t inode) {
 
     size_t offset = fs->grps[group].bg_inode_table * fs->blocksize + index * fs->inode_size;
 
-    int res = 1;
-    while ((res = part_read(&fs->p, offset, sizeof(ext2_inode_t), out))) {
-        if (res == 2)
-            return NULL;
-    }
+    part_read(&fs->p, offset, sizeof(ext2_inode_t), out);
 
     return out;
 }
