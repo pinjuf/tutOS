@@ -181,6 +181,55 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
     }
 }
 
+void ext2_read_inodeblock(ext2fs_t * fs, ext2_inode_t * inode, void * buf, size_t n) {
+    const size_t ptrs_per_block = fs->blocksize/sizeof(uint32_t);
+
+    if (n < 12) {
+        if (!inode->i_block[n]) {
+            memset(buf, 0, fs->blocksize);
+            return;
+        }
+
+        part_read(&fs->p, inode->i_block[n] * fs->blocksize, fs->blocksize, buf);
+    } else if (n < (12 + ptrs_per_block)) {
+        uint32_t * indirect = (uint32_t *) kmalloc(fs->blocksize);
+        part_read(&fs->p, inode->i_block[12] * fs->blocksize, fs->blocksize, indirect);
+
+        if (!indirect[n - 12]) {
+            memset(buf, 0, fs->blocksize);
+            kfree(indirect);
+            return;
+        }
+
+
+        part_read(&fs->p, indirect[n - 12] * fs->blocksize, fs->blocksize, buf);
+
+        kfree(indirect);
+    } else if (n < (12 + ptrs_per_block * ptrs_per_block)) {
+        uint32_t * bi_indirect = (uint32_t *) kmalloc(fs->blocksize);
+        part_read(&fs->p, inode->i_block[13] * fs->blocksize, fs->blocksize, bi_indirect);
+
+        const uint32_t bi_offset = (n - 12 - ptrs_per_block)/ptrs_per_block;
+
+        uint32_t * indirect = (uint32_t *) kmalloc(fs->blocksize);
+        part_read(&fs->p, bi_indirect[bi_offset] * fs->blocksize, fs->blocksize, indirect);
+
+        const uint32_t offset = n - (12 + ptrs_per_block + ptrs_per_block * bi_offset);
+
+        if (!indirect[offset]) {
+            memset(buf, 0, fs->blocksize);
+            kfree(indirect);
+            kfree(bi_indirect);
+            return;
+        }
+
+        part_read(&fs->p, indirect[offset] * fs->blocksize, fs->blocksize, buf);
+
+        kfree(indirect);
+        kfree(bi_indirect);
+    } // TODO: Tri-indirect buffer?
+}
+
 char * ext2_lsdir(ext2fs_t * fs, ext2_inode_t * inode) {
     if (!(inode->i_mode & EXT2_S_IFDIR)) {
         kwarn(__FILE__,__func__,"non-directory inode");
