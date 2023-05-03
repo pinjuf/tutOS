@@ -70,6 +70,26 @@ void fat32_read(fat32fs_t * fs, fat_dirent83_t * entry, void * buf) {
     kfree(fat);
 }
 
+// Read a specific cluster in the cluster chain
+void fat32_readcluster(fat32fs_t * fs, fat_dirent83_t * entry, void * buf, uint32_t n) {
+
+    if (n * fs->cluster_size > entry->size)
+        kwarn(__FILE__,__func__,"cluster N too high");
+
+    uint32_t * fat = (uint32_t *) kmalloc(fs->fat_size);
+    part_read(&fs->p, fs->bpb.res_sectors * fs->bpb.sectorsize, fs->fat_size, fat);
+
+    uint32_t curr = (entry->cluster_hi << 16) | (entry->cluster_lo);
+
+    for (size_t i = 0; i < n; i++)
+        curr = fat[curr];
+
+    size_t sector_offset = (curr - 2) * fs->bpb.sectors_per_cluster + fs->data_sector;
+    part_read(&fs->p, sector_offset * fs->bpb.sectorsize, fs->cluster_size, buf);
+
+    kfree(fat);
+}
+
 char * fat32_lsdir(fat32fs_t * fs, fat_dirent83_t * entry) {
     void * buf = kmalloc(entry->size);
     char * out = kmalloc(entry->size);

@@ -80,6 +80,7 @@ typedef struct fat32fs_t {
 fat32fs_t * get_fat32fs(part_t * p);
 size_t fat32_get_clusters(fat32fs_t * fs, uint32_t start);
 void fat32_read(fat32fs_t * fs, fat_dirent83_t * entry, void * buf);
+void fat32_readcluster(fat32fs_t * fs, fat_dirent83_t * entry, void * buf, uint32_t n);
 char * fat32_lsdir(fat32fs_t * fs, fat_dirent83_t * entry);
 fat_dirent83_t * fat32_get_dirent_by_name(fat32fs_t * fs, fat_dirent83_t * entry, char * name);
 
