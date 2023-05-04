@@ -72,6 +72,9 @@ void _kmain() {
     kputdec(file->size);
     kputc('\n');
 
+    kclose(file);
+    kputs("Closed /root/test.txt\n");
+
     kputs("KRN DN\n");
 
     while (1);

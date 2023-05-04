@@ -306,7 +306,6 @@ void * ext2_getfile(ext2fs_t * fs, char * path, int m) {
         return NULL;
     }
 
-    size_t pathlen = strlen(path);
     ext2_inode_t * curr = ext2_get_inode(fs, EXT2_ROOT_INO);
 
     // Courtesy of ChatGPT cause I am tired
@@ -340,9 +339,28 @@ void * ext2_getfile(ext2fs_t * fs, char * path, int m) {
 
     filehandle_t * out = kmalloc(sizeof(filehandle_t));
 
-    out->internal_file = curr;
+    out->internal_file = curr; // TODO: Create a bigger internal structure that contains the inode, a cache, etc.
     out->curr = 0;
     out->size = curr->i_size;
 
+    switch (curr->i_mode & EXT2_S_IFMSK) {
+        case EXT2_S_IFREG:
+            out->type = FILE_REG;
+            break;
+        case EXT2_S_IFDIR:
+            out->type = FILE_DIR;
+            break;
+        default:
+            out->type = FILE_UNKN;
+            break;
+    }
+
     return out;
+}
+
+void ext2_closefile(void * f) {
+    filehandle_t * fh = f;
+
+    kfree(fh->internal_file);
+    kfree(fh);
 }

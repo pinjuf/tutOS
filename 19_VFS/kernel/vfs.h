@@ -33,6 +33,7 @@ typedef struct filesystem_t {
     char name[8];
     void * (* get_fs)(part_t * p);
     filehandle_t * (* get_filehandle)(void * internal_fs, char * path, enum FILEMODE mode);
+    void (* close_filehandle)(filehandle_t * f);
 } filesystem_t;
 
 enum FILESYSTEM {
@@ -50,16 +51,18 @@ typedef struct mountpoint_t {
 
 // Needs to be in the same order as FILESYSTEM!
 static const filesystem_t FILESYSTEMS[] = {
-    {"unkn", NULL, NULL}, // Unknown FS
+    {"unkn", NULL, NULL, NULL}, // Unknown FS
 
     {"ext2",
         (void* (*) (part_t * p)) get_ext2fs,
         (filehandle_t * (*) (void * internal_fs, char * path, enum FILEMODE mode)) ext2_getfile,
+        (void (*) (filehandle_t * f)) ext2_closefile,
     },
 
     {"fat32",
         (void* (*) (part_t * p)) get_fat32fs,
-        NULL, // TODO: Implement fat32_getfile
+        NULL, // TODO: Implement fat32_getfile etc.
+        NULL,
     },
 };
 
@@ -68,3 +71,4 @@ extern mountpoint_t * mountpoints;
 
 void init_vfs();
 filehandle_t * kopen(char * path, enum FILEMODE FILE_R);
+void kclose(filehandle_t * f);

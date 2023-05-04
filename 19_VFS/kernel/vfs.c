@@ -43,6 +43,17 @@ filehandle_t * kopen(char * p, enum FILEMODE mode) {
 
     if (mountpoint == (size_t)-1) {
         kwarn(__FILE__,__func__,"mountpoint not found");
+
+        kfree(path);
+
+        return NULL;
+    }
+
+    if (FILESYSTEMS[mountpoints[mountpoint].type].get_filehandle == NULL) {
+        kwarn(__FILE__,__func__,"no driver support");
+
+        kfree(path);
+
         return NULL;
     }
 
@@ -50,11 +61,18 @@ filehandle_t * kopen(char * p, enum FILEMODE mode) {
 
     if (out) {
         out->mountpoint = mountpoint;
-        out->type = mountpoints[mountpoint].type;
         out->mode = mode;
     }
 
     kfree(path);
 
     return out;
+}
+
+void kclose(filehandle_t * f) {
+    if (FILESYSTEMS[mountpoints[f->mountpoint].type].close_filehandle == NULL) {
+        kwarn(__FILE__,__func__,"no driver support");
+    }
+
+    FILESYSTEMS[mountpoints[f->mountpoint].type].close_filehandle(f);
 }
