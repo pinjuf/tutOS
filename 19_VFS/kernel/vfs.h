@@ -5,8 +5,18 @@
 #include "fat.h"
 #include "ext2.h"
 
+#define DIRSEP '/'
+
+enum FILETYPE {
+    FILE_UNKN,
+    FILE_REG,
+    FILE_DIR,
+    // TODO: Support more filetypes
+};
+
 typedef struct filehandle_t {
     size_t mountpoint; // Offset into the mountpoint table
+    enum FILETYPE type;
     void * internal_file;
     size_t size;
     size_t curr;       // Current offset
@@ -24,11 +34,12 @@ enum FILESYSTEM {
     FS_FAT32,
 };
 
+
 typedef struct mountpoint_t {
     enum FILESYSTEM type;
     void * internal_fs; // ext2fs_t, fat32fs_t, etc.
     part_t * p;
-    char * path;
+    char * path;        // Must end with "/"
 } mountpoint_t;
 
 // Needs to be in the same order as FILESYSTEM!
@@ -43,6 +54,7 @@ static const filesystem_t FILESYSTEMS[] = {
 };
 
 extern mountpoint_t * mountpoints;
-#define MOUNTPOINTS_N 1
+#define MOUNTPOINTS_N 4
 
 void init_vfs();
+filehandle_t * kopen(char * path);

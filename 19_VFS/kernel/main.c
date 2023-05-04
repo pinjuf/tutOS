@@ -69,9 +69,7 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    ext2fs_t rootfs = *((ext2fs_t*)mountpoints[0].internal_fs);
-    kputguid(rootfs.sb.s_uuid);
-    kputc('\n');
+    filehandle_t * file = kopen("/root/test.txt");
 
     kputs("KRN DN\n");
 

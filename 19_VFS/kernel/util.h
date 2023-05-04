@@ -22,6 +22,7 @@ void memcpy(void * dest, void * src, size_t len);
 size_t strlen(char * str);
 int strcmp(char * s1, char * s2);
 int strncmp(char * s1, char * s2, size_t n);
+size_t strmatchstart(char * s1, char * s2);
 
 void itoa(uint64_t x, char * out, uint8_t base);
 void sitoa(int64_t x, char * out, uint8_t base);

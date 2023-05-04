@@ -344,3 +344,20 @@ int strncmp(char * s1, char * s2, size_t n) {
 
     return 0;
 }
+
+size_t strmatchstart(char * s1, char * s2) {
+    size_t out = 0;
+
+    size_t len = strlen(s1);
+    if (strlen(s2) < len)
+        len = strlen(s2);
+
+    for (size_t i = 0; i < len; i++) {
+        if (s1[i] == s2[i])
+            out++;
+        else
+            break;
+    }
+
+    return out;
+}
