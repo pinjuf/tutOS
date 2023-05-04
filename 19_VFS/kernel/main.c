@@ -7,13 +7,11 @@
 #include "mm.h"
 #include "pic.h"
 #include "ata.h"
-#include "ext2.h"
 #include "kbd.h"
 #include "gpt.h"
 #include "syscall.h"
-#include "vfs.h"
 #include "schedule.h"
-#include "fat.h"
+#include "vfs.h"
 
 __attribute__((noreturn))
 void _kmain() {
@@ -69,7 +67,10 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    filehandle_t * file = kopen("/root/test.txt");
+    filehandle_t * file = kopen("/root/test.txt", FILE_R);
+    kputs("Size of /root/test.txt: ");
+    kputdec(file->size);
+    kputc('\n');
 
     kputs("KRN DN\n");
 

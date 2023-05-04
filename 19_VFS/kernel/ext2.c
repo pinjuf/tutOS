@@ -1,6 +1,7 @@
 #include "ext2.h"
 #include "util.h"
 #include "mm.h"
+#include "vfs.h"
 
 ext2fs_t * get_ext2fs(part_t * p) {
     ext2fs_t * out = (ext2fs_t*)kmalloc(sizeof(ext2fs_t));
@@ -294,4 +295,54 @@ uint32_t ext2_get_inode_by_name(ext2fs_t * fs, ext2_inode_t * inode, char * name
     kfree(buf);
 
     return 0;
+}
+
+void * ext2_getfile(ext2fs_t * fs, char * path, int m) {
+    enum FILEMODE mode = m; // compiler's fault
+    char token[256];
+
+    if (mode == FILE_W) {
+        kwarn(__FILE__,__func__,"write not implemented");
+        return NULL;
+    }
+
+    size_t pathlen = strlen(path);
+    ext2_inode_t * curr = ext2_get_inode(fs, EXT2_ROOT_INO);
+
+    // Courtesy of ChatGPT cause I am tired
+    char * p = path;
+    while (*p) {
+
+        while (*p == DIRSEP)
+            p++;
+
+        char * tok = p;
+        while (*p && *p != DIRSEP) {
+            p++;
+        }
+
+        if (tok == p)
+            continue;
+
+        memset(token, 0, 256);
+        memcpy(token, tok, p-tok);
+
+        uint32_t next = ext2_get_inode_by_name(fs, curr, token);
+        kfree(curr);
+
+        if (!next) {
+            kwarn(__FILE__,__func__,"file not found");
+            return NULL;
+        }
+
+        curr = ext2_get_inode(fs, next);
+    }
+
+    filehandle_t * out = kmalloc(sizeof(filehandle_t));
+
+    out->internal_file = curr;
+    out->curr = 0;
+    out->size = curr->i_size;
+
+    return out;
 }

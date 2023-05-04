@@ -18,12 +18,16 @@ void init_vfs() {
     }
 }
 
-filehandle_t * kopen(char * path) {
+filehandle_t * kopen(char * p, enum FILEMODE mode) {
 
     // Get the string with the longest starting match
     // TODO: Shorten "x/y/../z" to "x/z"
 
-    if (path[strlen(path)-1] == DIRSEP) { // Remove ending "/"
+    // We might do "unsanitary" stuff to the string
+    char * path = kmalloc(strlen(p)+1);
+    memcpy(path, p, strlen(p)+1);
+
+    if (strlen(path)>1 && path[strlen(path)-1] == DIRSEP) { // Remove ending "/" if the path is not "/" (root dir)
         path[strlen(path)-1] = 0;
     }
 
@@ -42,5 +46,15 @@ filehandle_t * kopen(char * path) {
         return NULL;
     }
 
-    return FILESYSTEMS[mountpoints[mountpoint].type].get_filehandle(mountpoints[mountpoint].internal_fs, path + length);
+    filehandle_t * out = FILESYSTEMS[mountpoints[mountpoint].type].get_filehandle(mountpoints[mountpoint].internal_fs, path + length, mode);
+
+    if (out) {
+        out->mountpoint = mountpoint;
+        out->type = mountpoints[mountpoint].type;
+        out->mode = mode;
+    }
+
+    kfree(path);
+
+    return out;
 }
