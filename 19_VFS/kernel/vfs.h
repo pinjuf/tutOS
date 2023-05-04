@@ -26,6 +26,7 @@ typedef struct filehandle_t {
 typedef struct filesystem_t {
     char name[8];
     void * (* get_fs)(part_t * p);
+    filehandle_t * (* get_filehandle)(void * internal_fs, char * path);
 } filesystem_t;
 
 enum FILESYSTEM {
@@ -47,10 +48,14 @@ static const filesystem_t FILESYSTEMS[] = {
     {"unkn", NULL}, // Unknown FS
 
     {"ext2",
-        (void* (*) (part_t * p)) get_ext2fs},
+        (void* (*) (part_t * p)) get_ext2fs,
+        (void* (*) (void * internal_fs, char * path)) ext2_getfile,
+    },
 
     {"fat32",
-        (void* (*) (part_t * p)) get_fat32fs},
+        (void* (*) (part_t * p)) get_fat32fs,
+        // TODO: Implement fat32_getfile
+    },
 };
 
 extern mountpoint_t * mountpoints;

@@ -16,8 +16,6 @@ void init_vfs() {
             continue;
         mountpoints[i].internal_fs = FILESYSTEMS[mountpoints[i].type].get_fs(mountpoints[i].p);
     }
-
-    mountpoints[1].path = "/mnt/";
 }
 
 filehandle_t * kopen(char * path) {
@@ -25,8 +23,8 @@ filehandle_t * kopen(char * path) {
     // Get the string with the longest starting match
     // TODO: Shorten "x/y/../z" to "x/z"
 
-    if (path[strlen(path)-1] == DIRSEP) {
-        path[strlen(path)-1] = 0x00;
+    if (path[strlen(path)-1] == DIRSEP) { // Remove ending "/"
+        path[strlen(path)-1] = 0;
     }
 
     size_t mountpoint = -1;
@@ -44,8 +42,5 @@ filehandle_t * kopen(char * path) {
         return NULL;
     }
 
-    kputdec(mountpoint);
-    kputc('\n');
-
-    return NULL;
+    return FILESYSTEMS[mountpoints[mountpoint].type].get_filehandle(mountpoints[mountpoint].internal_fs, path + length);
 }
