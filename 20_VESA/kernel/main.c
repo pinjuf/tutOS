@@ -1,6 +1,5 @@
 #include "main.h"
 #include "paging.h"
-#include "vga.h"
 #include "util.h"
 #include "idt.h"
 #include "gdt.h"
@@ -20,10 +19,6 @@ void _kmain() {
         mov $0x120000, %rsp; \
         mov %rsp, %rbp; \
             "); 
-
-    // Set up VGA
-    vga_enable_cursor(0, 16);
-    vga_get_cursor();
 
     // I really like cool sounding logs
     kputs("KRN OK\n");

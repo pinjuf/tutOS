@@ -1,15 +1,14 @@
 #include "kbd.h"
 
 #include "util.h"
-#include "vga.h"
 
 bool mouse_left   = false;
 bool mouse_middle = false;
 bool mouse_right  = false;
 uint8_t mouse_scroll = PS2_MOUSE_SCRL_NONE;
 
-float mouse_x = VGA_COLS>>1;
-float mouse_y = VGA_ROWS>>1;
+float mouse_x = 0;
+float mouse_y = 0;
 
 uint8_t * kbd_bitmap;
 

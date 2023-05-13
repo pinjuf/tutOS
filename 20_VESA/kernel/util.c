@@ -2,7 +2,6 @@
 #include "kbd.h"
 #include "mm.h"
 #include "util.h"
-#include "vga.h"
 
 void outb(uint16_t port, uint8_t value) {
     asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
@@ -34,13 +33,10 @@ void qemu_puts(char * s) {
 }
 
 void kputc(char c) {
-    vga_putc(c);
-    vga_update_cursor();
     qemu_putc(c);
 }
 
 void kputs(char * s) {
-    vga_puts(s);
     qemu_puts(s);
 }
 

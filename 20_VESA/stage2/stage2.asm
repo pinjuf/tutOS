@@ -130,7 +130,7 @@ find_vbe_mode:
     int 0x10
 
     cmp ax, 0x004F
-    jmp vbe_error
+    jne vbe_error
 
     ; Prepare for Protected Mode
     lgdt [gdtr] ; Load the GDT
