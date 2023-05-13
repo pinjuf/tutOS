@@ -394,7 +394,7 @@ size_t ext2_readfile(void * f, void * buf, size_t count) {
         ext2_read_inode(mountpoints[fh->mountpoint].internal_fs, intern->inode, intern->cache);
     }
 
-    memcpy(buf, intern->cache + fh->curr, to_read);
+    memcpy(buf, (void*)((size_t)intern->cache + fh->curr), to_read);
 
     fh->curr += to_read;
 
