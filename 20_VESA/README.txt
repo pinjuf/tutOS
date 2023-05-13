@@ -1,18 +1,11 @@
-Chapter 19 - Virtual File System
+Chapter 20 - VESA VBE
 
-We now have "multiple" (2) file system drivers pretty much set up:
-ext2 and FAT32. But of course, it would be very difficult and annoying
-to choose a certain file from a certain filesystem, forcing us to directly
-call an FS driver for every open/read/write/close we would want to do.
-To avoid this, we must implement a VFS, a virtual file system. This is
-not a "Filesystem" in the usual sense, but rather an interface to all
-mounted filesystems. Here's an example:
-    - FAT32 partition (d=1, p=1) mounted on /mnt
-    - open(/mnt/testdir/testfile.txt) is issued
-    - VFS determines the correct mount point to be /mnt/
-    - VFS asks the FAT32 driver for a file handle for testdir/testfile.txt
-    - FAT32 driver creates a file handle, consisting of a standardized part
-            and a driver-internal part
-    - VFS gets the handle and passes it/a file descriptor to it on
+For now, we have been using VGA graphics to show the user text,
+but we were limited to 16 specific colors in a specific font.
+By using VESA graphics, we get a framebuffer where we can actually
+set each pixel to an RGB color, giving us a great deal of control.
+Furthermore, now that we have a basic VFS, we can load a font file
+and use this to keep showing text, with the addition of images now
+too.
 
 FAQ:
