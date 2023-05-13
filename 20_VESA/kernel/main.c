@@ -12,6 +12,8 @@
 #include "schedule.h"
 #include "vfs.h"
 
+bpob_t * bpob = (void*)BPOB_ADDR;
+
 __attribute__((noreturn))
 void _kmain() {
     // Set up our stack
@@ -59,6 +61,10 @@ void _kmain() {
 
     init_vfs();
     kputs("VFS OK\n");
+
+    init_vesa();
+    vesa_clear(RGB32(0, 255, 0));
+    kputs("VESA OK\n");
 
     kputs("KRN MN\n");
 
