@@ -76,3 +76,11 @@ void kclose(filehandle_t * f) {
 
     FILESYSTEMS[mountpoints[f->mountpoint].type].close_filehandle(f);
 }
+
+size_t kread(filehandle_t * f, void * buf, size_t count) {
+    if (FILESYSTEMS[mountpoints[f->mountpoint].type].read_file == NULL) {
+        kwarn(__FILE__,__func__,"no driver support");
+    }
+
+    return FILESYSTEMS[mountpoints[f->mountpoint].type].read_file(f, buf, count);
+}

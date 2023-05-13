@@ -339,7 +339,12 @@ void * ext2_getfile(ext2fs_t * fs, char * path, int m) {
 
     filehandle_t * out = kmalloc(sizeof(filehandle_t));
 
-    out->internal_file = curr; // TODO: Create a bigger internal structure that contains the inode, a cache, etc.
+    ext2fs_file_t * intern_out = kmalloc(sizeof(ext2fs_file_t));
+
+    intern_out->inode = curr;
+    intern_out->cache = NULL;
+
+    out->internal_file = intern_out;
     out->curr = 0;
     out->size = curr->i_size;
 
@@ -360,7 +365,38 @@ void * ext2_getfile(ext2fs_t * fs, char * path, int m) {
 
 void ext2_closefile(void * f) {
     filehandle_t * fh = f;
+    ext2fs_file_t * intern = fh->internal_file;
 
-    kfree(fh->internal_file);
+    kfree(intern->inode);
+    if (intern->cache)
+        kfree(intern->cache);
+
+    kfree(intern);
     kfree(fh);
+}
+
+size_t ext2_readfile(void * f, void * buf, size_t count) {
+    filehandle_t * fh = f;
+    ext2fs_file_t * intern = fh->internal_file;
+
+    if (fh->type == FILE_DIR) {
+        kwarn(__FILE__,__func__,"trying to file-read directory");
+    }
+
+    size_t to_read = count;
+    if (fh->curr + to_read > fh->size) {
+        to_read = fh->size - fh->curr;
+    }
+
+    if (!intern->cache) {
+        intern->cache = kmalloc(fh->size);
+
+        ext2_read_inode(mountpoints[fh->mountpoint].internal_fs, intern->inode, intern->cache);
+    }
+
+    memcpy(buf, intern->cache + fh->curr, to_read);
+
+    fh->curr += to_read;
+
+    return to_read;
 }

@@ -72,6 +72,11 @@ void _kmain() {
     kputdec(file->size);
     kputc('\n');
 
+    kputs("Contents of /root/test.txt:\n");
+    char * buf = kcalloc(file->size + 1); // Null byte not included in text files
+    kread(file, buf, file->size);
+    kputs(buf);
+
     kclose(file);
     kputs("Closed /root/test.txt\n");
 
