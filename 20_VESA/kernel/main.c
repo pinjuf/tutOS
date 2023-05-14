@@ -11,6 +11,7 @@
 #include "syscall.h"
 #include "schedule.h"
 #include "vfs.h"
+#include "vesa.h"
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
@@ -63,10 +64,21 @@ void _kmain() {
     kputs("VFS OK\n");
 
     init_vesa();
-    //vesa_clear(RGB32(0, 0, 0));
+    vesa_clear(RGB32(0, 0, 0));
     kputs("VBE OK\n");
 
     kputs("KRN MN\n");
+
+    kputs("Type/draw something!\n");
+
+    do_scheduling = false;
+    sti;
+    while (1) {
+        if (kbd_last_ascii)
+            kputc(kbd_get_last_ascii());
+
+        SET_PIXEL((uint32_t)mouse_x, (uint32_t)mouse_y, RGB32(255, 255, 255));
+    }
 
     kputs("KRN DN\n");
 

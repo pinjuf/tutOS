@@ -2,6 +2,7 @@
 #include "kbd.h"
 #include "mm.h"
 #include "util.h"
+#include "vesa.h"
 
 void outb(uint16_t port, uint8_t value) {
     asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
@@ -33,10 +34,14 @@ void qemu_puts(char * s) {
 }
 
 void kputc(char c) {
+    if (vesa_ready)
+        vesa_putc(c);
     qemu_putc(c);
 }
 
 void kputs(char * s) {
+    if (vesa_ready)
+        vesa_puts(s);
     qemu_puts(s);
 }
 

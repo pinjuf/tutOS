@@ -57,6 +57,7 @@ typedef uint16_t pid_t;
 
 extern process_t * processes;
 extern process_t * current_process;
+extern bool do_scheduling;
 
 void init_scheduling(void);
 void schedule(void * regframe_ptr);

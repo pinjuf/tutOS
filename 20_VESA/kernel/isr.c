@@ -64,7 +64,7 @@ void isr_default_int(uint16_t n, uint64_t rip, uint64_t cs, uint64_t rflags, uin
 void isr_irq0(void * regframe) {
     pit0_ticks++;
 
-    if (!(pit0_ticks % TICKS_PER_SCHEDULE)) {
+    if (!(pit0_ticks % TICKS_PER_SCHEDULE) && do_scheduling) {
         schedule(regframe);
     }
 }
@@ -163,10 +163,10 @@ void isr_irq12(void) {
     mouse_x += true_dx * MOUSE_XSCALE;
     mouse_y += true_dy * MOUSE_YSCALE;
 
-    if (mouse_x > MOUSE_XLIM)
-        mouse_x = MOUSE_XLIM;
-    if (mouse_y > MOUSE_YLIM)
-        mouse_y = MOUSE_YLIM;
+    if (mouse_x > mouse_xlim)
+        mouse_x = mouse_xlim;
+    if (mouse_y > mouse_ylim)
+        mouse_y = mouse_ylim;
 
     if (mouse_x < 0)
         mouse_x = 0;

@@ -22,13 +22,13 @@ extern bool mouse_left;
 extern bool mouse_middle;
 extern bool mouse_right;
 
-#define MOUSE_XSCALE 0.1f
-#define MOUSE_YSCALE -0.05f
-#define MOUSE_XLIM   79
-#define MOUSE_YLIM   24
+#define MOUSE_XSCALE 1.f
+#define MOUSE_YSCALE -1.f
 
 extern float mouse_x;
 extern float mouse_y;
+extern size_t mouse_xlim;
+extern size_t mouse_ylim;
 extern uint8_t mouse_scroll;
 
 // The lower 32 bytes are the normal bitmap,

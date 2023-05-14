@@ -63,11 +63,18 @@ void init_vesa();
 // We assume a 32-bpp framebuffer with 0x00RRGGBB format
 typedef uint32_t rgb32_t;
 #define RGB32(r, g, b) ((rgb32_t)(((r) << 16) | ((g) << 8) | (b)))
-#define SET_PIXEL(x, y, color) *(uint32_t*)((size_t)VESA_VIRT_FB + (y) * bpob->vbe_mode_info.pitch + (x) * 4) = (color)
+#define SET_PIXEL(x, y, color) *(uint32_t*)((size_t)VESA_VIRT_FB + (y) * bpob->vbe_mode_info.pitch + (x) * sizeof(uint32_t)) = (color)
+#define GET_PIXEL(x, y) (*(uint32_t*)((size_t)VESA_VIRT_FB + (y) * bpob->vbe_mode_info.pitch + (x) * sizeof(uint32_t))) // TODO: Add double buffering
 
 void vesa_clear(rgb32_t c);
 void vesa_drawrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, rgb32_t c);
+void vesa_scrolldown(uint32_t n);
 
 extern uint32_t vheight, vwidth;
 extern psf2_header_t * vfont;
 extern rgb32_t vfont_fg, vfont_bg;
+extern bool vesa_ready;
+extern uint32_t vesa_x, vesa_y;
+
+void vesa_putc(char c);
+void vesa_puts(char * s);

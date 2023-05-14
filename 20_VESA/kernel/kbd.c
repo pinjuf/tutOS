@@ -10,6 +10,9 @@ uint8_t mouse_scroll = PS2_MOUSE_SCRL_NONE;
 float mouse_x = 0;
 float mouse_y = 0;
 
+size_t mouse_xlim = 800; // These values get changed on VESA init
+size_t mouse_ylim = 600;
+
 uint8_t * kbd_bitmap;
 
 char kbd_last_ascii;
@@ -46,6 +49,7 @@ char scancode_shift_to_ascii(uint8_t s) {
 }
 
 // Should it be necessary to get the last key WITHOUT blocking, you can just read kbd_last_ascii
+__attribute__((optimize("O0"))) // GCC will transform "kbd_last_ascii==0" into "true"
 char kbd_get_last_ascii() {
     while (kbd_last_ascii == 0);
     char o = kbd_last_ascii;
@@ -53,6 +57,7 @@ char kbd_get_last_ascii() {
     return o;
 }
 
+__attribute__((optimize("O0")))
 uint16_t kbd_get_last_scancode() {
     while (kbd_last_scancode == 0);
     uint16_t o = kbd_last_scancode;

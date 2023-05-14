@@ -4,6 +4,7 @@
 
 process_t * processes;
 process_t * current_process = NULL;
+bool do_scheduling = true;
 
 void init_scheduling() {
     processes = kcalloc(sizeof(process_t) * MAX_PROCESSES);
