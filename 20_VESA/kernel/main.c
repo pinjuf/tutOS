@@ -63,8 +63,8 @@ void _kmain() {
     kputs("VFS OK\n");
 
     init_vesa();
-    vesa_clear(RGB32(0, 0, 0));
-    kputs("VESA OK\n");
+    //vesa_clear(RGB32(0, 0, 0));
+    kputs("VBE OK\n");
 
     kputs("KRN MN\n");
 

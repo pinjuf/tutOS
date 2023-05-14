@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "psf.h"
 
 typedef struct vbe_info_t {
 	char signature[4];
@@ -68,3 +69,5 @@ void vesa_clear(rgb32_t c);
 void vesa_drawrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, rgb32_t c);
 
 extern uint32_t vheight, vwidth;
+extern psf2_header_t * vfont;
+extern rgb32_t vfont_fg, vfont_bg;
