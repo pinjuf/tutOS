@@ -68,6 +68,7 @@ typedef uint32_t rgb32_t;
 
 void vesa_clear(rgb32_t c);
 void vesa_drawrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, rgb32_t c);
+void vesa_drawcircle(uint32_t x, uint32_t y, int r, rgb32_t c);
 void vesa_scrolldown(uint32_t n);
 
 extern uint32_t vheight, vwidth;

@@ -61,6 +61,13 @@ void vesa_drawrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, rgb32_t c) {
             SET_PIXEL(x+dx, y+dy, c);
 }
 
+void vesa_drawcircle(uint32_t x, uint32_t y, int r, rgb32_t c) {
+    for (int dy = -r; dy <= r; dy++)
+        for (int dx = -r; dx <= r; dx++)
+            if (dx*dx + dy*dy <= r*r)
+                SET_PIXEL(x+dx, y+dy, c);
+}
+
 void vesa_scrolldown(uint32_t n) {
     for (uint32_t y = 0; y < vheight - n; y++)
         for (uint32_t x = 0; x < vwidth; x++)

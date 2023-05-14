@@ -69,6 +69,9 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
+    for (size_t i = 0; i < 200; i++)
+        vesa_drawcircle(400, 400, 200-i, RGB32(127-i, 255-i, 127-i));
+
     kputs("Type/draw something!\n");
 
     do_scheduling = false;
