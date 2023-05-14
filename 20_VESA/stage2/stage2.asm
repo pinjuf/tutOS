@@ -3,8 +3,8 @@
 
 %define BPOB 0x7E00 ; "Boot Pass-On Block", stores data to be used by the kernel
 
-%define VESA_WIDTH  800
-%define VESA_HEIGHT 600
+%define VESA_WIDTH  1024
+%define VESA_HEIGHT 768
 %define VESA_BPP    32
 
 struc vbe_info
@@ -127,6 +127,7 @@ find_vbe_mode:
     ; Actually select the mode
     mov ax, 0x4F02 ; SET VESA MODE
     mov bx, cx
+    ; Because we are not using the CRTCInfo struct/setting bit 11, we do not need to pass anything in ES:DI
     int 0x10
 
     cmp ax, 0x004F

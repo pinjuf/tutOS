@@ -63,10 +63,7 @@ void _kmain() {
     kputs("VFS OK\n");
 
     init_vesa();
-    vesa_clear(RGB32(255, 255, 255));
-    for (size_t i = 0; i < 255; i++) {
-        vesa_drawrect(i, i, vwidth-2*i, vheight-2*i, RGB32(255-i, 255-i, 255-i));
-    }
+    vesa_clear(RGB32(0, 0, 0));
     kputs("VESA OK\n");
 
     kputs("KRN MN\n");
