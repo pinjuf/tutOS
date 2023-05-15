@@ -15,6 +15,11 @@ process_t * elf_load(void * buf, size_t stacksize, bool kmode) {
         return NULL;
     }
 
+    if (hdr->e_type != ELF_EXEC) {
+        kwarn(__FILE__,__func__,"not an executable");
+        return NULL;
+    }
+
     process_t * out = NULL;
     for (size_t i = 0; i < MAX_PROCESSES; i++) {
         if (processes[i].state == PROCESS_NONE) {

@@ -6,10 +6,7 @@ extern handle_syscall
 syscall_stub:
     ; The syscall triggerer is responsible for saving the registers, not the kernel
 
-    mov [us_rsp], rsp ; Save user RSP & RBP
-    mov [us_rbp], rbp
-
-    mov rsp, 0x110000
+    push rbp     ; IDK if this is even necessary on x86_64
     mov rbp, rsp
 
     push rcx ; Save passed on user RIP & RFLAGS
@@ -41,10 +38,6 @@ syscall_stub:
     pop r11
     pop rcx
 
-    mov rsp, [us_rsp]
-    mov rbp, [us_rbp]
+    pop rbp
 
     o64 sysret
-
-us_rsp: dq 0
-us_rbp: dq 0
