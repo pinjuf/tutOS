@@ -12,6 +12,7 @@
 #include "schedule.h"
 #include "vfs.h"
 #include "vesa.h"
+#include "elf.h"
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
@@ -69,19 +70,12 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    for (size_t i = 0; i < 200; i++)
-        vesa_drawcircle(400, 400, 200-i, RGB32(127-i, 255-i, 127-i));
+    filehandle_t * test_elf_fh = kopen("/bin/test", FILE_R);
+    char * test_elf_buf = kmalloc(test_elf_fh->size);
+    kread(test_elf_fh, test_elf_buf, test_elf_fh->size);
+    kclose(test_elf_fh);
 
-    kputs("Type/draw something!\n");
-
-    do_scheduling = false;
-    sti;
-    while (1) {
-        if (kbd_last_ascii)
-            kputc(kbd_get_last_ascii());
-
-        SET_PIXEL((uint32_t)mouse_x, (uint32_t)mouse_y, RGB32(255, 255, 255));
-    }
+    elf_load
 
     kputs("KRN DN\n");
 
