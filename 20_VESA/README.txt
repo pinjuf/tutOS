@@ -9,3 +9,5 @@ and use this to keep showing text, with the addition of images now
 too.
 
 FAQ:
+    1) Why don't you use double buffering?
+        Cause I am too lazy.
