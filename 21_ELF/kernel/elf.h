@@ -70,7 +70,19 @@ enum ELF_MACHINE {
     ELF_NONE,
     ELF_X86    = 0x3,
     ELF_IA32   = 0x32,
-    ELF_x86_64 = 0x3E,
+    ELF_X86_64 = 0x3E,
+};
+
+enum ELF_IDENT {
+    ELF_EI_MAG0,
+    ELF_EI_MAG1,
+    ELF_EI_MAG2,
+    ELF_EI_MAG3,
+    ELF_EI_CLASS,
+    ELF_EI_DATA,
+    ELF_EI_VERSION,
+    ELF_EI_OSABI,
+    ELF_EI_ABIVERSION,
 };
 
 enum ELF_PTYPE {
@@ -84,4 +96,4 @@ enum ELF_PTYPE {
     ELF_PT_TLS,
 };
 
-process_t * elf_load(void * buf, bool kmode);
+process_t * elf_load(void * buf, size_t stacksize, bool kmode);

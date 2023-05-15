@@ -75,9 +75,12 @@ void _kmain() {
     kread(test_elf_fh, test_elf_buf, test_elf_fh->size);
     kclose(test_elf_fh);
 
-    elf_load
+    elf_load(test_elf_buf, 0x4000, false);
 
-    kputs("KRN DN\n");
+    kfree(test_elf_buf); // Everything has been copied to aligned memory
+
+    kputs("KRN RD\n");
+    sti;
 
     while (1);
 }
