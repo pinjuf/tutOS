@@ -1,10 +1,9 @@
 all: bin
 
-bin: src lib
-	# Copy all executables into /bin
+bin: src
 	find src -type f -perm /a+x -exec cp {} bin \;
 
-src: src/
+src: src/ lib
 	$(MAKE) -C src
 
 lib: lib/

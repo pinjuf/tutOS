@@ -5,7 +5,7 @@ CFLAGS = -Wall -Wextra -Wpedantic -nostdlib -ffreestanding -fno-pie -fno-stack-p
 LD = ld
 ASM = nasm
 
-OBJS = syscall.o
+OBJS = libtut.o syscall.o
 
 %.o: %.c
 	gcc -c $(CFLAGS) $< -o $@
