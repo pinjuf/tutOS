@@ -8,3 +8,4 @@ longer necessary, as now, programs are loaded in sections.
 For now, we will only support static, non-PIE programs.
 
 FAQ:
+    1) Why don't you do anything with the section headers/symbol tables?

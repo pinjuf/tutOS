@@ -50,6 +50,11 @@ process_t * elf_load(void * buf, size_t stacksize, bool kmode) {
         if (phdr->p_type != ELF_PT_LOAD)
             continue;
 
+        if (phdr->p_vaddr < HEAP_PHYS) {
+            kwarn(__FILE__,__func__,"refusing to map to low kernel mem");
+            continue;
+        }
+
         out->pagemaps[out->pagemaps_n].virt = (void*)phdr->p_vaddr;
         out->pagemaps[out->pagemaps_n].attr = PAGE_PRESENT | PAGE_RW | PAGE_USER;
 

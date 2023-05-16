@@ -12,14 +12,17 @@ void init_syscalls() {
 
     wrmsr(LSTAR, (uint64_t)syscall_stub); // Handler's long mode RIP
     wrmsr(CSTAR, (uint64_t)syscall_stub); // Handler's IA32_COMP EIP
-    wrmsr(SFMASK, 0x200);                 // RFLAGS Mask (disable IF)
+    wrmsr(SFMASK, 0x200);                 // Handler's RFLAGS mask
 
     wrmsr(EFER, rdmsr(EFER) | 1); // SC (Syscall enable)
 }
 
 uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5) {
+    // If we are doing sth that takes time and can be interrupted, we should sti and cli later
+
     switch (n) { // TODO: Add more syscalls
         default: {
+                     sti;
                      kputs("SYSCALL n=0x");
                      kputhex(n);
                      kputs(" arg0=0x");
@@ -35,6 +38,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                      kputs(" arg5=0x");
                      kputhex(arg5);
                      kputc('\n');
+                     cli;
                  }
     }
 

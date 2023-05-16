@@ -171,7 +171,7 @@ isr_irq12_stub:
     PIC_EOI
     iretq
 
-isr_syscall_stub:
+isr_syscall_stub: ; Should probably NOT be used
     push rbp
     mov rbp, rsp
 
