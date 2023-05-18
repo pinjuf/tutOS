@@ -11,10 +11,14 @@ void init_vfs() {
     mountpoints[0].path = "/";
     mountpoints[0].p    = get_part(1, 0);
 
+    mountpoints[1].type = FS_DEVFS;
+    mountpoints[1].path = "/mnt/";
+
     for (size_t i = 0; i < MOUNTPOINTS_N; i++) {
         if (mountpoints[i].type == FS_UNKN)
             continue;
-        mountpoints[i].internal_fs = FILESYSTEMS[mountpoints[i].type].get_fs(mountpoints[i].p);
+        if (FILESYSTEMS[mountpoints[i].type].get_fs)
+            mountpoints[i].internal_fs = FILESYSTEMS[mountpoints[i].type].get_fs(mountpoints[i].p);
     }
 }
 

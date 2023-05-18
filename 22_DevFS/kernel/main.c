@@ -70,10 +70,6 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    uint32_t c = get_part_count(1);
-    kputdec(c);
-    kputc('\n');
-
     kputs("KRN DN\n");
     while (1);
 }

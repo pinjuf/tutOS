@@ -4,6 +4,7 @@
 #include "gpt.h"
 #include "fat.h"
 #include "ext2.h"
+#include "devfs.h"
 
 #define DIRSEP '/'
 
@@ -11,7 +12,8 @@ enum FILETYPE {
     FILE_UNKN,
     FILE_REG,
     FILE_DIR,
-    // TODO: Support more filetypes
+    FILE_BLK,
+    FILE_DEV,
 };
 
 enum FILEMODE {
@@ -44,6 +46,7 @@ enum FILESYSTEM {
     FS_UNKN,
     FS_EXT2,
     FS_FAT32,
+    FS_DEVFS,
 };
 
 typedef struct mountpoint_t {
@@ -71,6 +74,14 @@ static const filesystem_t FILESYSTEMS[] = {
         NULL,
         NULL,
         NULL,
+    },
+
+    {"devfs",
+        NULL,
+        (filehandle_t * (*) (void * internal_fs, char * path, enum FILEMODE mode)) devfs_getfile,
+        (void (*) (filehandle_t * f)) devfs_closefile,
+        (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_readfile,
+        (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_writefile,
     },
 };
 
