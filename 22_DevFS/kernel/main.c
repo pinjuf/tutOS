@@ -13,6 +13,7 @@
 #include "vfs.h"
 #include "vesa.h"
 #include "elf.h"
+#include "isr.h"
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
@@ -69,6 +70,22 @@ void _kmain() {
     kputs("VBE OK\n");
 
     kputs("KRN MN\n");
+
+    do_scheduling = false;
+
+    sti;
+
+    filehandle_t * fb_fh = kopen("/dev/vesafb", FILE_R);
+
+    rgb32_t col = RGB32(255, 127, 127);
+    for (size_t i = 0; i < bpob->vbe_mode_info.height * bpob->vbe_mode_info.width; i++) {
+        kwrite(fb_fh, &col, sizeof(rgb32_t));
+    }
+
+    kputdec(fb_fh->curr);
+    kputc('\n');
+
+    kclose(fb_fh);
 
     kputs("KRN DN\n");
     while (1);

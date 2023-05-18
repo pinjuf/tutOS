@@ -35,6 +35,7 @@ void hexdump(void * ptr, size_t n);
 void kwarn(const char * source, const char * func, const char * msg);
 
 void init_pit0(uint32_t freq);
+void init_pit2(uint32_t freq);
 
 void init_8042ps2();
 

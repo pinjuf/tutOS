@@ -19,7 +19,7 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         intern->type = DEVFS_VESA;
         out->curr = 0;
         out->type = FILE_DEV;
-        out->size = bpob->vbe_mode_info.bpp \
+        out->size = bpob->vbe_mode_info.bpp/8 \
                   * bpob->vbe_mode_info.height \
                   * bpob->vbe_mode_info.width;
 
@@ -74,11 +74,11 @@ size_t devfs_readfile(void * f, void * buf, size_t count) {
 
                  const size_t pad = bpob->vbe_mode_info.pitch \
                                   - bpob->vbe_mode_info.width \
-                                  * bpob->vbe_mode_info.bpp;
+                                  * bpob->vbe_mode_info.bpp/8;
 
                  const size_t full_rows = fh->curr \
                                         / bpob->vbe_mode_info.width \
-                                        / bpob->vbe_mode_info.bpp;
+                                        / bpob->vbe_mode_info.bpp/8;
 
                  size_t actual = fh->curr + full_rows * pad;
                  ((char*)buf)[i] = *((char*) ((size_t)VESA_VIRT_FB + actual));
@@ -99,39 +99,41 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
 
     switch (intern->type) {
         case DEVFS_VESA: {
-             if (fh->curr > fh->size) {
-                 return 0;
-             }
+            if (fh->curr > fh->size) {
+                return 0;
+            }
 
-             size_t to_write = count;
-             if (fh->curr + to_write > fh->size) {
-                 to_write = fh->size - fh->curr;
-             }
+            size_t to_write = count;
+            if (fh->curr + to_write > fh->size) {
+                to_write = fh->size - fh->curr;
+            }
 
-             for (size_t i = 0; i < to_write; i++) {
-                 // We need to take pitch into account!
-                 // <=====WIDTH * BPP=========>
-                 // | ACTUAL ROW              | PAD |
-                 // <=============PITCH=============>
+            for (size_t i = 0; i < to_write; i++) {
+                // We need to take pitch into account!
+                // <=====WIDTH * BPP=========>
+                // | ACTUAL ROW              | PAD |
+                // <=============PITCH=============>
 
-                 const size_t pad = bpob->vbe_mode_info.pitch \
-                                  - bpob->vbe_mode_info.width \
-                                  * bpob->vbe_mode_info.bpp;
+                const size_t pad = bpob->vbe_mode_info.pitch \
+                                 - bpob->vbe_mode_info.width \
+                                 * bpob->vbe_mode_info.bpp/8;
 
-                 const size_t full_rows = fh->curr \
-                                        / bpob->vbe_mode_info.width \
-                                        / bpob->vbe_mode_info.bpp;
+                const size_t full_rows = fh->curr \
+                                       / bpob->vbe_mode_info.width \
+                                       / bpob->vbe_mode_info.bpp/8;
 
-                 size_t actual = fh->curr + full_rows * pad;
-                 *((char*) ((size_t)VESA_VIRT_FB + actual)) = ((char*)buf)[i];
+                size_t actual = fh->curr + full_rows * pad;
+                *((char*) ((size_t)VESA_VIRT_FB + actual)) = ((char*)buf)[i];
 
-                 fh->curr++;
-             }
+                fh->curr++;
+            }
 
-             return to_write;
+            return to_write;
         }
         case DEVFS_PCSPK: {
+            init_pit2(*(uint32_t*)buf);
 
+            return 4;
         }
         default:
             return 0;

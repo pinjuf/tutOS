@@ -103,6 +103,25 @@ void init_pit0(uint32_t freq) {
     outb(0x40, (divisor >> 8) & 0xFF); // High PIT0 byte
 }
 
+void init_pit2(uint32_t freq) {
+    if (freq == 0) { // Stopping letting the signal pass through
+        uint8_t tmp = inb(0x61) & 0xFC;
+        outb(0x61, tmp);
+        return;
+    }
+
+    uint32_t divisor = 1193180 / freq;
+
+    outb(0x43, 0xB6); // Configure mode for PIT0
+    outb(0x42, divisor & 0xFF); // Low PIT0 byte
+    outb(0x42, (divisor >> 8) & 0xFF); // High PIT0 byte
+
+    uint8_t tmp = inb(0x61);
+    if (tmp != (tmp | 3)) {
+        outb(0x61, tmp | 3);
+    }
+}
+
 void kwarn(const char * source, const char * func, const char * msg) {
     kputs("[KWRN] ");
     kputs((char*)source);

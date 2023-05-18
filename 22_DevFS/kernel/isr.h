@@ -11,3 +11,5 @@ void isr_default_int(uint16_t n, uint64_t rip, uint64_t cs, uint64_t rflags, uin
 void isr_irq0(void * regframe);
 void isr_irq1(void);
 void isr_irq12(void);
+
+extern uint64_t pit0_ticks;
