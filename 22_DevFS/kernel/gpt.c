@@ -29,13 +29,13 @@ part_t * get_part(drive_t d, uint32_t n) {
         kwarn(__FILE__,__func__,"part num out of reach");
     }
 
-    gpt_entry_t * gpt = (gpt_entry_t*)kmalloc(gpt_pth->gpt_esize * gpt_pth->gpt_entries);
+    gpt_entry_t * gpt = (gpt_entry_t*)kmalloc(gpt_pth->gpt_esize);
 
-    drive_read(d, gpt_pth->gpt * SECTOR_SIZE, gpt_pth->gpt_esize * gpt_pth->gpt_entries, gpt);
+    drive_read(d, gpt_pth->gpt * SECTOR_SIZE + n * gpt_pth->gpt_esize, gpt_pth->gpt_esize, gpt);
 
     bool zero = true;
     for (uint8_t i = 0; i < sizeof(guid_t); i++) {
-        if (((char*)(&gpt[n].type_guid))[i]) {
+        if (((char*)(&gpt->type_guid))[i]) {
             zero = false;
         }
     }
@@ -46,10 +46,10 @@ part_t * get_part(drive_t d, uint32_t n) {
     part_t * out = (part_t*)kmalloc(sizeof(part_t));
     out->d = d;
     out->n = n;
-    memcpy(&out->guid, &gpt[n].uniq_guid, 16);
-    memcpy(&out->type, &gpt[n].type_guid, 16);
-    out->start_lba = gpt[n].start_lba;
-    out->size = gpt[n].end_lba - gpt[n].start_lba + 1; // End LBA is inclusive
+    memcpy(&out->guid, &gpt->uniq_guid, 16);
+    memcpy(&out->type, &gpt->type_guid, 16);
+    out->start_lba = gpt->start_lba;
+    out->size = gpt->end_lba - gpt->start_lba + 1; // End LBA is inclusive
 
     kfree(gpt_pth);
     kfree(gpt);
@@ -67,6 +67,30 @@ uint32_t get_part_count(drive_t d) {
         kwarn(__FILE__,__func__,"no gpt signature");
     }
 
+    gpt_entry_t * gpt = (gpt_entry_t*)kmalloc(gpt_pth->gpt_esize * gpt_pth->gpt_entries);
+
+    drive_read(d, gpt_pth->gpt * SECTOR_SIZE, gpt_pth->gpt_esize * gpt_pth->gpt_entries, gpt);
+
+    uint32_t out = 0;
+    for (size_t i = 0; i < gpt_pth->gpt_entries; i++) {
+        // We can't trust sizeof() because of gpt_esize
+        gpt_entry_t * g = (void*)((size_t)gpt + gpt_pth->gpt_esize * i);
+
+        bool zero = true;
+        for (uint8_t i = 0; i < sizeof(guid_t); i++) {
+            if (((char*)(&g->type_guid))[i]) {
+                zero = false;
+            }
+        }
+
+        if (!zero)
+            out++;
+    }
+
+    kfree(gpt_pth);
+    kfree(gpt);
+
+    return out;
 }
 
 void kputguid(guid_t guid) {

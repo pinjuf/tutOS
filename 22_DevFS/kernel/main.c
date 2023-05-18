@@ -70,17 +70,10 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    filehandle_t * test_elf_fh = kopen("/bin/test", FILE_R);
-    char * test_elf_buf = kmalloc(test_elf_fh->size);
-    kread(test_elf_fh, test_elf_buf, test_elf_fh->size);
-    kclose(test_elf_fh);
+    uint32_t c = get_part_count(1);
+    kputdec(c);
+    kputc('\n');
 
-    elf_load(test_elf_buf, 0x4000, false);
-
-    kfree(test_elf_buf); // Everything has been copied to aligned memory
-
-    kputs("KRN RD\n");
-    sti;
-
+    kputs("KRN DN\n");
     while (1);
 }
