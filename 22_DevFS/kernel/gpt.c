@@ -18,11 +18,7 @@ part_t * get_part(drive_t d, uint32_t n) {
         return out;
     }
 
-    int res = 1;
-    while ((res = drive_read(d, 1*SECTOR_SIZE, sizeof(gpt_pth_t), gpt_pth))) {
-        if (res == 2)
-            return NULL;
-    }
+    drive_read(d, 1*SECTOR_SIZE, sizeof(gpt_pth_t), gpt_pth);
 
     // Check the signature
     if (*(uint64_t*)(&gpt_pth->sign) != GPT_SIGN) {
@@ -35,11 +31,7 @@ part_t * get_part(drive_t d, uint32_t n) {
 
     gpt_entry_t * gpt = (gpt_entry_t*)kmalloc(gpt_pth->gpt_esize * gpt_pth->gpt_entries);
 
-    res = 1;
-    while ((res = drive_read(d, gpt_pth->gpt * SECTOR_SIZE, gpt_pth->gpt_esize * gpt_pth->gpt_entries, gpt))) {
-        if (res == 2)
-            return NULL;
-    }
+    drive_read(d, gpt_pth->gpt * SECTOR_SIZE, gpt_pth->gpt_esize * gpt_pth->gpt_entries, gpt);
 
     bool zero = true;
     for (uint8_t i = 0; i < sizeof(guid_t); i++) {
@@ -63,6 +55,18 @@ part_t * get_part(drive_t d, uint32_t n) {
     kfree(gpt);
 
     return out;
+}
+
+uint32_t get_part_count(drive_t d) {
+    gpt_pth_t * gpt_pth = (gpt_pth_t*)kmalloc(sizeof(gpt_pth_t));
+
+    drive_read(d, 1*SECTOR_SIZE, sizeof(gpt_pth_t), gpt_pth);
+
+    // Check the signature
+    if (*(uint64_t*)(&gpt_pth->sign) != GPT_SIGN) {
+        kwarn(__FILE__,__func__,"no gpt signature");
+    }
+
 }
 
 void kputguid(guid_t guid) {
