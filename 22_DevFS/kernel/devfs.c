@@ -57,6 +57,35 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         out->type = FILE_BLK;
         out->size = 0;
 
+    } else if (strlen(path) > 2 \
+            && path[0] == 'h' \
+            && path[1] == 'd') {
+
+        intern->type = DEVFS_HDD;
+        ata_checkdrives();
+
+        drive_t drive_n = path[2] - 'a';
+        size_t part_n = strlen(path+3) ? atoi(path+3, 10)-1 : GPT_WHOLEDISK; // Partition numbering starts at #1
+
+        if ((drive_bitmap & (1<<drive_n)) == 0) {
+            kwarn(__FILE__,__func__,"drive not present");
+            return NULL;
+        }
+
+        if (part_n != GPT_WHOLEDISK && part_n >= get_part_count(drive_n)) {
+            // We assume that there are no holes (unused entries) in the GPT
+            kwarn(__FILE__,__func__,"partition non-existant");
+            return NULL;
+        }
+
+        part_t * p = get_part(drive_n, part_n);
+        memcpy(&intern->p, p, sizeof(part_t));
+        kfree(p);
+
+        out->curr = 0;
+        out->type = FILE_BLK;
+        out->size = 0;
+
     } else {
         kwarn(__FILE__,__func__,"file not found");
         return NULL;
@@ -129,6 +158,14 @@ size_t devfs_readfile(void * f, void * buf, size_t count) {
             return count;
         }
 
+        case DEVFS_HDD: {
+            int res = part_read(&intern->p, fh->curr, count, buf);
+
+            fh->curr += count;
+
+            return res ? 0 : count;
+        }
+
         default:
             kwarn(__FILE__,__func__,"cannot read (no impl?)");
             return 0;
@@ -190,6 +227,13 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
             }
 
             return count;
+        }
+        case DEVFS_HDD: {
+            int res = part_write(&intern->p, fh->curr, count, buf);
+
+            fh->curr += count;
+
+            return res ? 0 : count;
         }
         default:
             kwarn(__FILE__,__func__,"cannot write (no impl?)");

@@ -27,6 +27,8 @@ size_t strmatchstart(char * s1, char * s2);
 void itoa(uint64_t x, char * out, uint8_t base);
 void sitoa(int64_t x, char * out, uint8_t base);
 
+size_t atoi(char * s, uint8_t base);
+
 void kputdec(uint64_t x);
 void kputhex(uint64_t x);
 

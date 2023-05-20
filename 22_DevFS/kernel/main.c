@@ -75,17 +75,13 @@ void _kmain() {
 
     sti;
 
-    filehandle_t * out = kopen("/dev/tty", FILE_W);
-    filehandle_t * in = kopen("/dev/tty", FILE_R);
+    filehandle_t * hda = kopen("/dev/hda", FILE_R);
 
-    char last = 0;
-    while (last != '\n') {
-        kread(in, &last, 1);
-        kwrite(out, &last, 1);
-    }
-
-    kclose(out);
-    kclose(in);
+    char * buf = kmalloc(512);
+    kread(hda, buf, 512);
+    hexdump(buf, 512);
+    kread(hda, buf, 512);
+    hexdump(buf, 512);
 
     kputs("KRN DN\n");
     while (1);

@@ -381,3 +381,33 @@ size_t strmatchstart(char * s1, char * s2) {
 
     return out;
 }
+
+size_t atoi(char * s, uint8_t base) {
+    size_t len = strlen(s);
+    size_t out = 0;
+
+    size_t factor = 1;
+
+    for (size_t i = 0; i < len; i++) {
+        char current = s[len-i-1];
+
+        size_t val = -1;
+        const char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        for (size_t j = 0; j < strlen((char*)digits); j++) {
+            if (current == digits[j]) {
+                val = j;
+                break;
+            }
+        }
+
+        if (val == (size_t)-1) {
+            kwarn(__FILE__,__func__,"unknown char");
+        }
+
+        out += val * factor;
+        factor *= base;
+    }
+
+    return out;
+}
