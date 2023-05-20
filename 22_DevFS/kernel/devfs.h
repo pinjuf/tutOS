@@ -4,10 +4,12 @@
 
 enum DEVFS_DEV {
     DEVFS_UNKN,
+    DEVFS_DIR, // The /dev directory itself
     DEVFS_VESA,
     DEVFS_PCSPK,
     DEVFS_HDD,
     DEVFS_TTY,
+    DEVFS_MEM,
 };
 
 typedef struct devfs_file_t {

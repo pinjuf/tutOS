@@ -41,6 +41,22 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         out->type = FILE_DEV;
         out->size = 0;
 
+    } else if (!strcmp(path, "")) {
+        intern->type = DEVFS_DIR;
+        out->curr = 0;
+        out->type = FILE_DIR;
+        out->size = 0;
+
+        if (mode == FILE_W) {
+            kwarn(__FILE__,__func__,"cannot write to devfs root dir");
+        }
+
+    } else if (!strcmp(path, "mem")) {
+        intern->type = DEVFS_MEM;
+        out->curr = 0;
+        out->type = FILE_BLK;
+        out->size = 0;
+
     } else {
         kwarn(__FILE__,__func__,"file not found");
         return NULL;
@@ -104,7 +120,17 @@ size_t devfs_readfile(void * f, void * buf, size_t count) {
 
             return count;
         }
+
+        case DEVFS_MEM: {
+            for (size_t i = 0; i < count; i++) {
+                ((char*)buf)[i] = *((char*)(fh->curr++));
+            }
+
+            return count;
+        }
+
         default:
+            kwarn(__FILE__,__func__,"cannot read (no impl?)");
             return 0;
     }
 }
@@ -158,7 +184,15 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
 
             return count;
         }
+        case DEVFS_MEM: {
+            for (size_t i = 0; i < count; i++) {
+                *((char*)(fh->curr++)) = ((char*)buf)[i];
+            }
+
+            return count;
+        }
         default:
+            kwarn(__FILE__,__func__,"cannot write (no impl?)");
             return 0;
     }
 }
