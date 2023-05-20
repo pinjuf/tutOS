@@ -7,6 +7,7 @@ enum DEVFS_DEV {
     DEVFS_VESA,
     DEVFS_PCSPK,
     DEVFS_HDD,
+    DEVFS_TTY,
 };
 
 typedef struct devfs_file_t {

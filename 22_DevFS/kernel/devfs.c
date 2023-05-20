@@ -4,6 +4,7 @@
 #include "util.h"
 #include "vesa.h"
 #include "main.h"
+#include "kbd.h"
 
 void * devfs_getfile(void * internal_fs, char * path, int m) {
     (void) internal_fs;
@@ -34,7 +35,14 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
             return NULL;
         }
 
+    } else if (!strcmp(path, "tty")) {
+        intern->type = DEVFS_TTY;
+        out->curr = 0;
+        out->type = FILE_DEV;
+        out->size = 0;
+
     } else {
+        kwarn(__FILE__,__func__,"file not found");
         return NULL;
     }
 
@@ -88,6 +96,14 @@ size_t devfs_readfile(void * f, void * buf, size_t count) {
 
              return to_read;
         }
+
+        case DEVFS_TTY: {
+            for (size_t i = 0; i < count; i++) {
+                ((char*)buf)[i] = kbd_get_last_ascii();
+            }
+
+            return count;
+        }
         default:
             return 0;
     }
@@ -134,6 +150,13 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
             init_pit2(*(uint32_t*)buf);
 
             return 4;
+        }
+        case DEVFS_TTY: {
+            for (size_t i = 0; i < count; i++) {
+                kputc(((char*)buf)[i]);
+            }
+
+            return count;
         }
         default:
             return 0;

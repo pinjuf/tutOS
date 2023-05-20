@@ -31,17 +31,22 @@ filehandle_t * kopen(char * p, enum FILEMODE mode) {
     char * path = kmalloc(strlen(p)+1);
     memcpy(path, p, strlen(p)+1);
 
-    if (strlen(path)>1 && path[strlen(path)-1] == DIRSEP) { // Remove ending "/" if the path is not "/" (root dir)
-        path[strlen(path)-1] = 0;
-    }
-
     size_t mountpoint = -1;
     size_t length = 0;
     for (size_t m = 0; m < MOUNTPOINTS_N; m++) {
+        // 2 scenarios:
+        //
+        // 1) path equals JUST the mountpoint (without trailing DIRSEP), e.g. "/dev"
+        // 2) path equals mountpoint AND a DIRSEP (and possibly additional path tokens), e.g. "/dev/", "/dev/tty0"
         size_t match = strmatchstart(mountpoints[m].path, path);
-        if (match > length && strlen(mountpoints[m].path) == match) {
-            length = match;
+
+        if (match == strlen(mountpoints[m].path) && match > length) { // Scenario 2
             mountpoint = m;
+            length = match;
+        } else if (match == strlen(mountpoints[m].path) - 1 && strlen(path) == match) { // Scenario 1
+            mountpoint = m;
+            length = match;
+            break;
         }
     }
 

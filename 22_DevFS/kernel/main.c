@@ -75,17 +75,17 @@ void _kmain() {
 
     sti;
 
-    filehandle_t * fb_fh = kopen("/dev/vesafb", FILE_R);
+    filehandle_t * out = kopen("/dev/tty", FILE_W);
+    filehandle_t * in = kopen("/dev/tty", FILE_R);
 
-    rgb32_t col = RGB32(255, 127, 127);
-    for (size_t i = 0; i < bpob->vbe_mode_info.height * bpob->vbe_mode_info.width; i++) {
-        kwrite(fb_fh, &col, sizeof(rgb32_t));
+    char last = 0;
+    while (last != '\n') {
+        kread(in, &last, 1);
+        kwrite(out, &last, 1);
     }
 
-    kputdec(fb_fh->curr);
-    kputc('\n');
-
-    kclose(fb_fh);
+    kclose(out);
+    kclose(in);
 
     kputs("KRN DN\n");
     while (1);
