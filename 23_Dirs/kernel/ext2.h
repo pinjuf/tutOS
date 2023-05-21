@@ -167,3 +167,4 @@ uint32_t ext2_get_inode_by_name(ext2fs_t * fs, ext2_inode_t * inode, char * name
 void * ext2_getfile(ext2fs_t * fs, char * path, int);
 void ext2_closefile(void * f);
 size_t ext2_readfile(void * f, void * buf, size_t count);
+void * ext2_readdir(void * f);

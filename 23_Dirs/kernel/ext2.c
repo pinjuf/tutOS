@@ -400,3 +400,48 @@ size_t ext2_readfile(void * f, void * buf, size_t count) {
 
     return to_read;
 }
+
+void * ext2_readdir(void * f) {
+    filehandle_t * fh = f;
+    ext2fs_file_t * intern = fh->internal_file;
+
+    if (fh->type != FILE_DIR) {
+        kwarn(__FILE__,__func__,"trying to dir-read file");
+    }
+
+    if (!intern->cache) {
+        intern->cache = kmalloc(fh->size);
+
+        ext2_read_inode(mountpoints[fh->mountpoint].internal_fs, intern->inode, intern->cache);
+    }
+
+    ext2_dirent_t * entry = (ext2_dirent_t*) ((size_t)intern->cache + fh->curr);
+
+    if (entry->ino == 0) // Technically means unused entry, but generally indicates End Of Directory
+        return NULL;
+
+    dirent_t * out = kcalloc(sizeof(dirent_t));
+
+    switch (entry->file_type) {
+        case EXT2_FT_REG_FILE:
+            out->type = FILE_REG;
+            break;
+        case EXT2_FT_DIR:
+            out->type = FILE_DIR;
+            break;
+        default:
+            out->type = FILE_UNKN;
+            break;
+    }
+
+    memcpy(out->name, entry->name, entry->name_len);
+    out->namelen = strlen(out->name);
+
+    ext2_inode_t * ino = ext2_get_inode(mountpoints[fh->mountpoint].internal_fs, entry->ino);
+    out->size = ino->i_size;
+    kfree(ino);
+
+    fh->curr += entry->rec_len;
+
+    return out;
+}

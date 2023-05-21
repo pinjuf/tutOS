@@ -3,7 +3,7 @@
 #include "gpt.h"
 
 enum DEVFS_DEV {
-    DEVFS_UNKN,
+    DEVFS_UNKN = 0,
     DEVFS_DIR, // The /dev directory itself
     DEVFS_VESA,
     DEVFS_PCSPK,
@@ -23,3 +23,5 @@ void * devfs_getfile(void *, char * path, int);
 void devfs_closefile(void * f);
 size_t devfs_readfile(void * f, void * buf, size_t count);
 size_t devfs_writefile(void * f, void * buf, size_t count);
+
+void * devfs_readdir(void * f);

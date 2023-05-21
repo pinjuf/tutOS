@@ -43,7 +43,7 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
 
     } else if (!strcmp(path, "")) {
         intern->type = DEVFS_DIR;
-        out->curr = 0;
+        out->curr = 2; // 0 is UNKN device, 1 is the /DEV dir, our devices start at 2
         out->type = FILE_DIR;
         out->size = 0;
 
@@ -265,5 +265,88 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
         default:
             kwarn(__FILE__,__func__,"cannot write (no impl?)");
             return 0;
+    }
+}
+
+void * devfs_readdir(void * f) {
+    filehandle_t * fh = f;
+    devfs_file_t * intern = fh->internal_file;
+
+    if (intern->type != DEVFS_DIR) {
+        kwarn(__FILE__,__func__,"trying to dir-read not /dev");
+        return NULL;
+    }
+
+    enum DEVFS_DEV current = fh->curr;
+
+    dirent_t * out = kcalloc(sizeof(dirent_t));
+
+    // This SHOULD be in enum DEVFS_DEV order
+    switch (current) {
+        case DEVFS_VESA:
+            out->type = FILE_DEV;
+            out->namelen = 6;
+            memcpy(out->name, (char*)"vesafb", 7); // Satan fears me
+            out->size = bpob->vbe_mode_info.bpp/8 \
+                  * bpob->vbe_mode_info.height \
+                  * bpob->vbe_mode_info.width;
+            fh->curr++;
+            return out;
+
+        case DEVFS_PCSPK:
+            out->type = FILE_DEV;
+            out->namelen = 5;
+            memcpy(out->name, (char*)"pcspk", 6);
+            out->size = 0;
+            fh->curr++;
+            return out;
+
+        case DEVFS_HDD:
+            out->type = FILE_BLK;
+            // This one is a little bit special... we're not listing partitions for now, cause we still need to create a function to check for GPT magic
+            ata_checkdrives();
+            out->namelen = 3;
+            out->size = 0;
+            memcpy(out->name, (char*)"hd", 3);
+
+            while (!(drive_bitmap & (1<<intern->p.d)) && intern->p.d < 8) {
+                intern->p.d++;
+            }
+
+            if (intern->p.d < 8) {
+                out->name[2] = 'a' + intern->p.d;
+                intern->p.d++;
+                return out;
+            }
+
+            // Notice how we fall through into the next one
+            fh->curr++;
+ 
+        case DEVFS_TTY:
+            out->type = FILE_DEV;
+            out->namelen = 3;
+            memcpy(out->name, (char*)"tty", 4);
+            out->size = 0;
+            fh->curr++;
+            return out;
+
+        case DEVFS_QEMUDBG:
+            out->type = FILE_DEV;
+            out->namelen = 7;
+            memcpy(out->name, (char*)"qemudbg", 8);
+            out->size = 0;
+            fh->curr++;
+            return out;
+
+        case DEVFS_MEM:
+            out->type = FILE_DEV;
+            out->namelen = 3;
+            memcpy(out->name, (char*)"mem", 4);
+            out->size = 0;
+            fh->curr++;
+            return out;
+
+        default:
+            return NULL;
     }
 }

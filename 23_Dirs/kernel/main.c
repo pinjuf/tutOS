@@ -73,66 +73,19 @@ void _kmain() {
 
     sti;
 
-    kputs("Opening /dev/pcspk... ");
-    filehandle_t * pcspk = kopen("/dev/pcspk", FILE_W);
-    kputs("done.\n");
-    kputs("Beeping... ");
-    uint32_t freq = 440;
-    kwrite(pcspk, &freq, 4);
-    size_t now = pit0_ticks;
-    while (now + PIT0_FREQ > *(size_t volatile *)&pit0_ticks);
-    freq = 0;
-    kwrite(pcspk, &freq, 4);
-    kclose(pcspk);
-    kputs("done.\n");
+    filehandle_t * root_dir = kopen("/dev", FILE_R);
 
-    kputs("Opening /dev/vesafb... ");
-    filehandle_t * vesafb = kopen("/dev/vesafb", FILE_W);
-    kputs("done.\n");
-    kputs("Making green screen... ");
-    rgb32_t green = RGB32(0, 255, 0);
-    for (size_t i = 0; i < vesafb->size/sizeof(rgb32_t); i++) {
-        kwrite(vesafb, &green, sizeof(rgb32_t));
+    dirent_t * curr;
+    while ((curr = kreaddir(root_dir))) {
+        kputs(curr->name);
+        kputs("\t: nlen=");
+        kputdec(curr->namelen);
+        kputs(",\ttype=");
+        kputdec(curr->type);
+        kputs(",\tsize=");
+        kputdec(curr->size);
+        kputc('\n');
     }
-    kclose(vesafb);
-    kputs("done.\n");
-
-    kputs("Opening /dev/tty...");
-    filehandle_t * tty_r = kopen("/dev/tty", FILE_R);
-    filehandle_t * tty_w = kopen("/dev/tty", FILE_W);
-    kputs("done.\n");
-    kputs("You may write 10 characters. No more, no less.\n> ");
-    for (size_t i = 0; i < 10; i++) {
-        char in;
-        kread(tty_r, &in, 1);
-        kwrite(tty_w, &in, 1);
-    }
-    kclose(tty_r);
-    kclose(tty_w);
-    kputs("\n");
-
-    kputs("Opening /dev/hdb1...");
-    filehandle_t * hdb1 = kopen("/dev/hdb1", FILE_R);
-    kputs("done.\n");
-    kputs("Dumping superblock...\n");
-    hdb1->curr = SECTOR_SIZE * 2;
-    char * hdb1_s1 = kmalloc(SECTOR_SIZE * 2);
-    kread(hdb1, hdb1_s1, SECTOR_SIZE * 2);
-    hexdump(hdb1_s1, SECTOR_SIZE * 2);
-    kclose(hdb1);
-    kfree(hdb1_s1);
-    kputs("done.\n");
-
-    kputs("Opening /dev/mem...");
-    filehandle_t * mem = kopen("/dev/mem", FILE_R);
-    kputs("done.\n");
-    kputs("Dumping GDT/IDT...\n");
-    char * mem_buf = kmalloc(SECTOR_SIZE * 2);
-    kread(mem, mem_buf, SECTOR_SIZE * 2);
-    hexdump(mem_buf, SECTOR_SIZE * 2);
-    kclose(mem);
-    kfree(mem_buf);
-    kputs("done.\n");
 
     kputs("KRN DN\n");
     while (1);

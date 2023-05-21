@@ -75,7 +75,7 @@ static const filesystem_t FILESYSTEMS[] = {
         (void (*) (filehandle_t * f)) ext2_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) ext2_readfile,
         NULL,
-        NULL,
+        (dirent_t * (*) (filehandle_t * f)) ext2_readdir,
     },
 
     {"fat32",
@@ -93,7 +93,7 @@ static const filesystem_t FILESYSTEMS[] = {
         (void (*) (filehandle_t * f)) devfs_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_readfile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_writefile,
-        NULL,
+        (dirent_t * (*) (filehandle_t * f)) devfs_readdir,
     },
 };
 
