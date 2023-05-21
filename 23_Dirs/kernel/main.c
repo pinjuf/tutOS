@@ -73,19 +73,15 @@ void _kmain() {
 
     sti;
 
-    filehandle_t * root_dir = kopen("/dev", FILE_R);
+    kputs("Listing root directory: ");
+    filehandle_t * root_dir = kopen("/", FILE_R);
 
     dirent_t * curr;
     while ((curr = kreaddir(root_dir))) {
         kputs(curr->name);
-        kputs("\t: nlen=");
-        kputdec(curr->namelen);
-        kputs(",\ttype=");
-        kputdec(curr->type);
-        kputs(",\tsize=");
-        kputdec(curr->size);
-        kputc('\n');
+        kputc(' ');
     }
+    kputc('\n');
 
     kputs("KRN DN\n");
     while (1);
