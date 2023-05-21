@@ -321,6 +321,8 @@ void * devfs_readdir(void * f) {
 
             // Notice how we fall through into the next one
             fh->curr++;
+            /* fall through */
+            // Holy shit, a marker comment!
  
         case DEVFS_TTY:
             out->type = FILE_DEV;
