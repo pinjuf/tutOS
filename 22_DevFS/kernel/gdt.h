@@ -40,7 +40,7 @@ typedef struct tss_t {
 } __attribute__((packed)) tss_t;
 
 #define GDT_ENTRIES 64
-#define GDT_BASE 0x0
+#define GDT_BASE 0x0 // TODO: Put this somewhere else, this overwrites some data from the BIOS we might want
 extern gdt_entry_t * kgdt;
 extern gdtr_t kgdtr;
 extern tss_t ktss;

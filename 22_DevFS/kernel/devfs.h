@@ -9,6 +9,7 @@ enum DEVFS_DEV {
     DEVFS_PCSPK,
     DEVFS_HDD,
     DEVFS_TTY,
+    DEVFS_QEMUDBG,
     DEVFS_MEM,
 };
 

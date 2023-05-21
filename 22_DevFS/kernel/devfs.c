@@ -47,8 +47,11 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         out->type = FILE_DIR;
         out->size = 0;
 
+        memset(&intern->p, 0, sizeof(part_t));
+
         if (mode == FILE_W) {
             kwarn(__FILE__,__func__,"cannot write to devfs root dir");
+            return NULL;
         }
 
     } else if (!strcmp(path, "mem")) {
@@ -56,6 +59,17 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         out->curr = 0;
         out->type = FILE_BLK;
         out->size = 0;
+
+    } else if (!strcmp(path, "qemudbg")) {
+        intern->type = DEVFS_QEMUDBG;
+        out->curr = 0;
+        out->type = FILE_DEV;
+        out->size = 0;
+
+        if (mode == FILE_R) {
+            kwarn(__FILE__,__func__,"cannot read from qemu dbg io");
+            return NULL;
+        }
 
     } else if (strlen(path) > 2 \
             && path[0] == 'h' \
@@ -209,11 +223,13 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
 
             return to_write;
         }
+
         case DEVFS_PCSPK: {
             init_pit2(*(uint32_t*)buf);
 
             return 4;
         }
+
         case DEVFS_TTY: {
             for (size_t i = 0; i < count; i++) {
                 kputc(((char*)buf)[i]);
@@ -221,6 +237,7 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
 
             return count;
         }
+
         case DEVFS_MEM: {
             for (size_t i = 0; i < count; i++) {
                 *((char*)(fh->curr++)) = ((char*)buf)[i];
@@ -228,6 +245,7 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
 
             return count;
         }
+
         case DEVFS_HDD: {
             int res = part_write(&intern->p, fh->curr, count, buf);
 
@@ -235,6 +253,15 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
 
             return res ? 0 : count;
         }
+
+        case DEVFS_QEMUDBG: {
+            for (size_t i = 0; i < count; i++) {
+                qemu_putc(((char*)buf)[i]);
+            }
+
+            return count;
+        }
+
         default:
             kwarn(__FILE__,__func__,"cannot write (no impl?)");
             return 0;
