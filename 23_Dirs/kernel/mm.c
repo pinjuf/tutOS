@@ -143,6 +143,9 @@ void kfree(void * ptr) {
         kwarn(__FILE__,__func__,"no malloc signature");
     }
 
+    // Break magic signature
+    *(uint32_t*)ptr = 0x00000000;
+
     size_t start = ((uint64_t)ptr - HEAP_VIRT) / MM_CHUNKSIZE;
     for (size_t i = 0; i < n; i++) {
         mm_set_used(start + i, 0);
