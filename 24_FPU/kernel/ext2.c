@@ -231,44 +231,6 @@ void ext2_read_inodeblock(ext2fs_t * fs, ext2_inode_t * inode, void * buf, size_
     } // TODO: Tri-indirect buffer?
 }
 
-char * ext2_lsdir(ext2fs_t * fs, ext2_inode_t * inode) {
-    if (!(inode->i_mode & EXT2_S_IFDIR)) {
-        kwarn(__FILE__,__func__,"non-directory inode");
-    }
-
-    // We use a bit of a special format for an ls:
-    // Every entry is a NULL-terminated string,
-    // and output itself is terminated by a double NULL.
-
-    void * buf = kmalloc(inode->i_size);
-    ext2_read_inode(fs, inode, buf);
-
-    size_t read = 0;
-    void * curr = buf;
-
-    char * out = kmalloc(inode->i_size); // This leaves some overhead
-    char * out_curr = out;
-
-    while (read < inode->i_size) {
-        ext2_dirent_t * entry = (ext2_dirent_t *) curr;
-
-        memcpy(out_curr, entry->name, entry->name_len);
-
-        curr = (char*)curr + entry->rec_len;
-        read += entry->rec_len;
-
-        out_curr += entry->name_len;
-        *out_curr = 0;
-        out_curr++;
-    }
-
-    *out_curr = 0;
-
-    kfree(buf);
-
-    return out;
-}
-
 uint32_t ext2_get_inode_by_name(ext2fs_t * fs, ext2_inode_t * inode, char * name) {
     if (!(inode->i_mode & EXT2_S_IFDIR)) {
         kwarn(__FILE__,__func__,"non-directory inode");
@@ -418,6 +380,9 @@ void * ext2_readdir(void * f) {
     ext2_dirent_t * entry = (ext2_dirent_t*) ((size_t)intern->cache + fh->curr);
 
     if (entry->ino == 0) // Technically means unused entry, but generally indicates End Of Directory
+        return NULL;
+
+    if (fh->curr >= fh->size) // End of directory
         return NULL;
 
     dirent_t * out = kcalloc(sizeof(dirent_t));

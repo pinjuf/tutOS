@@ -29,6 +29,8 @@ typedef struct int_regframe_t {
     uint64_t rflags;
     uint64_t rsp;
     uint64_t ss;
+    char alignment[8];
+    char fpu[512];
 } __attribute__((packed)) int_regframe_t;
 
 typedef enum PROCESS_STATE {

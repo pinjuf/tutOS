@@ -3,7 +3,8 @@
 extern isr_noerr_exception, isr_err_exception, isr_default_int, isr_irq0, isr_irq1, isr_irq12, handle_syscall
 global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq12_stub, isr_syscall_stub
 
-%define PUSH_ALL_SIZE (18*8)
+; 512 FXSAVE bytes, plus 8 for alignment
+%define PUSH_ALL_SIZE (18*8 + 512 + 8)
 
 %macro PUSH_ALL 0
     push rbp
@@ -38,9 +39,20 @@ global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq12
 
     mov rax, 0x10
     mov ss, rax
+
+    ; To save the FPU states, we need to be 16-byte aligned!
+    ; We have already pushed 18 values ourselves, as well
+    ; as 5 values from the interrupt itself. Therefore, we align
+    ; ourselves with an extra 8 bytes.
+
+    sub rsp, (512+8)
+    fxsave [rsp]
 %endmacro
 
 %macro POP_ALL 0
+    fxrstor [rsp]
+    add rsp, (512+8)
+
     pop rax
     mov cr3, rax
 
@@ -81,19 +93,30 @@ global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq12
 isr_stub_%+%1:
     cli
 
+    ; Because of the FPU's 16-byte alignment,
+    ; we are in a bit of a predicament here,
+    ; because now, the CPU pushed 6 values
+    ; instead of 5, so we need to push a value
+    ; for alignment once again
+
+    sub rsp, 8 ; Alignment
+
     PUSH_ALL
 
-    mov rdi, %1                     ; Exception number
-    mov rsi, [PUSH_ALL_SIZE+rsp]    ; ERR
-    mov rdx, [PUSH_ALL_SIZE+rsp+8]  ; RIP
-    mov rcx, [PUSH_ALL_SIZE+rsp+16] ; CS
-    mov r8,  [PUSH_ALL_SIZE+rsp+24] ; RFLAGS
-    mov r9,  [PUSH_ALL_SIZE+rsp+32] ; RSP
-    mov r9,  [PUSH_ALL_SIZE+rsp+40] ; SS
+    ; Notice the +8 alignment bytes
+    mov rdi, %1                       ; Exception number
+    mov rsi, [PUSH_ALL_SIZE+8+rsp]    ; ERR
+    mov rdx, [PUSH_ALL_SIZE+8+rsp+8]  ; RIP
+    mov rcx, [PUSH_ALL_SIZE+8+rsp+16] ; CS
+    mov r8,  [PUSH_ALL_SIZE+8+rsp+24] ; RFLAGS
+    mov r9,  [PUSH_ALL_SIZE+8+rsp+32] ; RSP
+    mov r9,  [PUSH_ALL_SIZE+8+rsp+40] ; SS
 
     call isr_err_exception
 
     POP_ALL
+
+    add rsp, 8 ; Pop alignment
 
     add rsp, 8 ; Pop ERR
 
