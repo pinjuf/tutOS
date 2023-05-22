@@ -131,7 +131,7 @@ find_vbe_mode:
     int 0x10
 
     cmp ax, 0x004F
-    jne vbe_error
+    jne no_vesa
 
     ; Prepare for Protected Mode
     lgdt [gdtr] ; Load the GDT
@@ -163,6 +163,26 @@ reload_cs:
     mov ss, ax
     mov esp, 0x9000
 
+    ; Enabling MMX, SSE & SSE2
+    ; Step 1: Check for features
+    mov eax, 0x1
+    cpuid
+    test edx, 1 << 25 ; SSE CPUID
+    jz no_sse
+    test edx, 1 << 26 ; SSE2 CPUID
+    jz no_sse
+
+    ; Step 2: Enable SSE etc.
+    mov eax, cr0
+    and ax, ~(1 << 2) ; Disable CR0.EM
+    or  ax,  1 << 1   ; Enable  CR0.MP
+    mov cr0, eax
+
+    mov eax, cr4
+    or ax, 0b11 << 9 ; Enable CR4.OSFXSR and CR4.OSXMMEXCPT
+    mov cr4, eax
+
+    ; Getting to long mode:
     ; Step 1: Check if we even have Long Mode
     mov eax, 0x80000001 ; Extended CPUID
     cpuid
@@ -220,8 +240,16 @@ start_lm:
 
     jmp 0xA000
 
-no_lm: ; No 64-bit message
+no_lm: ; No 64-bit message (only for VGA)
     mov eax, 0x0C4F0C4E
+    mov [0xB8000], eax
+    mov eax, 0x0C3F0C45
+    mov [0xB8004], eax
+
+    jmp $
+
+no_sse: ; SSE? message (only for VGA)
+    mov eax, 0x0C530C53
     mov [0xB8000], eax
     mov eax, 0x0C340C36
     mov [0xB8004], eax

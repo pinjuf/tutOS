@@ -10,3 +10,4 @@ However, this features must be activated, and their
 internal registers must be stored during task switching.
 
 FAQ:
+    1) Why don't you use AVX?
