@@ -4,10 +4,30 @@
 
 #define TICKS_PER_SCHEDULE 4
 
+typedef struct fpu_fxsave_t {
+    uint16_t fcw;
+    uint16_t fsw;
+    uint8_t ftw;
+    uint8_t res0;
+    uint16_t fop;
+    uint32_t fpu_ip;
+    uint16_t cs;
+    uint16_t res1;
+    uint32_t fpu_dp;
+    uint16_t ds;
+    uint16_t res2;
+    uint32_t mxcsr;
+    uint32_t mxcsr_mask;
+    uint8_t st_mm[8][16]; // Only bits 0..80 are used
+    uint8_t xmm[16][16];
+    uint8_t res3[48];
+    uint8_t unused0[48];
+} __attribute__((packed)) fpu_fxsave_t;
+
 // Structure describing the PUSH_ALL stack frame during an interrupt
 typedef struct int_regframe_t {
-    char fpu[512];
-    char alignment[8];
+    fpu_fxsave_t fpu;
+    uint8_t alignment[8];
     uint64_t cr3;
     uint64_t gs;
     uint64_t fs;
