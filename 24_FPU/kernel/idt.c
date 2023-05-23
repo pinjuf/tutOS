@@ -10,6 +10,7 @@ extern void isr_irq0_stub();
 extern void isr_irq1_stub();
 extern void isr_irq12_stub();
 extern void isr_syscall_stub();
+extern void isr_debugcall_stub();
 
 void fill_idt_desc(idt_entry_t * entry, void (* isr)(), uint8_t flags, uint8_t selector) {
     entry->offset_low = (uint64_t)isr & 0xFFFF;
@@ -38,6 +39,7 @@ void init_idt(void) {
     fill_idt_desc(&kidt[PIC_OFFSET+PIC_MOUSE], isr_irq12_stub, IDT_P | IDT_INT, 0x08);
 
     fill_idt_desc(&kidt[SYSCALL_INT], isr_syscall_stub, IDT_P | IDT_INT | IDT_DPL, 0x08);
+    fill_idt_desc(&kidt[DEBUGCALL_INT], isr_debugcall_stub, IDT_P | IDT_INT | IDT_DPL, 0x08);
 
     asm volatile ("lidt %0" : : "m" (kidtr));
 }

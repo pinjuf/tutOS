@@ -61,7 +61,7 @@ void isr_default_int(uint16_t n, uint64_t rip, uint64_t cs, uint64_t rflags, uin
     kputs("\n");
 }
 
-void isr_irq0(void * regframe) {
+void isr_irq0(int_regframe_t * regframe) {
     pit0_ticks++;
 
     if (!(pit0_ticks % TICKS_PER_SCHEDULE) && do_scheduling) {
@@ -178,4 +178,96 @@ void isr_irq12(void) {
 
     while (read_status_8042ps2() & 1)
         read_data_8042ps2();
+}
+
+void isr_debugcall(int_regframe_t * regframe) {
+    kputs("< DEBUGCALL >\n");
+
+    kputs("RIP = 0x");
+    kputleadingzeroes_hex(regframe->rip, 16);
+    kputhex(regframe->rip);
+    kputs(" RSP = 0x");
+    kputleadingzeroes_hex(regframe->rsp, 16);
+    kputhex(regframe->rsp);
+    kputs("  CS = 0x");
+    kputleadingzeroes_hex(regframe->cs, 4);
+    kputhex(regframe->cs);
+    kputs("  SS = 0x");
+    kputleadingzeroes_hex(regframe->ss, 4);
+    kputhex(regframe->ss);
+    kputs(" RFLAGS = 0x");
+    kputleadingzeroes_hex(regframe->rflags, 16);
+    kputhex(regframe->rflags);
+
+    kputc('\n');
+
+    kputs("                         "); // Sorry not sorry, \t doesn't exist to me
+    kputs("RBP = 0x");
+    kputleadingzeroes_hex(regframe->rbp, 16);
+    kputhex(regframe->rbp);
+    kputs("  GS = 0x");
+    kputleadingzeroes_hex(regframe->gs, 4);
+    kputhex(regframe->gs);
+    kputs("  FS = 0x");
+    kputleadingzeroes_hex(regframe->fs, 4);
+    kputhex(regframe->fs);
+    kputs(" CR3    = 0x");
+    kputleadingzeroes_hex(regframe->cr3, 16);
+    kputhex(regframe->cr3);
+
+    kputc('\n');
+
+    kputs("RAX = 0x");
+    kputleadingzeroes_hex(regframe->rax, 16);
+    kputhex(regframe->rax);
+    kputs(" RBX = 0x");
+    kputleadingzeroes_hex(regframe->rbx, 16);
+    kputhex(regframe->rbx);
+    kputs(" RCX = 0x");
+    kputleadingzeroes_hex(regframe->rcx, 16);
+    kputhex(regframe->rcx);
+    kputs(" RDX = 0x");
+    kputleadingzeroes_hex(regframe->rdx, 16);
+    kputhex(regframe->rdx);
+
+    kputc('\n');
+
+    kputs("RDI = 0x");
+    kputleadingzeroes_hex(regframe->rdi, 16);
+    kputhex(regframe->rdi);
+    kputs(" RSI = 0x");
+    kputleadingzeroes_hex(regframe->rsi, 16);
+    kputhex(regframe->rsi);
+    kputs("  R8 = 0x");
+    kputleadingzeroes_hex(regframe->r8, 16);
+    kputhex(regframe->r8);
+    kputs("  R9 = 0x");
+    kputleadingzeroes_hex(regframe->r9, 16);
+    kputhex(regframe->r9);
+
+    kputc('\n');
+
+    kputs("R10 = 0x");
+    kputleadingzeroes_hex(regframe->r10, 16);
+    kputhex(regframe->r10);
+    kputs(" R11 = 0x");
+    kputleadingzeroes_hex(regframe->r11, 16);
+    kputhex(regframe->r11);
+    kputs(" R12 = 0x");
+    kputleadingzeroes_hex(regframe->r12, 16);
+    kputhex(regframe->r12);
+    kputs(" R13 = 0x");
+    kputleadingzeroes_hex(regframe->r13, 16);
+    kputhex(regframe->r13);
+
+    kputc('\n');
+
+    kputs("R14 = 0x");
+    kputleadingzeroes_hex(regframe->r14, 16);
+    kputhex(regframe->r14);
+    kputs(" R15 = 0x");
+    kputleadingzeroes_hex(regframe->r15, 16);
+    kputhex(regframe->r15);
+
+    kputc('\n');
 }

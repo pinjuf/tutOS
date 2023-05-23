@@ -1,7 +1,7 @@
 [BITS 64]
 
-extern isr_noerr_exception, isr_err_exception, isr_default_int, isr_irq0, isr_irq1, isr_irq12, handle_syscall
-global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq12_stub, isr_syscall_stub
+extern isr_noerr_exception, isr_err_exception, isr_default_int, isr_irq0, isr_irq1, isr_irq12, handle_syscall, isr_debugcall
+global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq12_stub, isr_syscall_stub, isr_debugcall_stub
 
 ; 512 FXSAVE bytes, plus 8 for alignment
 %define PUSH_ALL_SIZE (18*8 + 512 + 8)
@@ -212,6 +212,17 @@ isr_syscall_stub: ; Should probably NOT be used
     add rsp, 0x8
 
     pop rbp
+
+    iretq
+
+isr_debugcall_stub:
+    PUSH_ALL
+
+    mov rdi, rsp
+
+    call isr_debugcall
+
+    POP_ALL
 
     iretq
 

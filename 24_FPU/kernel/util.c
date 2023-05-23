@@ -317,6 +317,9 @@ void write_ps2_port2(uint8_t d) {
 }
 
 void kputleadingzeroes_hex(uint64_t val, uint8_t len) {
+    if (val == 0) // kputhex will put a 0 anyways
+        len--;
+
     for (uint8_t i = len - 1; i < UINT8_MAX; i--) {
         uint8_t v = val >> (i * 4) & 0xF;
         if (!v)

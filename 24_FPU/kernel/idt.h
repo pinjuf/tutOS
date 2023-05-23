@@ -31,4 +31,5 @@ void init_idt(void);
 #define IDT_INT (0xE)       // Interrupt gate
 #define IDT_TRAP (0xF)      // Trap gate
 
-#define SYSCALL_INT 0x80
+#define SYSCALL_INT   0x80
+#define DEBUGCALL_INT 0x81
