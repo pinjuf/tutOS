@@ -11,3 +11,7 @@ internal registers must be stored during task switching.
 
 FAQ:
     1) Why don't you use AVX?
+    2) Why do you use padding in the interrupt register frame?
+        The FPU memory area must be 16-byte aligned. However, we
+        can't just align RSP by +8 after ISR entry, because there
+        still are the 5 values the CPU pushed that must be kept.
