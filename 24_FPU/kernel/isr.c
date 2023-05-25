@@ -181,7 +181,7 @@ void isr_irq12(void) {
 }
 
 void isr_debugcall(int_regframe_t * regframe) {
-    kputs("< DEBUGCALL >\n");
+    kputs("< DEBUGCALL START >\n");
 
     kputs("RIP = 0x");
     kputleadingzeroes_hex(regframe->rip, 16);
@@ -270,4 +270,6 @@ void isr_debugcall(int_regframe_t * regframe) {
     kputhex(regframe->r15);
 
     kputc('\n');
+
+    kputs("< DEBUGCALL END >\n");
 }
