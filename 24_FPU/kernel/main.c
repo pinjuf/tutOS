@@ -71,7 +71,25 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    asm ("int $0x81");
+    for (size_t y = 0; y < 400; y++)
+        for (size_t x = 0; x < 600; x++) {
+            long double zr = MAP((long double)x, 0L, 600L, -2.03L, 0.5L);
+            long double zi = MAP((long double)y, 0L, 400, 1.2L, -1.2L);   // Complex axis is mirrored
+
+            long double cr = zr;
+            long double ci = zi;
+
+            for (size_t i = 0; i < 256; i++) {
+                long double ocr = cr;
+                cr = cr * cr - ci * ci + zr;
+                ci = 2 * ocr * ci + zi;
+
+                if (cr * cr + ci * ci > 4) {
+                    SET_PIXEL(x, y, RGB32(255, 255, 255));
+                    break;
+                }
+            }
+        }
 
     kputs("KRN DN\n");
     while (1);
