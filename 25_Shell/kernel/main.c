@@ -71,26 +71,19 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    for (size_t y = 0; y < 400; y++)
-        for (size_t x = 0; x < 600; x++) {
-            long double zr = MAP((long double)x, 0L, 600L, -2.03L, 0.5L);
-            long double zi = MAP((long double)y, 0L, 400, 1.2L, -1.2L);   // Complex axis is mirrored, (pixel number grows on downwards)
+    filehandle_t * init_fh = kopen("/bin/init", FILE_R);
+    if (!init_fh) {
+        kwarn(__FILE__,__func__,"no init executable found");
+    }
 
-            long double cr = zr;
-            long double ci = zi;
+    char * buf = kmalloc(init_fh->size);
+    kread(init_fh, buf, init_fh->size);
+    kclose(init_fh);
+    elf_load(buf, 0x10000, false);
+    kfree(buf);
 
-            for (size_t i = 0; i < 256; i++) {
-                long double ocr = cr;
-                cr = cr * cr - ci * ci + zr;
-                ci = 2 * ocr * ci + zi;
+    do_scheduling = true;
+    sti;
 
-                if (cr * cr + ci * ci > 4) {
-                    SET_PIXEL(x, y, RGB32(255, 255, 255));
-                    break;
-                }
-            }
-        }
-
-    kputs("KRN DN\n");
     while (1);
 }

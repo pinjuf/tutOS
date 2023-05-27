@@ -1,5 +1,5 @@
 #include "syscall.h"
-
+#include "vfs.h"
 #include "util.h"
 
 extern void syscall_stub(void);
@@ -20,7 +20,54 @@ void init_syscalls() {
 uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5) {
     // If we are doing sth that takes time and can be interrupted, we should sti and cli later
 
-    switch (n) { // TODO: Add more syscalls
+    switch (n) {
+        case 0: { // read
+            filehandle_t * fh = (void*)arg0;
+            void * buf        = (void*)arg1;
+            size_t count      = arg2;
+
+            return kread(fh, buf, count);
+        }
+        case 1: { // write
+            filehandle_t * fh = (void*)arg0;
+            void * buf        = (void*)arg1;
+            size_t count      = arg2;
+
+            return kwrite(fh, buf, count);
+        }
+        case 2: { // open
+            char * path = (void*)arg0;
+            enum FILEMODE mode = arg1;
+
+            return (size_t)kopen(path, mode);
+        }
+        case 3: { // close
+            filehandle_t * fh = (void*)arg0;
+
+            kclose(fh);
+
+            return 0;
+         }
+        case 8: { // seek
+            filehandle_t * fh   = (void*)arg0;
+            int64_t offset      = arg1;
+            enum SEEKMODE mode  = arg2;
+
+            switch (mode) {
+                case SEEK_SET:
+                    fh->curr = offset;
+                    break;
+                case SEEK_CUR:
+                    fh->curr += offset;
+                    break;
+                case SEEK_END: // I cannot imagine a universe where this is truly needed
+                    fh->curr = fh->size + offset;
+                    break;
+            }
+
+            return fh->curr;
+        }
+
         default: {
                      sti;
                      kputs("SYSCALL n=0x");
@@ -42,5 +89,5 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                  }
     }
 
-    return 0x42; // The one true meaning of life, the universe, and everything (and also 66 in decimal)
+    return -1; // The one true meaning of life, the universe, and everything (and also 66 in decimal)
 }

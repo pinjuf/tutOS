@@ -21,6 +21,12 @@ enum FILEMODE {
     FILE_W,
 };
 
+enum SEEKMODE {
+    SEEK_SET = 0,
+    SEEK_CUR,
+    SEEK_END,
+};
+
 typedef struct filehandle_t {
     size_t mountpoint; // Offset into the mountpoint table
     enum FILETYPE type;
