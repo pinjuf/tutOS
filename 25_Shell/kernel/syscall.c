@@ -1,6 +1,7 @@
 #include "syscall.h"
 #include "vfs.h"
 #include "util.h"
+#include "mm.h"
 
 extern void syscall_stub(void);
 
@@ -26,6 +27,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             void * buf        = (void*)arg1;
             size_t count      = arg2;
 
+            sti; // For keyboard read etc.
             return kread(fh, buf, count);
         }
         case 1: { // write
@@ -47,7 +49,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             kclose(fh);
 
             return 0;
-         }
+        }
         case 8: { // seek
             filehandle_t * fh   = (void*)arg0;
             int64_t offset      = arg1;
@@ -66,6 +68,15 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             }
 
             return fh->curr;
+        }
+        case 336: { // malloc
+            size_t n = arg0;
+            return (uint64_t)kmalloc(n);
+        }
+        case 337: { // free
+            void * addr = (void*) arg0;
+            kfree(addr);
+            return 0;
         }
 
         default: {

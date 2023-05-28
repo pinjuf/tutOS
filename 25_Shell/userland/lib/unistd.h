@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include "types.h"
 
 enum FILETYPE {
     FILE_UNKN,

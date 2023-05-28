@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include "types.h"
 
 void memset(void * dest, uint8_t val, size_t len);
 void memcpy(void * dest, void * src, size_t len);
