@@ -15,7 +15,7 @@ extern void isr_debugcall_stub();
 void fill_idt_desc(idt_entry_t * entry, void (* isr)(), uint8_t flags, uint8_t selector) {
     entry->offset_low = (uint64_t)isr & 0xFFFF;
     entry->selector = selector;
-    entry->ist = 0;
+    entry->ist = 1; // All IST entries are set to 0x110000
     entry->attr = flags;
     entry->offset_middle = ((uint64_t)isr >> 16) & 0xFFFF;
     entry->offset_high = ((uint64_t)isr >> 32) & 0xFFFFFFFF;

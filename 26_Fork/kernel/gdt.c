@@ -30,9 +30,11 @@ void init_kgdt() {
     memset(kgdt, 0, sizeof(gdt_entry_t) * GDT_ENTRIES);
 
     memset(&ktss, 0, sizeof(ktss));
-    ktss.rsp[0] = 0x110000;
-    ktss.rsp[1] = 0x110000;
-    ktss.rsp[2] = 0x110000;
+
+    for (size_t i = 0; i < 3; i++)
+        ktss.rsp[i] = 0x110000;
+    for (size_t i = 0; i < 7; i++)
+        ktss.ist[i] = 0x110000;
 
     fill_gdt_entry(&kgdt[1],
             0,
