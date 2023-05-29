@@ -35,10 +35,7 @@ int main() {
 
         pid_t p = fork();
         if (p == 0) {
-            puts(" < I AM THE CHILD > ");
-            while (1);
-        } else {
-            puts(" < I AM THE PARENT > ");
+            exec(cmdbuf);
         }
     }
 

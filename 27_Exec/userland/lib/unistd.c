@@ -24,3 +24,7 @@ int64_t seek(FILE * file, int64_t offset, enum SEEKMODE mode) {
 pid_t fork() {
     return syscall(57, 0, 0, 0, 0, 0, 0);
 }
+
+void exec(char * file) {
+    syscall(59, (uint64_t)file, 0, 0, 0, 0, 0);
+}

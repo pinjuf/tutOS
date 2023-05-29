@@ -86,6 +86,9 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                 return 0;
             return current_process->latest_child;
         }
+        case 59: { // exec
+
+        }
         case 110: { // getppid
             return current_process->parent;
         }

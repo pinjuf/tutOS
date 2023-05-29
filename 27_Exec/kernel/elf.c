@@ -20,8 +20,6 @@ int elf_load(process_t * out, void * buf, size_t stack_pages, bool kmode) {
         return 1;
     }
 
-    memset(out, 0, sizeof(process_t));
-
     out->regs.rip = hdr->e_entry;
 
     out->regs.rsp = DEF_ELF_RSP + stack_pages * PAGE_SIZE;
