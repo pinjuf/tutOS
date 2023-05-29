@@ -58,4 +58,41 @@ void schedule(void * regframe_ptr) {
                    current_process->pagemaps[i].attr,
                    current_process->pagemaps[i].n);
     }
+
+    if (current_process->to_fork) {
+        current_process->to_fork = false;
+
+        process_t * child = NULL;
+        for (size_t i = 0; i < MAX_PROCESSES; i++) {
+            if (processes[i].state == PROCESS_NONE) {
+                child = &processes[i];
+                break;
+            }
+        }
+
+        if (!child) {
+            kwarn(__FILE__,__func__,"no child process available");
+            return;
+        }
+
+        current_process->latest_child = PROC_PTR_TO_PID(child);
+
+        memcpy(child, current_process, sizeof(process_t));
+
+        child->state = PROCESS_NOT_RUNNING;
+        child->latest_child = 0;
+
+        child->pagemaps = kmalloc(child->pagemaps_n * sizeof(pagemap_t));
+        for (size_t i = 0; i < child->pagemaps_n; i++) {
+            child->pagemaps[i].virt = current_process->pagemaps[i].virt;
+            child->pagemaps[i].n    = current_process->pagemaps[i].n;
+            child->pagemaps[i].attr = current_process->pagemaps[i].attr;
+
+            void * buf = alloc_pages(current_process->pagemaps[i].n);
+
+            child->pagemaps[i].phys = virt_to_phys(buf);
+
+            memcpy(buf, current_process->pagemaps[i].virt, current_process->pagemaps[i].n * PAGE_SIZE);
+        }
+    }
 }

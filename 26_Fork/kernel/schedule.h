@@ -74,7 +74,7 @@ typedef struct process_t {
     void * stack_heap;  // The position of the stack in heap memory (it is mapped to sth like ELF_DEF_RSP)
     size_t stack_pages;
 
-    bool to_fork;
+    volatile bool to_fork;
     pid_t latest_child;
 
     pagemap_t * pagemaps;

@@ -1,6 +1,7 @@
 #include "syscall.h"
 #include "vfs.h"
 #include "util.h"
+#include "schedule.h"
 #include "mm.h"
 
 extern void syscall_stub(void);
@@ -70,7 +71,17 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             return fh->curr;
         }
         case 57: { // fork
-            kputs(" | fork | ");
+            current_process->to_fork = true;
+
+            volatile process_t * original_process = current_process;
+
+            sti;
+            while (current_process->to_fork);
+            cli;
+
+            if (original_process != current_process)
+                return 0;
+            return current_process->latest_child;
         }
         case 336: { // malloc
             size_t n = arg0;
@@ -83,24 +94,24 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
         }
 
         default: {
-                     sti;
-                     kputs("SYSCALL n=0x");
-                     kputhex(n);
-                     kputs(" arg0=0x");
-                     kputhex(arg0);
-                     kputs(" arg1=0x");
-                     kputhex(arg1);
-                     kputs(" arg2=0x");
-                     kputhex(arg2);
-                     kputs(" arg3=0x");
-                     kputhex(arg3);
-                     kputs(" arg4=0x");
-                     kputhex(arg4);
-                     kputs(" arg5=0x");
-                     kputhex(arg5);
-                     kputc('\n');
-                     cli;
-                 }
+            sti;
+            kputs("SYSCALL n=0x");
+            kputhex(n);
+            kputs(" arg0=0x");
+            kputhex(arg0);
+            kputs(" arg1=0x");
+            kputhex(arg1);
+            kputs(" arg2=0x");
+            kputhex(arg2);
+            kputs(" arg3=0x");
+            kputhex(arg3);
+            kputs(" arg4=0x");
+            kputhex(arg4);
+            kputs(" arg5=0x");
+            kputhex(arg5);
+            kputc('\n');
+            cli;
+        }
     }
 
     return -1; // The one true meaning of life, the universe, and everything (and also 66 in decimal)
