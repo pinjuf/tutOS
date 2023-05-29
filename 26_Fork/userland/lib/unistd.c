@@ -20,3 +20,7 @@ size_t write(FILE * file, void * buf, size_t count) {
 int64_t seek(FILE * file, int64_t offset, enum SEEKMODE mode) {
     return syscall(8, (uint64_t)file, offset, (uint64_t)mode, 0, 0, 0);
 }
+
+pid_t fork() {
+    return syscall(57, 0, 0, 0, 0, 0, 0);
+}

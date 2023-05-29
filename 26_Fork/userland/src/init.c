@@ -28,11 +28,13 @@ int main() {
 
         *curr = '\0';
 
-        putc('\n');
-
-        puts("(no fork yet) input: ");
-        puts(cmdbuf);
-        putc('\n');
+        pid_t p = fork();
+        if (p == 0) {
+            puts(" < I AM THE CHILD > ");
+            while (1);
+        } else {
+            puts(" < I AM THE PARENT > ");
+        }
     }
 
     free(cmdbuf);

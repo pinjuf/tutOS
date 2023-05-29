@@ -4,6 +4,8 @@
 
 #define TICKS_PER_SCHEDULE 4
 
+typedef uint16_t pid_t;
+
 typedef struct fpu_fxsave_t {
     uint16_t fcw;
     uint16_t fsw;
@@ -72,13 +74,14 @@ typedef struct process_t {
     void * stack_heap;  // The position of the stack in heap memory (it is mapped to sth like ELF_DEF_RSP)
     size_t stack_pages;
 
+    bool to_fork;
+    pid_t latest_child;
+
     pagemap_t * pagemaps;
     size_t pagemaps_n;
 
     int_regframe_t regs;
 } process_t;
-
-typedef uint16_t pid_t;
 
 #define MAX_PROCESSES 256
 

@@ -69,6 +69,9 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return fh->curr;
         }
+        case 57: { // fork
+            kputs(" | fork | ");
+        }
         case 336: { // malloc
             size_t n = arg0;
             return (uint64_t)kmalloc(n);
