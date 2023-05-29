@@ -117,6 +117,23 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             sti; // Wait for the scheduler to pick us up
             while (1);
         }
+        case 60: { // exit
+            int return_code = arg0; // TODO: Implement this
+
+            // Free the memory
+            for (size_t i = 0; i < current_process->pagemaps_n; i++) {
+                uint64_t addr = (uint64_t)current_process->pagemaps[i].phys;
+                addr -= HEAP_PHYS;
+                addr += HEAP_VIRT;
+                free_pages((void*)addr, current_process->pagemaps[i].n);
+            }
+            kfree(current_process->pagemaps);
+
+            current_process->state = PROCESS_NONE;
+
+            sti;
+            while (1);
+        }
         case 110: { // getppid
             return current_process->parent;
         }

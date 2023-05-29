@@ -28,3 +28,8 @@ pid_t fork() {
 int exec(char * file) {
     return syscall(59, (uint64_t)file, 0, 0, 0, 0, 0);
 }
+
+void exit(int code) {
+    syscall(60, code, 0, 0, 0, 0, 0);
+    __builtin_unreachable();
+}

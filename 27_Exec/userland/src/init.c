@@ -40,7 +40,7 @@ int main() {
         if (p == 0) {
             exec(temp_cmdbuf);
             puts("could not exec command");
-            while (1);
+            exit(0);
         }
     }
 

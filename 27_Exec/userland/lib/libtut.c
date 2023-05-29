@@ -12,5 +12,5 @@ void _start() {
     close(stdout);
     close(stdin);
 
-    while (1);
+    exit(0);
 }
