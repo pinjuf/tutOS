@@ -79,7 +79,7 @@ void _kmain() {
     char * buf = kmalloc(init_fh->size);
     kread(init_fh, buf, init_fh->size);
     kclose(init_fh);
-    elf_load(buf, 0x10000, false);
+    elf_load(&processes[0], buf, 0x10000, false);
     kfree(buf);
 
     do_scheduling = true;

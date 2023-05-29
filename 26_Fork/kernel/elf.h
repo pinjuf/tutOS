@@ -96,4 +96,4 @@ enum ELF_PTYPE {
     ELF_PT_TLS,
 };
 
-process_t * elf_load(void * buf, size_t stacksize, bool kmode);
+int elf_load(process_t * out, void * buf, size_t stacksize, bool kmode);
