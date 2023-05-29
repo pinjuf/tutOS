@@ -70,6 +70,9 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return fh->curr;
         }
+        case 39: { // getpid
+            return PROC_PTR_TO_PID(current_process);
+        }
         case 57: { // fork
             current_process->to_fork = true;
 
@@ -82,6 +85,9 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             if (original_process != current_process)
                 return 0;
             return current_process->latest_child;
+        }
+        case 110: { // getppid
+            return current_process->parent;
         }
         case 336: { // malloc
             size_t n = arg0;

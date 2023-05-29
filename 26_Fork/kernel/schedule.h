@@ -77,6 +77,8 @@ typedef struct process_t {
     volatile bool to_fork;
     pid_t latest_child;
 
+    pid_t parent;
+
     pagemap_t * pagemaps;
     size_t pagemaps_n;
 

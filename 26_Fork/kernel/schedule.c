@@ -81,6 +81,7 @@ void schedule(void * regframe_ptr) {
 
         child->state = PROCESS_NOT_RUNNING;
         child->latest_child = 0;
+        child->parent = PROC_PTR_TO_PID(current_process);
 
         child->pagemaps = kmalloc(child->pagemaps_n * sizeof(pagemap_t));
         for (size_t i = 0; i < child->pagemaps_n; i++) {
