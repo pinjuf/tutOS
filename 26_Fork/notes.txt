@@ -11,3 +11,5 @@ Memory layout:
     120000 - 140000 | Heap pages        | IDMAP
     140000 -   ...  | Memory bitmap     | IDMAP
     400000 -   ...  | Heap              | VIRT=0xB0000000
+    ???    -   ???  | VESA Framebuffer  | VIRT=0xFFFF800000000000
+    ???    -   ???  | ELF Default Stack | VIRT=0x7FFF00000000

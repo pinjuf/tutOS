@@ -96,4 +96,6 @@ enum ELF_PTYPE {
     ELF_PT_TLS,
 };
 
-int elf_load(process_t * out, void * buf, size_t stacksize, bool kmode);
+int elf_load(process_t * out, void * buf, size_t stack_pages, bool kmode);
+
+#define DEF_ELF_RSP 0x7FFF00000000

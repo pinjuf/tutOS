@@ -2,7 +2,7 @@
 #include "mm.h"
 #include "util.h"
 
-int elf_load(process_t * out, void * buf, size_t stacksize, bool kmode) {
+int elf_load(process_t * out, void * buf, size_t stack_pages, bool kmode) {
     elf64_hdr_t * hdr = buf;
 
     if (*(uint32_t*)&(hdr->e_ident[ELF_EI_MAG0]) != ELF_MAGIC) {
@@ -23,14 +23,25 @@ int elf_load(process_t * out, void * buf, size_t stacksize, bool kmode) {
     memset(out, 0, sizeof(process_t));
 
     out->regs.rip = hdr->e_entry;
-    out->regs.rsp = (size_t)kmalloc(stacksize) + stacksize;
+
+    out->regs.rsp = DEF_ELF_RSP + stack_pages * PAGE_SIZE;
+    out->stack_pages = stack_pages;
+    out->stack_heap = alloc_pages(stack_pages);
     out->regs.rbp = out->regs.rsp;
+
     asm volatile ("mov %%cr3, %0" : "=a" (out->regs.cr3));
     out->regs.rflags = 0x202; // IF
     out->regs.cs = kmode ? (1*8) : ((6*8) | 3);
     out->regs.ss = kmode ? (2*8) : ((5*8) | 3);
 
-    out->pagemaps = kmalloc(sizeof(pagemap_t) * hdr->e_phnum); // Some overhead, I know...
+    out->pagemaps = kmalloc(sizeof(pagemap_t) * (hdr->e_phnum + 1)); // Some overhead, I know...
+
+    // Set up a stack pagemap
+    out->pagemaps[out->pagemaps_n].attr = PAGE_PRESENT | PAGE_RW | PAGE_USER;
+    out->pagemaps[out->pagemaps_n].virt = (void*)DEF_ELF_RSP;
+    out->pagemaps[out->pagemaps_n].phys = virt_to_phys(out->stack_heap);
+    out->pagemaps[out->pagemaps_n].n    = stack_pages;
+    out->pagemaps_n++;
 
     for (size_t i = 0; i < hdr->e_phnum; i++) {
         elf64_phdr_t * phdr = (void*)((size_t)hdr + hdr->e_phoff + hdr->e_phentsize * i);
