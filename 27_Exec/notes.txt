@@ -1,0 +1,15 @@
+Memory layout:
+    0000   -   200  | GDT               | IDMAP
+    200    -  1200  | IDT               | IDMAP
+    7C00   -  7E00  | Boot sector       | IDMAP
+    9000   -  DOWN  | Boot/Stage2 Stack | IDMAP
+    9000   -  A000  | Stage2            | IDMAP
+    A000   - 19000  | Kernel            | IDMAP
+    7D000  - 7FFFF  | PML4T/PDPT/PDT    | IDMAP
+    110000 -  DOWN  | Int-Syscall stack | IDMAP
+    120000 -  DOWN  | Kernel stack      | IDMAP
+    120000 - 140000 | Heap pages        | IDMAP
+    140000 -   ...  | Memory bitmap     | IDMAP
+    400000 -   ...  | Heap              | VIRT=0xB0000000
+    ???    -   ???  | VESA Framebuffer  | VIRT=0xFFFF800000000000
+    ???    -   ???  | ELF Default Stack | VIRT=0x7FFF00000000
