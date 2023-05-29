@@ -1,6 +1,7 @@
 #include "elf.h"
 #include "mm.h"
 #include "util.h"
+#include "vfs.h"
 
 int elf_load(process_t * out, void * buf, size_t stack_pages, bool kmode) {
     elf64_hdr_t * hdr = buf;
@@ -33,6 +34,7 @@ int elf_load(process_t * out, void * buf, size_t stack_pages, bool kmode) {
     out->regs.ss = kmode ? (2*8) : ((5*8) | 3);
 
     out->pagemaps = kmalloc(sizeof(pagemap_t) * (hdr->e_phnum + 1)); // Some overhead, I know...
+    out->pagemaps_n = 0;
 
     // Set up a stack pagemap
     out->pagemaps[out->pagemaps_n].attr = PAGE_PRESENT | PAGE_RW | PAGE_USER;
@@ -67,6 +69,7 @@ int elf_load(process_t * out, void * buf, size_t stack_pages, bool kmode) {
         out->pagemaps[out->pagemaps_n].n = pages;
 
         void * buf = calloc_pages(pages);
+
         memcpy(buf, (void*)((size_t)hdr + phdr->p_offset), phdr->p_filesz);
 
         out->pagemaps[out->pagemaps_n].phys = virt_to_phys(buf);
