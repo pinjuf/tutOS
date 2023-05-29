@@ -3,6 +3,7 @@
 #include "util.h"
 #include "schedule.h"
 #include "mm.h"
+#include "elf.h"
 
 extern void syscall_stub(void);
 
@@ -87,7 +88,34 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             return current_process->latest_child;
         }
         case 59: { // exec
+            char * file = (char*)arg0;
 
+            filehandle_t * elf_handle = kopen(file, FILE_R);
+            if (!elf_handle) {
+                kwarn(__FILE__,__func__,"exec file not found");
+                return 1;
+            }
+
+            for (size_t i = 0; i < current_process->pagemaps_n; i++) {
+                // Dirty, I know...
+                uint64_t addr = (uint64_t)current_process->pagemaps[i].phys;
+                addr -= HEAP_PHYS;
+                addr += HEAP_VIRT;
+                free_pages((void*)addr, current_process->pagemaps[i].n);
+            }
+            kfree(current_process->pagemaps);
+
+            void * elf_buf = kmalloc(elf_handle->size);
+            kread(elf_handle, elf_buf, elf_handle->size);
+            kclose(elf_handle);
+
+            elf_load(current_process, elf_buf, 0x10, false); // 64 KiB stack
+            kfree(elf_buf);
+
+            current_process->to_exec = true;
+
+            sti; // Wait for the scheduler to pick us up
+            while (1);
         }
         case 110: { // getppid
             return current_process->parent;

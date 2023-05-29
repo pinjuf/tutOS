@@ -33,8 +33,11 @@ void schedule(void * regframe_ptr) {
             }
         }
     } else {
-        // Save current process
-        memcpy(&current_process->regs, rf, sizeof(int_regframe_t));
+        // Save current process, given that it is not about to undergo a context change
+        if (!current_process->to_exec)
+            memcpy(&current_process->regs, rf, sizeof(int_regframe_t));
+        else
+            current_process->to_exec = false;
         current_process->state = PROCESS_NOT_RUNNING;
 
         // Get the next or the current process

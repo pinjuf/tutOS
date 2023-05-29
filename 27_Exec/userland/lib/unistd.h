@@ -32,4 +32,4 @@ size_t read(FILE * file, void * buf, size_t size);
 size_t write(FILE * file, void * buf, size_t size);
 int64_t seek(FILE * file, int64_t offset, enum SEEKMODE mode);
 pid_t fork();
-void exec(char * file);
+int exec(char * file);

@@ -5,6 +5,7 @@
 
 int main() {
     char * cmdbuf = malloc(256);
+    char * temp_cmdbuf = malloc(256);
     char c;
 
     puts("< tutOS sh >\n");
@@ -33,9 +34,13 @@ int main() {
         if (curr == cmdbuf)
             continue;
 
+        // The parent will pretty much immediately clear cmdbuf
+        strcpy(temp_cmdbuf, cmdbuf);
         pid_t p = fork();
         if (p == 0) {
-            exec(cmdbuf);
+            exec(temp_cmdbuf);
+            puts("could not exec command");
+            while (1);
         }
     }
 

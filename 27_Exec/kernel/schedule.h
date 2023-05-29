@@ -74,8 +74,10 @@ typedef struct process_t {
     void * stack_heap;  // The position of the stack in heap memory (it is mapped to sth like ELF_DEF_RSP)
     size_t stack_pages;
 
-    volatile bool to_fork;
+    volatile bool to_fork; // Should this process be forked during next scheduling tick?
     pid_t latest_child;
+
+    volatile bool to_exec; // Will this process jump to a new context (through exec()) next scheduling tick?
 
     pid_t parent;
 
