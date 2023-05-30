@@ -2,5 +2,5 @@
 #include "stdio.h"
 
 int main() {
-    puts("Hello from test binary, exiting now!");
+    puts("Hello from test binary, exiting now!\n");
 }

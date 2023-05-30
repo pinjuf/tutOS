@@ -39,7 +39,7 @@ int main() {
         pid_t p = fork();
         if (p == 0) {
             exec(temp_cmdbuf);
-            puts("could not exec command");
+            puts("could not exec command\n");
             exit(0);
         }
 
