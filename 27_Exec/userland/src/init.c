@@ -5,7 +5,6 @@
 
 int main() {
     char * cmdbuf = malloc(256);
-    char * temp_cmdbuf = malloc(256);
     char c;
 
     puts("< tutOS sh >\n");
@@ -20,7 +19,7 @@ int main() {
             read(stdin, &c, 1);
             if (c == '\n')
                 break;
-            if (c == '\b')
+            if (c == '\b' && curr > cmdbuf)
                 curr--;
             else
                 *curr++ = c;
@@ -34,11 +33,13 @@ int main() {
         if (curr == cmdbuf)
             continue;
 
+        if (!strcmp(cmdbuf, "exit"))
+            exit(0);
+
         // The parent will pretty much immediately clear cmdbuf
-        strcpy(temp_cmdbuf, cmdbuf);
         pid_t p = fork();
         if (p == 0) {
-            exec(temp_cmdbuf);
+            exec(cmdbuf);
             puts("could not exec command\n");
             exit(0);
         }
