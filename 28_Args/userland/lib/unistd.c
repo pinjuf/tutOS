@@ -25,8 +25,8 @@ pid_t fork() {
     return syscall(57, 0, 0, 0, 0, 0, 0);
 }
 
-int exec(char * file) {
-    return syscall(59, (uint64_t)file, 0, 0, 0, 0, 0);
+int exec(char * file, char * argv[]) {
+    return syscall(59, (uint64_t)file, (uint64_t)argv, 0, 0, 0, 0);
 }
 
 void exit(int code) {

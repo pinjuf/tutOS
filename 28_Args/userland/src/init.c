@@ -39,7 +39,7 @@ int main(int argc, char * argv[]) {
         // The parent will pretty much immediately clear cmdbuf
         pid_t p = fork();
         if (p == 0) {
-            exec(cmdbuf);
+            exec(cmdbuf, NULL);
             puts("could not exec command\n");
             exit(0);
         }

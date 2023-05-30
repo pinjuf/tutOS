@@ -89,6 +89,12 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
         }
         case 59: { // exec
             char * file = (char*)arg0;
+            char ** argv = (char**)arg1;
+
+            int argc = 0;
+            if (argv)
+                for (size_t i = 0; argv[i]; i++)
+                    argc++;
 
             filehandle_t * elf_handle = kopen(file, FILE_R);
             if (!elf_handle) {
@@ -110,6 +116,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             kclose(elf_handle);
 
             elf_load(current_process, elf_buf, 0x10, false); // 64 KiB stack
+            proc_set_args(current_process, argc, argv);
             kfree(elf_buf);
 
             current_process->to_exec = true;
