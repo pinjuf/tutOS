@@ -36,10 +36,22 @@ int main(int argc, char * argv[]) {
         if (!strcmp(cmdbuf, "exit"))
             exit(0);
 
-        // The parent will pretty much immediately clear cmdbuf
         pid_t p = fork();
         if (p == 0) {
-            exec(cmdbuf, NULL);
+            // We need to transform cmdbuf into a char*argv[]
+            char ** argv = malloc(sizeof(char*) * 16);
+            int argc = 0;
+            char * curr = cmdbuf;
+            while (*curr) {
+                argv[argc++] = curr;
+                while (*curr && *curr != ' ')
+                    curr++;
+                if (*curr)
+                    *curr++ = '\0';
+            }
+            argv[argc] = NULL;
+
+            exec(cmdbuf, argv);
             puts("could not exec command\n");
             exit(0);
         }
