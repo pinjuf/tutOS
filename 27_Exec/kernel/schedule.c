@@ -20,8 +20,8 @@ void schedule(void * regframe_ptr) {
     }
 
     if (!process_to_run) {
-        kwarn(__FILE__,__func__,"no process to run");
-        return;
+        kwarn(__FILE__,__func__,"no process to run, halting");
+        asm volatile ("hlt");
     }
 
     if (!current_process) { // First time loading in? / Last process killed?
