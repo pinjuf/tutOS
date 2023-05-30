@@ -100,6 +100,9 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         out->type = FILE_BLK;
         out->size = 0;
 
+        if (part_n != GPT_WHOLEDISK)
+            out->size = intern->p.size * SECTOR_SIZE;
+
     } else {
         kwarn(__FILE__,__func__,"file not found");
         return NULL;
