@@ -42,6 +42,8 @@ int main() {
             puts("could not exec command");
             exit(0);
         }
+
+        waitpid(p);
     }
 
     free(cmdbuf);

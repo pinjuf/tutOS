@@ -118,7 +118,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             while (1);
         }
         case 60: { // exit
-            int return_code = arg0; // TODO: Implement this
+            __attribute__((unused)) int return_code = arg0; // TODO: Implement this
 
             // Free the memory
             for (size_t i = 0; i < current_process->pagemaps_n; i++) {
@@ -130,9 +130,19 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             kfree(current_process->pagemaps);
 
             current_process->state = PROCESS_NONE;
+            current_process = NULL; // The scheduler will see this and pick us up
 
             sti;
             while (1);
+        }
+        case 61: { // wait4
+            pid_t pid = arg0;
+
+            sti;
+            while (processes[pid].state != PROCESS_NONE);
+            cli;
+
+            return pid;
         }
         case 110: { // getppid
             return current_process->parent;

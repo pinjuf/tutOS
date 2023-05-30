@@ -33,3 +33,15 @@ void exit(int code) {
     syscall(60, code, 0, 0, 0, 0, 0);
     __builtin_unreachable();
 }
+
+pid_t waitpid(pid_t pid) {
+    return syscall(61, pid, 0, 0, 0, 0, 0);
+}
+
+pid_t getpid() {
+    return syscall(39, 0, 0, 0, 0, 0, 0);
+}
+
+pid_t getppid() {
+    return syscall(110, 0, 0, 0, 0, 0, 0);
+}

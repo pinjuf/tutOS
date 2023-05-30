@@ -69,7 +69,7 @@ typedef struct pagemap_t {
 } pagemap_t;
 
 typedef struct process_t {
-    PROCESS_STATE state;
+    volatile PROCESS_STATE state;
 
     void * stack_heap;  // The position of the stack in heap memory (it is mapped to sth like ELF_DEF_RSP)
     size_t stack_pages;

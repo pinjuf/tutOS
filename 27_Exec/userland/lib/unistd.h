@@ -34,3 +34,6 @@ int64_t seek(FILE * file, int64_t offset, enum SEEKMODE mode);
 pid_t fork();
 int exec(char * file);
 void exit(int code);
+pid_t waitpid(pid_t pid);
+pid_t getpid();
+pid_t getppid();

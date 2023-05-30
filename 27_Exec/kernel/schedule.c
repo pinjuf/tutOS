@@ -24,7 +24,7 @@ void schedule(void * regframe_ptr) {
         return;
     }
 
-    if (!current_process) { // First time loading in?
+    if (!current_process) { // First time loading in? / Last process killed?
         // Look for the first process we can run
         for (size_t i = 0; i < MAX_PROCESSES; i++) {
             if (processes[i].state == PROCESS_NOT_RUNNING) {
