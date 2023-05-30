@@ -100,3 +100,8 @@ void schedule(void * regframe_ptr) {
         }
     }
 }
+
+void proc_set_args(process_t * proc, int argc, char * argv[]) {
+    proc->regs.rdi = proc->argc = argc;
+    proc->regs.rsi = (uint64_t) (proc->argv = argv);
+}

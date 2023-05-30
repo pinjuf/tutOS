@@ -79,6 +79,9 @@ typedef struct process_t {
 
     volatile bool to_exec; // Will this process jump to a new context (through exec()) next scheduling tick?
 
+    int argc;
+    char ** argv;
+
     pid_t parent;
 
     pagemap_t * pagemaps;
@@ -95,5 +98,7 @@ extern bool do_scheduling;
 
 void init_scheduling(void);
 void schedule(void * regframe_ptr);
+
+void proc_set_args(process_t * proc, int argc, char * argv[]);
 
 #define PROC_PTR_TO_PID(ptr) (pid_t)(((uint64_t)ptr - (uint64_t)processes)/sizeof(process_t))

@@ -5,4 +5,4 @@
 extern FILE * stdout, * stdin;
 
 void _entry();
-int main();
+int main(int argc, char * argv[]);

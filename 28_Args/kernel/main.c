@@ -80,6 +80,7 @@ void _kmain() {
     kread(init_fh, buf, init_fh->size);
     kclose(init_fh);
     elf_load(&processes[0], buf, 0x10, false);
+    proc_set_args(&processes[0], 0, NULL);
     kfree(buf);
 
     do_scheduling = true;

@@ -3,11 +3,11 @@
 
 FILE * stdout, * stdin;
 
-void _start() {
+void _start(int argc, char * argv[]) {
     stdout = open("/dev/tty", FILE_W);
     stdin = open("/dev/tty", FILE_R);
 
-    main();
+    main(argc, argv);
 
     close(stdout);
     close(stdin);
