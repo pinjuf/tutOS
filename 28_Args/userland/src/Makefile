@@ -1,4 +1,4 @@
-all: init test
+all: init test ls
 
 CC = gcc
 CFLAGS = -T linker.ld -Wall -Wextra -Wpedantic -nostdlib -ffreestanding -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables \
@@ -9,6 +9,9 @@ test: test.o
 	gcc $< $(CFLAGS) -o $@
 
 init: init.o
+	gcc $< $(CFLAGS) -o $@
+
+ls: ls.o
 	gcc $< $(CFLAGS) -o $@
 
 %.o: %.c
