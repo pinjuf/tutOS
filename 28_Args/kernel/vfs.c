@@ -124,3 +124,9 @@ dirent * kreaddir(filehandle_t * f) {
 
     return FILESYSTEMS[mountpoints[f->mountpoint].type].read_dir(f);
 }
+
+void fh_to_stat(filehandle_t * in, stat * out) {
+    out->st_dev  = in->mountpoint;
+    out->st_mode = in->type;
+    out->st_size = in->size;
+}

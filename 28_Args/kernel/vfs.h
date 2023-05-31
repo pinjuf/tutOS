@@ -71,6 +71,12 @@ typedef struct mountpoint_t {
     char * path;        // Must end with "/"
 } mountpoint_t;
 
+typedef struct stat {
+    size_t st_dev; // device, a.k.a. mountpoint #N
+    uint8_t st_mode; // only FILETYPE here
+    size_t st_size;
+} stat;
+
 // Needs to be in the same order as FILESYSTEM!
 static const filesystem_t FILESYSTEMS[] = {
     {"unkn", NULL, NULL, NULL, NULL, NULL, NULL}, // Unknown FS
