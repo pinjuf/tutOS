@@ -19,7 +19,7 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
     if (!strcmp(path, "vesafb")) {
         intern->type = DEVFS_VESA;
         out->curr = 0;
-        out->type = FILE_DEV;
+        out->type = FILE_BLK;
         out->size = bpob->vbe_mode_info.bpp/8 \
                   * bpob->vbe_mode_info.height \
                   * bpob->vbe_mode_info.width;
