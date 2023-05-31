@@ -127,13 +127,13 @@ typedef struct ext2_inode_t {
 #define EXT2_S_IWOTH  0x0002
 #define EXT2_S_IXOTH  0x0001
 
-typedef struct ext2_dirent_t {
+typedef struct ext2_dirent {
     uint32_t ino;
     uint16_t rec_len;
     uint8_t name_len;
     uint8_t file_type;
     char name[];
-} __attribute__((packed)) ext2_dirent_t;
+} __attribute__((packed)) ext2_dirent;
 
 #define EXT2_FT_UNKNOWN  0
 #define EXT2_FT_REG_FILE 1

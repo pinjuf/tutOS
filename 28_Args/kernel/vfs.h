@@ -36,12 +36,12 @@ typedef struct filehandle_t {
     size_t curr;       // Current offset
 } filehandle_t;
 
-typedef struct dirent_t {
-    enum FILETYPE type;
-    size_t size;
-    uint8_t namelen;
-    char name[256];
-} dirent_t;
+typedef struct dirent {
+    enum FILETYPE d_type;
+    size_t d_size;
+    uint8_t d_namlen;
+    char d_name[256];
+} dirent;
 
 // Generic structure describing an FS driver
 typedef struct filesystem_t {
@@ -54,7 +54,7 @@ typedef struct filesystem_t {
     size_t (* read_file)(filehandle_t * f, void * buf, size_t count);
     size_t (* write_file)(filehandle_t * f, void * buf, size_t count);
 
-    dirent_t * (* read_dir)(filehandle_t * f);
+    dirent * (* read_dir)(filehandle_t * f);
 } filesystem_t;
 
 enum FILESYSTEM {
@@ -81,7 +81,7 @@ static const filesystem_t FILESYSTEMS[] = {
         (void (*) (filehandle_t * f)) ext2_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) ext2_readfile,
         NULL,
-        (dirent_t * (*) (filehandle_t * f)) ext2_readdir,
+        (dirent * (*) (filehandle_t * f)) ext2_readdir,
     },
 
     {"fat32",
@@ -99,7 +99,7 @@ static const filesystem_t FILESYSTEMS[] = {
         (void (*) (filehandle_t * f)) devfs_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_readfile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_writefile,
-        (dirent_t * (*) (filehandle_t * f)) devfs_readdir,
+        (dirent * (*) (filehandle_t * f)) devfs_readdir,
     },
 };
 
@@ -111,4 +111,4 @@ filehandle_t * kopen(char * path, enum FILEMODE FILE_R);
 void kclose(filehandle_t * f);
 size_t kread(filehandle_t * f, void * buf, size_t count);
 size_t kwrite(filehandle_t * f, void * buf, size_t count);
-dirent_t * kreaddir(filehandle_t * f);
+dirent * kreaddir(filehandle_t * f);

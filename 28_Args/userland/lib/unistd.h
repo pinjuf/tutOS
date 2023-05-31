@@ -26,7 +26,7 @@ typedef struct dirent {
     size_t d_size;
     uint8_t d_namlen;
     char d_name[256];
-} dirent_t;
+} dirent;
 
 // I know, I know, don't judge me...
 typedef void FILE;

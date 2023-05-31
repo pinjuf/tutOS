@@ -112,7 +112,7 @@ size_t kwrite(filehandle_t * f, void * buf, size_t count) {
     return FILESYSTEMS[mountpoints[f->mountpoint].type].write_file(f, buf, count);
 }
 
-dirent_t * kreaddir(filehandle_t * f) {
+dirent * kreaddir(filehandle_t * f) {
     if (FILESYSTEMS[mountpoints[f->mountpoint].type].read_dir == NULL) {
         kwarn(__FILE__,__func__,"no driver support");
     }

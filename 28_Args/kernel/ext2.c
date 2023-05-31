@@ -243,7 +243,7 @@ uint32_t ext2_get_inode_by_name(ext2fs_t * fs, ext2_inode_t * inode, char * name
     void * curr = buf;
 
     while (read < inode->i_size) {
-        ext2_dirent_t * entry = (ext2_dirent_t *) curr;
+        ext2_dirent * entry = (ext2_dirent *) curr;
 
         if (!strncmp(name, entry->name, entry->name_len)) {
             kfree(buf);
@@ -377,7 +377,7 @@ void * ext2_readdir(void * f) {
         ext2_read_inode(mountpoints[fh->mountpoint].internal_fs, intern->inode, intern->cache);
     }
 
-    ext2_dirent_t * entry = (ext2_dirent_t*) ((size_t)intern->cache + fh->curr);
+    ext2_dirent * entry = (ext2_dirent*) ((size_t)intern->cache + fh->curr);
 
     if (entry->ino == 0) // Technically means unused entry, but generally indicates End Of Directory
         return NULL;
@@ -385,25 +385,25 @@ void * ext2_readdir(void * f) {
     if (fh->curr >= fh->size) // End of directory
         return NULL;
 
-    dirent_t * out = kcalloc(sizeof(dirent_t));
+    dirent * out = kcalloc(sizeof(dirent));
 
     switch (entry->file_type) {
         case EXT2_FT_REG_FILE:
-            out->type = FILE_REG;
+            out->d_type = FILE_REG;
             break;
         case EXT2_FT_DIR:
-            out->type = FILE_DIR;
+            out->d_type = FILE_DIR;
             break;
         default:
-            out->type = FILE_UNKN;
+            out->d_type = FILE_UNKN;
             break;
     }
 
-    memcpy(out->name, entry->name, entry->name_len);
-    out->namelen = strlen(out->name);
+    memcpy(out->d_name, entry->name, entry->name_len);
+    out->d_namlen = strlen(out->d_name);
 
     ext2_inode_t * ino = ext2_get_inode(mountpoints[fh->mountpoint].internal_fs, entry->ino);
-    out->size = ino->i_size;
+    out->d_size = ino->i_size;
     kfree(ino);
 
     fh->curr += entry->rec_len;
