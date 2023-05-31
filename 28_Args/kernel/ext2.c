@@ -245,7 +245,7 @@ uint32_t ext2_get_inode_by_name(ext2fs_t * fs, ext2_inode_t * inode, char * name
     while (read < inode->i_size) {
         ext2_dirent * entry = (ext2_dirent *) curr;
 
-        if (!strncmp(name, entry->name, entry->name_len)) {
+        if (!strncmp(name, entry->name, entry->name_len) && entry->name_len == strlen(name)) {
             kfree(buf);
             return entry->ino;
         }
