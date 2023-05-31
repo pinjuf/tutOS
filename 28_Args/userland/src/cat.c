@@ -20,7 +20,7 @@ int main(int argc, char * argv[]) {
             case FILE_REG: {
                 char * buf = malloc(st->st_size);
                 read(file, buf, st->st_size);
-                puts(buf);
+                write(stdout, buf, st->st_size);
                 free(buf);
                 break;
             }
