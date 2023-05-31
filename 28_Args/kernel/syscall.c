@@ -52,6 +52,29 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return 0;
         }
+        case 4: { // stat
+            char * filename = (void*)arg0;
+            stat * out      = (void*)arg1;
+
+            // Please don't judge me
+            filehandle_t * fh = kopen(filename, FILE_R);
+            if (!fh)
+                fh = kopen(filename, FILE_W);
+            if (!fh)
+                return 1;
+
+            fh_to_stat(fh, out);
+
+            return 0;
+        }
+        case 5: { // fstat
+            filehandle_t * handle = (void*)arg0;
+            stat * out            = (void*)arg1;
+
+            fh_to_stat(handle, out);
+
+            return 0;
+        }
         case 8: { // seek
             filehandle_t * fh   = (void*)arg0;
             int64_t offset      = arg1;

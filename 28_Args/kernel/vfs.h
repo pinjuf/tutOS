@@ -118,3 +118,4 @@ void kclose(filehandle_t * f);
 size_t kread(filehandle_t * f, void * buf, size_t count);
 size_t kwrite(filehandle_t * f, void * buf, size_t count);
 dirent * kreaddir(filehandle_t * f);
+void fh_to_stat(filehandle_t * in, stat * out);
