@@ -63,10 +63,12 @@ dirent * readdir(DIR * d) {
     return out;
 }
 
-int stat(char * pathname, struct stat * statbuf) {
+int pstat(char * pathname, stat * statbuf) {
+    // I know it should be called stat(), but I don't wanna
+    // fight GCC again...
     return syscall(4, (uint64_t)pathname, (uint64_t)statbuf, 0, 0, 0, 0);
 }
 
-int fstat(FILE * fd, struct stat * statbuf) {
+int fstat(FILE * fd, stat * statbuf) {
     return syscall(5, (uint64_t)fd, (uint64_t)statbuf, 0, 0, 0, 0);
 }

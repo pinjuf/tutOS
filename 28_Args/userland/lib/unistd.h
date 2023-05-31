@@ -28,11 +28,11 @@ typedef struct dirent {
     char d_name[256];
 } dirent;
 
-struct stat {
+typedef struct {
     size_t st_dev; // device, a.k.a. mountpoint #N
     uint8_t st_mode; // only FILETYPE here
     size_t st_size;
-};
+} stat;
 
 // I know, I know, don't judge me...
 typedef void FILE;
@@ -52,5 +52,5 @@ pid_t getpid();
 pid_t getppid();
 size_t getdents(DIR * fd, dirent * dirp, size_t count);
 dirent * readdir(DIR * d);
-int stat(char * pathname, struct stat * statbuf);
-int fstat(FILE * fd, struct stat * statbuf);
+int pstat(char * pathname, stat * statbuf);
+int fstat(FILE * fd, stat * statbuf);

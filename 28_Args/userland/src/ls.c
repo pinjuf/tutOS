@@ -14,6 +14,14 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
+    stat * st = malloc(sizeof(stat));
+    fstat(fd, st);
+
+    if (st->st_mode != FILE_DIR) {
+        puts("ls: not a dir\n");
+        return 1;
+    }
+
     while (1) {
         dirent * d = readdir(fd);
         if (!d) break;
