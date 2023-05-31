@@ -151,6 +151,24 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return pid;
         }
+        case 78: { // getdents (technically getdents64)
+            filehandle_t * dir = (void*)arg0;
+            dirent * out       = (void*)arg1;
+            size_t count       = arg2;
+
+            size_t read = 0;
+
+            for (size_t i = 0; i < count; i++) {
+                dirent * o = kreaddir(dir);
+                if (o == NULL)
+                    return 0; // End of directory
+
+                memcpy(&out[i], o, sizeof(*o));
+                read += sizeof(*o);
+            }
+
+            return read;
+        }
         case 110: { // getppid
             return current_process->parent;
         }

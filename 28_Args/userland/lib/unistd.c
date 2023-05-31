@@ -1,5 +1,7 @@
 #include "unistd.h"
 #include "syscall.h"
+#include "dirent.h"
+#include "stdlib.h"
 
 FILE * open(char * path, enum FILEMODE mode) {
     return (void*) syscall(2, (uint64_t)path, (size_t)mode, 0, 0, 0, 0);
@@ -44,4 +46,19 @@ pid_t getpid() {
 
 pid_t getppid() {
     return syscall(110, 0, 0, 0, 0, 0, 0);
+}
+
+size_t getdents(DIR * fd, dirent * dirp, size_t count) {
+    return syscall(78, (uint64_t)fd, (uint64_t)dirp, count, 0, 0, 0);
+}
+
+dirent * readdir(DIR * d) {
+    dirent * out = malloc(sizeof(dirent));
+
+    size_t read = getdents(d, out, 1);
+
+    if (read == 0)
+        return NULL;
+
+    return out;
 }
