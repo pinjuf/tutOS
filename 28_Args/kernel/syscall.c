@@ -102,20 +102,28 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                 return 1;
             }
 
-            for (size_t i = 0; i < current_process->pagemaps_n; i++) {
-                // Dirty, I know...
-                uint64_t addr = (uint64_t)current_process->pagemaps[i].phys;
-                addr -= HEAP_PHYS;
-                addr += HEAP_VIRT;
-                free_pages((void*)addr, current_process->pagemaps[i].n);
-            }
-            kfree(current_process->pagemaps);
+            // We cannot be sure elf_load will succeed, but if it does, it will overwrite the pagemaps
+            size_t original_pn = current_process->pagemaps_n;
+            pagemap_t * original_p  = current_process->pagemaps;
 
             void * elf_buf = kmalloc(elf_handle->size);
             kread(elf_handle, elf_buf, elf_handle->size);
             kclose(elf_handle);
 
-            elf_load(current_process, elf_buf, 0x10, false); // 64 KiB stack
+            int status = elf_load(current_process, elf_buf, 0x10, false); // 64 KiB stack
+            if (status) {
+                return 1;
+            }
+
+            for (size_t i = 0; i < original_pn; i++) {
+                // Dirty, I know...
+                uint64_t addr = (uint64_t)original_p[i].phys;
+                addr -= HEAP_PHYS;
+                addr += HEAP_VIRT;
+                free_pages((void*)addr, original_p[i].n);
+            }
+            kfree(original_p);
+
             proc_set_args(current_process, argc, argv);
             kfree(elf_buf);
 
