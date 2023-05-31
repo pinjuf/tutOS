@@ -62,3 +62,11 @@ dirent * readdir(DIR * d) {
 
     return out;
 }
+
+int stat(char * pathname, struct stat * statbuf) {
+    return syscall(4, (uint64_t)pathname, (uint64_t)statbuf, 0, 0, 0, 0);
+}
+
+int fstat(FILE * fd, struct stat * statbuf) {
+    return syscall(5, (uint64_t)fd, (uint64_t)statbuf, 0, 0, 0, 0);
+}
