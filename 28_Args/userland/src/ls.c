@@ -1,4 +1,5 @@
 #include "unistd.h"
+#include "stdlib.h"
 #include "stdio.h"
 
 int main(int argc, char * argv[]) {
@@ -18,6 +19,7 @@ int main(int argc, char * argv[]) {
         if (!d) break;
         puts(d->d_name);
         putc(' ');
+        free(d);
     }
     putc('\n');
 
