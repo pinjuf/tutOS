@@ -22,6 +22,8 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
+    free(st);
+
     while (1) {
         dirent * d = readdir(fd);
         if (!d) break;
