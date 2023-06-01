@@ -1,4 +1,5 @@
 #include "ll.h"
+#include "util.h"
 #include "mm.h"
 
 ll_head * create_ll(size_t node_sz) {
@@ -58,7 +59,7 @@ void * ll_push(ll_head * head) {
 
     new->next = NULL;
 
-    return new + sizeof(ll_nodeattr);
+    return (void*)((uint64_t)new + sizeof(ll_nodeattr));
 }
 
 void * ll_get(ll_head * head, size_t index) {
@@ -79,7 +80,7 @@ void * ll_get(ll_head * head, size_t index) {
         return NULL;
     }
 
-    return current + sizeof(ll_nodeattr);
+    return (void*)((uint64_t)current + sizeof(ll_nodeattr));
 }
 
 int ll_del(ll_head * head, size_t index) {
@@ -113,8 +114,8 @@ int ll_del(ll_head * head, size_t index) {
     return 0;
 }
 
-void * ll_next(ll_head * head, void * current) {
-    ll_nodeattr * attr = current - sizeof(ll_nodeattr);
+void * ll_next(void * current) {
+    ll_nodeattr * attr = (void*)((uint64_t)current - sizeof(ll_nodeattr));
 
     if (attr->next == NULL) {
         return NULL;
@@ -125,11 +126,10 @@ void * ll_next(ll_head * head, void * current) {
 
 void * ll_nextla(ll_head * head, void * current) {
     // Gives the next element, like ll_next, but with looparound
-
-    ll_nodeattr * attr = current - sizeof(ll_nodeattr);
+    ll_nodeattr * attr = (void*)((uint64_t)current - sizeof(ll_nodeattr));
 
     if (attr->next == NULL) {
-        return head->start + sizeof(ll_nodeattr);
+        return (void*)((uint64_t)head->start + sizeof(ll_nodeattr));
     }
 
     return attr->next + sizeof(ll_nodeattr);

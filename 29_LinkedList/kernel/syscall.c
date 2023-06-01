@@ -95,7 +95,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             return fh->curr;
         }
         case 39: { // getpid
-            return PROC_PTR_TO_PID(current_process);
+            return current_process->pid;
         }
         case 57: { // fork
             current_process->to_fork = true;
@@ -156,7 +156,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             while (1);
         }
         case 60: { // exit
-            __attribute__((unused)) int return_code = arg0; // TODO: Implement this
+            int return_code = arg0;
 
             // Free the memory
             for (size_t i = 0; i < current_process->pagemaps_n; i++) {
@@ -167,18 +167,26 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             }
             kfree(current_process->pagemaps);
 
-            current_process->state = PROCESS_NONE;
+            current_process->state = PROCESS_ZOMBIE;
+            current_process->exitcode = return_code;
             current_process = NULL; // The scheduler will see this and pick us up
 
             sti;
             while (1);
         }
-        case 61: { // wait4
+        case 61: { // wait4 // TODO: IMPLEMENT STATUS
             pid_t pid = arg0;
 
+            process_t * proc = get_proc_by_pid(pid);
+            if (!proc)
+                return -1;
+
             sti;
-            while (processes[pid].state != PROCESS_NONE);
+            while (proc->state != PROCESS_ZOMBIE);
             cli;
+
+            if (current_process->pid == proc->parent)
+                proc->state = PROCESS_NONE;
 
             return pid;
         }

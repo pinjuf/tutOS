@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "ll.h"
 
 #define TICKS_PER_SCHEDULE 4
 
@@ -59,6 +60,7 @@ typedef enum PROCESS_STATE {
     PROCESS_NONE = 0,
     PROCESS_NOT_RUNNING,
     PROCESS_RUNNING,
+    PROCESS_ZOMBIE,
 } PROCESS_STATE;
 
 typedef struct pagemap_t {
@@ -69,6 +71,8 @@ typedef struct pagemap_t {
 } pagemap_t;
 
 typedef struct process_t {
+    pid_t pid;
+
     volatile PROCESS_STATE state;
 
     void * stack_heap;  // The position of the stack in heap memory (it is mapped to sth like ELF_DEF_RSP)
@@ -83,6 +87,7 @@ typedef struct process_t {
     char ** argv;
 
     pid_t parent;
+    uint8_t exitcode;
 
     pagemap_t * pagemaps;
     size_t pagemaps_n;
@@ -92,13 +97,15 @@ typedef struct process_t {
 
 #define MAX_PROCESSES 256
 
-extern process_t * processes;
+extern ll_head * processes;
 extern process_t * current_process;
 extern bool do_scheduling;
+extern pid_t pid_counter;
 
 void init_scheduling(void);
 void schedule(void * regframe_ptr);
 
 void proc_set_args(process_t * proc, int argc, char * argv[]);
 
-#define PROC_PTR_TO_PID(ptr) (pid_t)(((uint64_t)ptr - (uint64_t)processes)/sizeof(process_t))
+process_t * add_process();
+process_t * get_proc_by_pid(pid_t pid);
