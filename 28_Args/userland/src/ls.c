@@ -10,7 +10,7 @@ int main(int argc, char * argv[]) {
 
     FILE * fd = open(argv[1], FILE_R);
     if (fd == 0) {
-        puts("File not found\n");
+        puts("file not found\n");
         return 1;
     }
 

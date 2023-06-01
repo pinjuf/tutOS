@@ -136,6 +136,7 @@ void kputguid(guid_t guid) {
 int part_read(part_t * p, uint64_t start, uint64_t count, void * buf) {
     if (start >= (p->size * SECTOR_SIZE)) {
         kwarn(__FILE__,__func__,"read out of bounds");
+        return 1;
     }
 
     return drive_read(p->d, p->start_lba * SECTOR_SIZE + start, count, buf);
@@ -144,6 +145,7 @@ int part_read(part_t * p, uint64_t start, uint64_t count, void * buf) {
 int part_write(part_t * p, uint64_t start, uint64_t count, void * buf) {
     if (start >= (p->size * SECTOR_SIZE)) {
         kwarn(__FILE__,__func__,"write out of bounds");
+        return 1;
     }
 
     return drive_write(p->d, p->start_lba * SECTOR_SIZE + start, count, buf);
