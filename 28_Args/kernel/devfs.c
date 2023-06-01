@@ -48,6 +48,7 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         out->size = 0;
 
         memset(&intern->p, 0, sizeof(part_t));
+        intern->p.n = GPT_WHOLEDISK;
 
         if (mode == FILE_W) {
             kwarn(__FILE__,__func__,"cannot write to devfs root dir");
@@ -83,6 +84,11 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
 
         if ((drive_bitmap & (1<<drive_n)) == 0) {
             kwarn(__FILE__,__func__,"drive not present");
+            return NULL;
+        }
+
+        if (part_n != GPT_WHOLEDISK && !gpt_hasmagic(drive_n)) {
+            kwarn(__FILE__,__func__,"no gpt");
             return NULL;
         }
 
@@ -306,19 +312,38 @@ void * devfs_readdir(void * f) {
 
         case DEVFS_HDD:
             out->d_type = FILE_BLK;
-            // This one is a little bit special... we're not listing partitions for now, cause we still need to create a function to check for GPT magic
+            // This one is a little bit autistic...
             ata_checkdrives();
+
             out->d_namlen = 3;
             out->d_size = 0;
             memcpy(out->d_name, (char*)"hd", 3);
 
-            while (!(drive_bitmap & (1<<intern->p.d)) && intern->p.d < 8) {
+            bool has_gpt = gpt_hasmagic(intern->p.d);
+            size_t partitions = 1;
+            if (has_gpt)
+                partitions = 1 + get_part_count(intern->p.d);
+
+            if (intern->p.n >= (partitions-1) && intern->p.n != GPT_WHOLEDISK) {
+                intern->p.n = GPT_WHOLEDISK;
                 intern->p.d++;
             }
 
-            if (intern->p.d < 8) {
-                out->d_name[2] = 'a' + intern->p.d;
+            while (!(drive_bitmap & (1 << intern->p.d))  && intern->p.d < 8)
                 intern->p.d++;
+
+            if (intern->p.d < 8) {
+                out->d_name[2] = intern->p.d + 'a';
+
+                char buf[6] = {0};
+                if (intern->p.n != GPT_WHOLEDISK)
+                    itoa(intern->p.n + 1, buf, 10);
+
+                out->d_namlen += strlen(buf);
+                memcpy(out->d_name + 3, buf, strlen(buf));
+
+                intern->p.n++;
+
                 return out;
             }
 
