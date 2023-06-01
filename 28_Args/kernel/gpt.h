@@ -61,3 +61,5 @@ int part_read(part_t * p, uint64_t start, uint64_t count, void * buf);
 int part_write(part_t * p, uint64_t start, uint64_t count, void * buf);
 
 uint32_t get_part_count(drive_t d);
+
+bool gpt_hasmagic(drive_t d);

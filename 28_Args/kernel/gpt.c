@@ -2,6 +2,14 @@
 #include "mm.h"
 #include "util.h"
 
+bool gpt_hasmagic(drive_t d) {
+    gpt_pth_t * gpt_pth = (gpt_pth_t*)kmalloc(sizeof(gpt_pth_t));
+    drive_read(d, 1*SECTOR_SIZE, sizeof(gpt_pth_t), gpt_pth);
+    kfree(gpt_pth);
+
+    return *(uint64_t*)(&gpt_pth->sign) == GPT_SIGN;
+}
+
 part_t * get_part(drive_t d, uint32_t n) {
     gpt_pth_t * gpt_pth = (gpt_pth_t*)kmalloc(sizeof(gpt_pth_t));
 
