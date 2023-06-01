@@ -156,7 +156,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             while (1);
         }
         case 60: { // exit
-            int return_code = arg0;
+            uint8_t return_code = arg0 & 0xFF;
 
             // Free the memory
             for (size_t i = 0; i < current_process->pagemaps_n; i++) {

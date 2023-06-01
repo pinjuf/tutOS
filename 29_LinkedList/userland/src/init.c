@@ -63,7 +63,7 @@ int main(int argc, char * argv[]) {
 
             exec(cmdbuf, argv);
             puts("could not exec command\n");
-            exit(0);
+            exit(1);
         }
 
         waitpid(p, &status);
