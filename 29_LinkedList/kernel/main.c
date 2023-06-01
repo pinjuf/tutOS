@@ -14,6 +14,7 @@
 #include "vesa.h"
 #include "elf.h"
 #include "isr.h"
+#include "ll.h"
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
@@ -70,6 +71,54 @@ void _kmain() {
     kputs("VBE OK\n");
 
     kputs("KRN MN\n");
+
+    ll_head * my_list = create_ll(sizeof(process_t));
+
+    kputs("Length after creation: ");
+    kputdec(ll_len(my_list));
+    kputc('\n');
+
+    process_t * elems[3];
+
+    elems[0] = ll_push(my_list);
+    elems[0]->state = 0;
+    kputs("Length after adding elem0: ");
+    kputdec(ll_len(my_list));
+    kputc('\n');
+
+    elems[1] = ll_push(my_list);
+    elems[1]->state = 1;
+    kputs("Length after adding elem1: ");
+    kputdec(ll_len(my_list));
+    kputc('\n');
+
+    elems[2] = ll_push(my_list);
+    elems[2]->state = 2;
+    kputs("Length after adding elem2: ");
+    kputdec(ll_len(my_list));
+    kputc('\n');
+
+    for (uint8_t i = 0; i < 3; i++) {
+        kputs("Testing element #");
+        kputdec(i);
+        kputs(": ");
+
+        if (ll_get(my_list, i) == elems[i]) {
+            kputs("PASS\n");
+        } else
+            kputs("FAIL\n");
+    }
+
+    ll_del(my_list, 1);
+    kputs("Length after deleting elem1: ");
+    kputdec(ll_len(my_list));
+    kputc('\n');
+
+    kputs("Checking that elem2 == my_list[1] after deletion: ");
+    if (ll_get(my_list, 1) == elems[2]) {
+        kputs("PASS\n");
+    } else
+        kputs("FAIL\n");
 
     filehandle_t * init_fh = kopen("/bin/init", FILE_R);
     if (!init_fh) {
