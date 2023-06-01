@@ -36,8 +36,8 @@ void exit(int code) {
     __builtin_unreachable();
 }
 
-pid_t waitpid(pid_t pid) {
-    return syscall(61, pid, 0, 0, 0, 0, 0);
+pid_t waitpid(pid_t pid, int * status) {
+    return syscall(61, pid, (uint64_t)status, 0, 0, 0, 0);
 }
 
 pid_t getpid() {

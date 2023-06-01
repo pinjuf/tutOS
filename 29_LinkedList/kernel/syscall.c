@@ -174,8 +174,9 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             sti;
             while (1);
         }
-        case 61: { // wait4 // TODO: IMPLEMENT STATUS
+        case 61: { // wait4
             pid_t pid = arg0;
+            int * status = (void*)arg1;
 
             process_t * proc = get_proc_by_pid(pid);
             if (!proc)
@@ -184,6 +185,8 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             sti;
             while (proc->state != PROCESS_ZOMBIE);
             cli;
+
+            *status = proc->exitcode;
 
             if (current_process->pid == proc->parent)
                 proc->state = PROCESS_NONE;

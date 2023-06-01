@@ -13,6 +13,8 @@ int main(int argc, char * argv[]) {
         char * curr = cmdbuf;
         memset(cmdbuf, 0, 256);
 
+        int status = 0;
+
         puts("$> ");
 
         while (1) {
@@ -64,7 +66,9 @@ int main(int argc, char * argv[]) {
             exit(0);
         }
 
-        waitpid(p);
+        waitpid(p, &status);
+        putc(status + '0');
+        putc(' ');
     }
 
     free(cmdbuf);
