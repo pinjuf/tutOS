@@ -11,6 +11,7 @@ enum DEVFS_DEV {
     DEVFS_TTY,
     DEVFS_QEMUDBG,
     DEVFS_MEM,
+    DEVFS_PIT0,
 };
 
 typedef struct devfs_file_t {

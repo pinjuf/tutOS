@@ -5,6 +5,7 @@
 #include "vesa.h"
 #include "main.h"
 #include "kbd.h"
+#include "isr.h"
 
 void * devfs_getfile(void * internal_fs, char * path, int m) {
     (void) internal_fs;
@@ -72,6 +73,18 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
             return NULL;
         }
 
+    } else if (!strcmp(path, "pit0")) {
+        // Lists pit0 ticks
+        intern->type = DEVFS_PIT0;
+        out->curr = 0;
+        out->type = FILE_DEV;
+        out->size = 0;
+
+        if (mode == FILE_W) {
+            kwarn(__FILE__,__func__,"cannot write to pit0");
+            return NULL;
+        }
+
     } else if (strlen(path) > 2 \
             && path[0] == 'h' \
             && path[1] == 'd') {
@@ -113,9 +126,6 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         kwarn(__FILE__,__func__,"file not found");
         return NULL;
     }
-
-
-    // TODO: HDD devices
 
     return out;
 }
@@ -187,6 +197,12 @@ size_t devfs_readfile(void * f, void * buf, size_t count) {
             fh->curr += count;
 
             return res ? 0 : count;
+        }
+
+        case DEVFS_PIT0: {
+            memcpy(buf, &pit0_ticks, sizeof(size_t));
+
+            return sizeof(size_t); // yes, we force this, no, we won't tell you why
         }
 
         default:
@@ -372,6 +388,14 @@ void * devfs_readdir(void * f) {
             out->d_type = FILE_DEV;
             out->d_namlen = 3;
             memcpy(out->d_name, (char*)"mem", 4);
+            out->d_size = 0;
+            fh->curr++;
+            return out;
+
+        case DEVFS_PIT0:
+            out->d_type = FILE_DEV;
+            out->d_namlen = 4;
+            memcpy(out->d_name, (char*)"pit0", 5);
             out->d_size = 0;
             fh->curr++;
             return out;
