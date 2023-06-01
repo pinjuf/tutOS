@@ -121,7 +121,7 @@ void * ll_next(void * current) {
         return NULL;
     }
 
-    return attr->next + sizeof(ll_nodeattr);
+    return (void*)((uint64_t)attr->next + sizeof(ll_nodeattr));
 }
 
 void * ll_nextla(ll_head * head, void * current) {
@@ -132,5 +132,5 @@ void * ll_nextla(ll_head * head, void * current) {
         return (void*)((uint64_t)head->start + sizeof(ll_nodeattr));
     }
 
-    return attr->next + sizeof(ll_nodeattr);
+    return (void*)((uint64_t)attr->next + sizeof(ll_nodeattr));
 }
