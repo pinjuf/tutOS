@@ -112,3 +112,25 @@ int ll_del(ll_head * head, size_t index) {
 
     return 0;
 }
+
+void * ll_next(ll_head * head, void * current) {
+    ll_nodeattr * attr = current - sizeof(ll_nodeattr);
+
+    if (attr->next == NULL) {
+        return NULL;
+    }
+
+    return attr->next + sizeof(ll_nodeattr);
+}
+
+void * ll_nextla(ll_head * head, void * current) {
+    // Gives the next element, like ll_next, but with looparound
+
+    ll_nodeattr * attr = current - sizeof(ll_nodeattr);
+
+    if (attr->next == NULL) {
+        return head->start + sizeof(ll_nodeattr);
+    }
+
+    return attr->next + sizeof(ll_nodeattr);
+}

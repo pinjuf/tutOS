@@ -24,3 +24,5 @@ size_t ll_len(ll_head * head);
 void * ll_push(ll_head * head);
 void * ll_get(ll_head * head, size_t index);
 int ll_del(ll_head * head, size_t index);
+void * ll_next(ll_head * head, void * current);
+void * ll_nextla(ll_head * head, void * current);
