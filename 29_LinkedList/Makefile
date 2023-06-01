@@ -21,19 +21,19 @@ img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin
 c.img: .FORCE userland.img
 	./mkgpt.sh $@ userland.img
 
-boot/boot.bin: boot
+boot/boot.bin: boot/
 	$(MAKE) -C boot boot.bin
 
-stage2/stage2.bin: stage2
+stage2/stage2.bin: stage2/
 	$(MAKE) -C stage2 stage2.bin
 
-kernel/kernel.bin: kernel
+kernel/kernel.bin: kernel/
 	$(MAKE) -C kernel kernel.bin
 
-kernel/kernel.elf: kernel
+kernel/kernel.elf: kernel/
 	$(MAKE) -C kernel kernel.elf
 
-userland.img: .FORCE userland
+userland.img: .FORCE userland/
 	dd if=/dev/zero of=$@ bs=1048576 count=16
 	mkfs.ext2 -d userland $@
 
