@@ -17,13 +17,16 @@ int main(int argc, char * argv[]) {
 
         while (1) {
             read(stdin, &c, 1);
-            if (c == '\n')
+
+            if (c == '\n') {
                 break;
-            if (c == '\b' && curr > cmdbuf)
+            } else if (c == '\b' && (curr > cmdbuf)) {
                 curr--;
-            else
+                putc(c);
+            } else {
                 *curr++ = c;
-            putc(c);
+                putc(c);
+            }
         }
 
         *curr = '\0';
@@ -35,6 +38,11 @@ int main(int argc, char * argv[]) {
 
         if (!strcmp(cmdbuf, "exit"))
             exit(0);
+
+        if (!strcmp(cmdbuf, "debug")) {
+            asm volatile ("int $0x81");
+            continue;
+        }
 
         pid_t p = fork();
         if (p == 0) {
