@@ -1,0 +1,13 @@
+# Ignore everything without extensions/that is not a dir
+*
+!*.*
+!*/
+!Makefile
+!bochsrc
+
+*.bin
+*.o
+*.elf
+*.lock
+*.img
+*.a

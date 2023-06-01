@@ -1,0 +1,2 @@
+Hello from FAT32!
+(by microsooft windblows)

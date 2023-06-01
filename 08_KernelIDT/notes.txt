@@ -1,0 +1,9 @@
+Memory layout:
+    0000   -   200 | GDT               | IDMAP
+    200    -  1200 | IDT               | IDMAP
+    7C00   -  7E00 | Boot sector       | IDMAP
+    9000   -  DOWN | Boot/Stage2 Stack | IDMAP
+    9000   -  A000 | Stage2            | IDMAP
+    A000   - 19000 | Kernel            | IDMAP
+    120000 -  DOWN | Kernel stack      | IDMAP
+
