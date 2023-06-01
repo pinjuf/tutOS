@@ -12,7 +12,7 @@ int main(int argc, char * argv[]) {
 
         if (!file) {
             puts("file not found\n");
-            continue;
+            return 1;
         }
 
         fstat(file, st);

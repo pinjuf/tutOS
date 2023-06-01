@@ -1,6 +1,10 @@
+# Ignore everything without extensions/that is not a dir
+*
+!*.*
+!*/
+
 *.bin
 *.o
 *.elf
 *.lock
-img
 *.img
