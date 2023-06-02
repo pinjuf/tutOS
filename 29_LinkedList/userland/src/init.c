@@ -46,6 +46,25 @@ int main(int argc, char * argv[]) {
             continue;
         }
 
+        if (!strcmp(cmdbuf, "spktst")) {
+            FILE * pcspk = open("/dev/pcspk", FILE_W);
+
+            uint32_t freq_a = 440;
+            uint32_t freq_b = 660;
+            uint32_t silent = 0;
+
+            for (size_t i = 0; i < 4; i++) {
+                write(pcspk, &freq_a, 4);
+                pit_msleep(500);
+                write(pcspk, &freq_b, 4);
+                pit_msleep(500);
+            }
+
+            write(pcspk, &silent, 4);
+
+            continue;
+        }
+
         pid_t p = fork();
         if (p == 0) {
             // We need to transform cmdbuf into a char*argv[]
