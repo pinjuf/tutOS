@@ -3,7 +3,9 @@
 #include "types.h"
 #include "ll.h"
 
+// A "jiffy"
 #define TICKS_PER_SCHEDULE 4
+#define PROC_CLEANER_TICKS 1000
 
 typedef uint16_t pid_t;
 
@@ -109,3 +111,5 @@ void proc_set_args(process_t * proc, int argc, char * argv[]);
 
 process_t * add_process();
 process_t * get_proc_by_pid(pid_t pid);
+
+void clear_none_procs();

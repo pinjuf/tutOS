@@ -67,6 +67,10 @@ void isr_irq0(int_regframe_t * regframe) {
     if (!(pit0_ticks % TICKS_PER_SCHEDULE) && do_scheduling) {
         schedule(regframe);
     }
+
+    if (!(pit0_ticks % PROC_CLEANER_TICKS) && do_scheduling) {
+        clear_none_procs();
+    }
 }
 
 void isr_irq1(void) {

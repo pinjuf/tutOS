@@ -113,3 +113,17 @@ process_t * get_proc_by_pid(pid_t pid) {
 
     return NULL;
 }
+
+void clear_none_procs() {
+    // Removes processes we no longer need
+
+    for (size_t i = 0; i < ll_len(processes); i++) {
+        process_t * p = ll_get(processes, i);
+
+        if (p->state == PROCESS_NONE) {
+            kputdec(p->pid);
+            ll_del(processes, i);
+            i--;
+        }
+    }
+}
