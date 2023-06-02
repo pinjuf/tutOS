@@ -120,8 +120,10 @@ void clear_none_procs() {
     for (size_t i = 0; i < ll_len(processes); i++) {
         process_t * p = ll_get(processes, i);
 
+        if (p == NULL)
+            break;
+
         if (p->state == PROCESS_NONE) {
-            kputdec(p->pid);
             ll_del(processes, i);
             i--;
         }
