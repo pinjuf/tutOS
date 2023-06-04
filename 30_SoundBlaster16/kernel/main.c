@@ -77,6 +77,10 @@ void _kmain() {
     kputs("KRN MN\n");
 
     filehandle_t * my_music = kopen("/root/music.raw", FILE_R);
+    if (!my_music) {
+        kputs("See userland/root/README.txt!\n");
+        while (1);
+    }
     char * music_buf = kmalloc(my_music->size);
     kread(my_music, music_buf, my_music->size);
 
