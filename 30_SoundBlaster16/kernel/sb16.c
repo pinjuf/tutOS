@@ -100,8 +100,12 @@ void isr_irq5() {
     outb(DSP_WRITE, transfer_mode);
     outb(DSP_WRITE, sound_type);
 
-    outb(DSP_WRITE, (to_play-1) & 0xFF);
-    outb(DSP_WRITE, ((to_play-1) >> 8 & 0xFF));
+    uint16_t true_count = to_play - 1;
+    if (sb16_player->_16bit)
+        true_count = (to_play >> 1) - 1;
+
+    outb(DSP_WRITE, true_count & 0xFF);
+    outb(DSP_WRITE, (true_count >> 8) & 0xFF);
 
     sb16_player->current += to_play;
     if (sb16_player->current >= sb16_player->size) {

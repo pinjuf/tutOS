@@ -85,7 +85,7 @@ void _kmain() {
     sb16_player->data          = music_buf;
     sb16_player->current       = 0;
     sb16_player->stereo        = false;
-    sb16_player->_16bit        = false;
+    sb16_player->_16bit        = true;
     sb16_player->volume        = 0x11;
     sb16_player->playing       = true;
     sb16_player->sampling_rate = 22000;
