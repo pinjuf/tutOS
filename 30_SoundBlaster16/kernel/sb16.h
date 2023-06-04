@@ -15,7 +15,7 @@
 #define DSP_IRQACK8    0x22E
 #define DSP_IRQACK16   0x22F
 
-#define DSP_TO_TIMECONSTANT(sampling_rate) (256 - (1000000 / (sampling_rate)))
+#define DSP_TO_TIMECONSTANT(sampling_rate, chans) (256 - (1000000 / (chans * sampling_rate)))
 
 // DSP Tranfer modes
 #define DSP_TRA16  0xB0
@@ -29,17 +29,22 @@
 
 void init_sb16();
 void sb16_volume(uint8_t volume);
-void sb16_play();
+void sb16_start_play();
 
 // Generic structure for what we are currently playing
 typedef struct sb16_player_t {
     void * data;
-    void * current;
+    size_t current;
     size_t size; // Actual size, not the count
     uint16_t sampling_rate;
     uint8_t volume;
-    uint8_t _16bit : 1;
-    uint8_t _sign  : 1;
+    bool _16bit;
+    bool sign;
+    bool stereo;
+    bool playing;
 } sb16_player_t;
 
 extern sb16_player_t * sb16_player;
+
+// DSP IRQs
+void isr_irq5();

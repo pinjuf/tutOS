@@ -76,7 +76,29 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    sb16_play();
+    int16_t * audiobuf = kmalloc(44100 * 2);
+    int16_t * curr = audiobuf;
+
+    sb16_player->sign          = true;
+    sb16_player->size          = 44100 * 2;
+    sb16_player->data          = audiobuf;
+    sb16_player->current       = 0;
+    sb16_player->stereo        = false;
+    sb16_player->_16bit        = true;
+    sb16_player->volume        = 0xFF;
+    sb16_player->playing       = true;
+    sb16_player->sampling_rate = 44100;
+
+    for (int i = 0; i < 440; i++) {
+        for (int j = 0; j < 50; j++) {
+            *curr++ = INT16_MIN;
+        }
+        for (int j = 0; j < 50; j++) {
+            *curr++ = INT16_MAX;
+        }
+    }
+
+    sb16_start_play();
 
     filehandle_t * init_fh = kopen("/bin/init", FILE_R);
     if (!init_fh) {
