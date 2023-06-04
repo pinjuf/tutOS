@@ -91,4 +91,19 @@ static const uint16_t DMA_MASK[] = {
     0xDE,
 };
 
-int dma_chan_init(uint8_t chan, void * addr, uint16_t count);
+// Transfer types for mode registers
+#define DMA_TRA_SELFTEST 0
+#define DMA_TRA_WRITE    4
+#define DMA_TRA_READ     8
+// Reset address and count registers after finishing
+#define DMA_AUTOINIT  0x10
+// Read in reverse order
+#define DMA_DOWNWARDS 0x20
+// Transfer modes
+#define DMA_ONDEMAND 0x00
+#define DMA_SINGLE   0x40
+#define DMA_BLOCK    0x80
+#define DMA_CASCADAE 0xC0
+
+int dma_chan_init(uint8_t chan, void * addr, uint32_t count);
+int dma_chan_mode(uint8_t chan, uint8_t mode);

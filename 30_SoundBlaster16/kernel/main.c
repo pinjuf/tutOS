@@ -15,6 +15,7 @@
 #include "elf.h"
 #include "isr.h"
 #include "ll.h"
+#include "sb16.h"
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
@@ -70,7 +71,12 @@ void _kmain() {
     vesa_clear(RGB32(0, 0, 0));
     kputs("VBE OK\n");
 
+    init_sb16();
+    kputs("SB16 OK\n");
+
     kputs("KRN MN\n");
+
+    sb16_play();
 
     filehandle_t * init_fh = kopen("/bin/init", FILE_R);
     if (!init_fh) {
