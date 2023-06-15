@@ -106,6 +106,7 @@ void _kmain() {
     process_t * init_proc = add_process();
     init_proc->parent = 0; // 0 means the kernel is the parent
     elf_load(init_proc, buf, 0x10, false);
+    init_proc->state = PROCESS_NOT_RUNNING;
     proc_set_args(init_proc, 0, NULL);
     kfree(buf);
 

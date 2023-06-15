@@ -59,7 +59,7 @@ enum ELF_ABI {
 };
 
 enum ELF_TYPE {
-    ELF_UNKN,
+    ELF_UNKN = 0,
     ELF_REL,
     ELF_EXEC,
     ELF_DYN,
@@ -67,14 +67,14 @@ enum ELF_TYPE {
 };
 
 enum ELF_MACHINE {
-    ELF_NONE,
+    ELF_NONE   = 0,
     ELF_X86    = 0x3,
     ELF_IA32   = 0x32,
     ELF_X86_64 = 0x3E,
 };
 
 enum ELF_IDENT {
-    ELF_EI_MAG0,
+    ELF_EI_MAG0 = 0,
     ELF_EI_MAG1,
     ELF_EI_MAG2,
     ELF_EI_MAG3,
@@ -86,7 +86,7 @@ enum ELF_IDENT {
 };
 
 enum ELF_PTYPE {
-    ELF_PT_NULL,
+    ELF_PT_NULL = 0,
     ELF_PT_LOAD,
     ELF_PT_DYNAMIC,
     ELF_PT_INTERP,

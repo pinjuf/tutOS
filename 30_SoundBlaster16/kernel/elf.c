@@ -77,7 +77,5 @@ int elf_load(process_t * out, void * buf, size_t stack_pages, bool kmode) {
         out->pagemaps_n++;
     }
 
-    out->state = PROCESS_NOT_RUNNING;
-
     return 0;
 }
