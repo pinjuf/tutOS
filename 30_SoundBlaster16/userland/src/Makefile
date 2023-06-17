@@ -1,4 +1,4 @@
-all: init test ls echo cat
+all: init test ls echo cat wavplay
 
 CC = gcc
 CFLAGS = -T linker.ld -Wall -Wextra -Wpedantic -nostdlib -ffreestanding -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables \
@@ -18,6 +18,9 @@ echo: echo.o
 	gcc $< $(CFLAGS) -o $@
 
 cat: cat.o
+	gcc $< $(CFLAGS) -o $@
+
+wavplay: wavplay.o
 	gcc $< $(CFLAGS) -o $@
 
 %.o: %.c
