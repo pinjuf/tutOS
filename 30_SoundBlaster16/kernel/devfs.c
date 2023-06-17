@@ -6,6 +6,7 @@
 #include "main.h"
 #include "kbd.h"
 #include "isr.h"
+#include "sb16.h"
 
 void * devfs_getfile(void * internal_fs, char * path, int m) {
     (void) internal_fs;
@@ -80,10 +81,12 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         out->type = FILE_DEV;
         out->size = 0;
 
-        if (mode == FILE_W) {
-            kwarn(__FILE__,__func__,"cannot write to pit0");
-            return NULL;
-        }
+    } else if (!strcmp(path, "dsp")) {
+        // Set/get DSP/SB16 status
+        intern->type = DEVFS_DSP;
+        out->curr = 0;
+        out->type = FILE_DEV;
+        out->size = 0;
 
     } else if (strlen(path) > 2 \
             && path[0] == 'h' \
@@ -205,6 +208,12 @@ size_t devfs_readfile(void * f, void * buf, size_t count) {
             return sizeof(size_t); // yes, we force this, no, we won't tell you why
         }
 
+        case DEVFS_DSP: {
+            memcpy(buf, sb16_player, sizeof(sb16_player_t));
+
+            return sizeof(sb16_player_t);
+        }
+
         default:
             kwarn(__FILE__,__func__,"cannot read (no impl?)");
             return 0;
@@ -285,6 +294,15 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
             }
 
             return count;
+        }
+
+        case DEVFS_DSP: {
+            memcpy(sb16_player, buf, sizeof(sb16_player_t));
+
+            if (sb16_player->playing)
+                sb16_start_play();
+
+            return sizeof(sb16_player_t);
         }
 
         default:
@@ -396,6 +414,14 @@ void * devfs_readdir(void * f) {
             out->d_type = FILE_DEV;
             out->d_namlen = 4;
             memcpy(out->d_name, (char*)"pit0", 5);
+            out->d_size = 0;
+            fh->curr++;
+            return out;
+
+        case DEVFS_DSP:
+            out->d_type = FILE_DEV;
+            out->d_namlen = 3;
+            memcpy(out->d_name, (char*)"dsp", 4);
             out->d_size = 0;
             fh->curr++;
             return out;

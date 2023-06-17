@@ -42,7 +42,6 @@ void sb16_volume(uint8_t volume) {
     outb(DSP_MIXER_DATA, volume);
 }
 
-// We assume we only play 8-bit signed mono 44.1kHz sound
 void sb16_start_play() {
     outb(DSP_RESET, 1);
     for (uint8_t i = 0; i < 32; i++)

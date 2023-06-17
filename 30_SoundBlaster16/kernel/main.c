@@ -76,25 +76,6 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    filehandle_t * my_music = kopen("/root/music.raw", FILE_R);
-    if (!my_music) {
-        kputs("See userland/root/README.txt!\n");
-        while (1);
-    }
-    char * music_buf = kmalloc(my_music->size);
-    kread(my_music, music_buf, my_music->size);
-
-    sb16_player->sign          = true;
-    sb16_player->size          = my_music->curr;
-    sb16_player->data          = music_buf;
-    sb16_player->current       = 0;
-    sb16_player->stereo        = false;
-    sb16_player->_16bit        = true;
-    sb16_player->volume        = 0x11;
-    sb16_player->playing       = true;
-    sb16_player->sampling_rate = 22000;
-    sb16_start_play();
-
     filehandle_t * init_fh = kopen("/bin/init", FILE_R);
     if (!init_fh) {
         kwarn(__FILE__,__func__,"no init executable found");

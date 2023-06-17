@@ -42,7 +42,7 @@ typedef struct sb16_player_t {
     bool sign;
     bool stereo;
     bool playing;
-} sb16_player_t;
+} __attribute__((packed)) sb16_player_t;
 
 extern sb16_player_t * sb16_player;
 
