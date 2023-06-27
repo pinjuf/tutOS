@@ -8,10 +8,10 @@
 #include "isr.h"
 #include "sb16.h"
 
-void * devfs_getfile(void * internal_fs, char * path, int m) {
+void * devfs_getfile(void * internal_fs, char * path, uint16_t m) {
     (void) internal_fs;
 
-    enum FILEMODE mode = m;
+    mode_t mode = m;
 
     filehandle_t * out = (filehandle_t *) kmalloc(sizeof(filehandle_t));
     devfs_file_t * intern = (devfs_file_t *) kmalloc(sizeof(devfs_file_t));
@@ -32,7 +32,7 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         out->type = FILE_DEV;
         out->size = 0;
 
-        if (mode == FILE_R) {
+        if (mode & O_RDONLY) {
             kwarn(__FILE__,__func__,"cannot read sound");
             return NULL;
         }
@@ -52,7 +52,7 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         memset(&intern->p, 0, sizeof(part_t));
         intern->p.n = GPT_WHOLEDISK;
 
-        if (mode == FILE_W) {
+        if (mode & O_WRONLY) {
             kwarn(__FILE__,__func__,"cannot write to devfs root dir");
             return NULL;
         }
@@ -69,7 +69,7 @@ void * devfs_getfile(void * internal_fs, char * path, int m) {
         out->type = FILE_DEV;
         out->size = 0;
 
-        if (mode == FILE_R) {
+        if (mode & O_RDONLY) {
             kwarn(__FILE__,__func__,"cannot read from qemu dbg io");
             return NULL;
         }

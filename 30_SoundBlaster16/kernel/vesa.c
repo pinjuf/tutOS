@@ -31,7 +31,7 @@ void init_vesa() {
     vheight = bpob->vbe_mode_info.height;
     vwidth = bpob->vbe_mode_info.width;
 
-    filehandle_t * font_fh = kopen(VFONT, FILE_R);
+    filehandle_t * font_fh = kopen(VFONT, O_RDONLY);
 
     if (!font_fh)
         kwarn(__FILE__,__func__,"vfont not found");

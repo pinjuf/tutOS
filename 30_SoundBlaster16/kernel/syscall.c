@@ -41,7 +41,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
         }
         case 2: { // open
             char * path = (void*)arg0;
-            enum FILEMODE mode = arg1;
+            mode_t mode = arg1;
 
             return (size_t)kopen(path, mode);
         }
@@ -57,9 +57,9 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             stat * out      = (void*)arg1;
 
             // Please don't judge me
-            filehandle_t * fh = kopen(filename, FILE_R);
+            filehandle_t * fh = kopen(filename, O_RDONLY);
             if (!fh)
-                fh = kopen(filename, FILE_W);
+                fh = kopen(filename, O_WRONLY);
             if (!fh)
                 return 1;
 
@@ -119,7 +119,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                 for (size_t i = 0; argv[i]; i++)
                     argc++;
 
-            filehandle_t * elf_handle = kopen(file, FILE_R);
+            filehandle_t * elf_handle = kopen(file, O_RDONLY);
             if (!elf_handle) {
                 kwarn(__FILE__,__func__,"exec file not found");
                 return 1;

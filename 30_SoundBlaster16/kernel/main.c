@@ -76,7 +76,7 @@ void _kmain() {
 
     kputs("KRN MN\n");
 
-    filehandle_t * init_fh = kopen("/bin/init", FILE_R);
+    filehandle_t * init_fh = kopen("/bin/init", O_RDONLY);
     if (!init_fh) {
         kwarn(__FILE__,__func__,"no init executable found");
     }

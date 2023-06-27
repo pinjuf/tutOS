@@ -259,11 +259,11 @@ uint32_t ext2_get_inode_by_name(ext2fs_t * fs, ext2_inode_t * inode, char * name
     return 0;
 }
 
-void * ext2_getfile(ext2fs_t * fs, char * path, int m) {
-    enum FILEMODE mode = m; // compiler's fault
+void * ext2_getfile(ext2fs_t * fs, char * path, uint16_t m) {
+    mode_t mode = m; // compiler's fault
     char token[256];
 
-    if (mode == FILE_W) {
+    if (mode & O_WRONLY) {
         kwarn(__FILE__,__func__,"write not implemented");
         return NULL;
     }

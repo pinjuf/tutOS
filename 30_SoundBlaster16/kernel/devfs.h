@@ -21,7 +21,7 @@ typedef struct devfs_file_t {
 } devfs_file_t;
 
 // devfs doesn't need a getdevfs initialization (for now)
-void * devfs_getfile(void *, char * path, int);
+void * devfs_getfile(void *, char * path, uint16_t);
 void devfs_closefile(void * f);
 size_t devfs_readfile(void * f, void * buf, size_t count);
 size_t devfs_writefile(void * f, void * buf, size_t count);

@@ -16,21 +16,21 @@ enum FILETYPE {
     FILE_DEV,
 };
 
-enum FILEMODE {
-    FILE_R = 0,
-    FILE_W,
-};
-
 enum SEEKMODE {
     SEEK_SET = 0,
     SEEK_CUR,
     SEEK_END,
 };
 
+typedef uint16_t mode_t;
+#define O_RDONLY 1
+#define O_WRONLY 2
+#define O_RDWR   3
+
 typedef struct filehandle_t {
     size_t mountpoint; // Offset into the mountpoint table
     enum FILETYPE type;
-    enum FILEMODE mode;
+    mode_t mode;
     void * internal_file;
     size_t size;
     size_t curr;       // Current offset
@@ -48,7 +48,7 @@ typedef struct filesystem_t {
     char name[8];
     void * (* get_fs)(part_t * p);
 
-    filehandle_t * (* get_filehandle)(void * internal_fs, char * path, enum FILEMODE mode);
+    filehandle_t * (* get_filehandle)(void * internal_fs, char * path, mode_t mode);
     void (* close_filehandle)(filehandle_t * f);
 
     size_t (* read_file)(filehandle_t * f, void * buf, size_t count);
@@ -83,7 +83,7 @@ static const filesystem_t FILESYSTEMS[] = {
 
     {"ext2",
         (void* (*) (part_t * p)) get_ext2fs,
-        (filehandle_t * (*) (void * internal_fs, char * path, enum FILEMODE mode)) ext2_getfile,
+        (filehandle_t * (*) (void * internal_fs, char * path, mode_t)) ext2_getfile,
         (void (*) (filehandle_t * f)) ext2_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) ext2_readfile,
         NULL,
@@ -101,7 +101,7 @@ static const filesystem_t FILESYSTEMS[] = {
 
     {"devfs",
         NULL,
-        (filehandle_t * (*) (void * internal_fs, char * path, enum FILEMODE mode)) devfs_getfile,
+        (filehandle_t * (*) (void * internal_fs, char * path, mode_t)) devfs_getfile,
         (void (*) (filehandle_t * f)) devfs_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_readfile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_writefile,
@@ -113,7 +113,7 @@ extern mountpoint_t * mountpoints;
 #define MOUNTPOINTS_N 4
 
 void init_vfs();
-filehandle_t * kopen(char * path, enum FILEMODE FILE_R);
+filehandle_t * kopen(char * path, mode_t mode);
 void kclose(filehandle_t * f);
 size_t kread(filehandle_t * f, void * buf, size_t count);
 size_t kwrite(filehandle_t * f, void * buf, size_t count);

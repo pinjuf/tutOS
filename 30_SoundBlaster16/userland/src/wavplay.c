@@ -67,6 +67,11 @@ int main(int argc, char * argv[]) {
     write(dsp, &player, sizeof(player));
     close(dsp);
 
+    dsp = open("/dev/dsp", FILE_R);
+    while (player.playing) {
+        read(dsp, &player, sizeof(player));
+    }
+
     free(wavbuf);
 
     return 0;

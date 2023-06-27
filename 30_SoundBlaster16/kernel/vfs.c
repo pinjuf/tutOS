@@ -22,7 +22,7 @@ void init_vfs() {
     }
 }
 
-filehandle_t * kopen(char * p, enum FILEMODE mode) {
+filehandle_t * kopen(char * p, mode_t mode) {
 
     // Get the string with the longest starting match
     // TODO: Shorten "x/y/../z" to "x/z"
@@ -91,7 +91,7 @@ size_t kread(filehandle_t * f, void * buf, size_t count) {
         kwarn(__FILE__,__func__,"no driver support");
     }
 
-    if (f->mode != FILE_R) {
+    if (f->mode & O_RDONLY) {
         kwarn(__FILE__,__func__,"file not open as r");
         return 0;
     }
@@ -104,7 +104,7 @@ size_t kwrite(filehandle_t * f, void * buf, size_t count) {
         kwarn(__FILE__,__func__,"no driver support");
     }
 
-    if (f->mode != FILE_W) {
+    if (f->mode & O_WRONLY) {
         kwarn(__FILE__,__func__,"file not open as w");
         return 0;
     }
