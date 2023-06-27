@@ -3,7 +3,7 @@
 #include "dirent.h"
 #include "stdlib.h"
 
-FILE * open(char * path, enum FILEMODE mode) {
+FILE * open(char * path, mode_t mode) {
     return (void*) syscall(2, (uint64_t)path, (size_t)mode, 0, 0, 0, 0);
 }
 

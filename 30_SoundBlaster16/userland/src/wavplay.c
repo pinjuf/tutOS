@@ -10,7 +10,7 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
-    FILE * audio_f = open(argv[1], FILE_R);
+    FILE * audio_f = open(argv[1], O_RDONLY);
     if (!audio_f) {
         puts("Could not open file\n");
         return 1;
@@ -63,11 +63,8 @@ int main(int argc, char * argv[]) {
     player.data = (void*)((uint64_t)curr_chunk + 8);
     player.size = *(uint32_t*)((uint64_t)curr_chunk + 4);
 
-    FILE * dsp = open("/dev/dsp", FILE_W);
+    FILE * dsp = open("/dev/dsp", O_RDWR);
     write(dsp, &player, sizeof(player));
-    close(dsp);
-
-    dsp = open("/dev/dsp", FILE_R);
     while (player.playing) {
         read(dsp, &player, sizeof(player));
     }

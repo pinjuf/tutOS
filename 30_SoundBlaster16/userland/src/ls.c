@@ -8,7 +8,7 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
-    FILE * fd = open(argv[1], FILE_R);
+    FILE * fd = open(argv[1], O_RDONLY);
     if (fd == 0) {
         puts("file not found\n");
         return 1;

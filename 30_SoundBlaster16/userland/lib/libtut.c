@@ -4,8 +4,8 @@
 FILE * stdout, * stdin;
 
 void _start(int argc, char * argv[]) {
-    stdout = open("/dev/tty", FILE_W);
-    stdin = open("/dev/tty", FILE_R);
+    stdout = open("/dev/tty", O_WRONLY);
+    stdin = open("/dev/tty", O_RDONLY);
 
     int status = main(argc, argv);
 
@@ -16,7 +16,7 @@ void _start(int argc, char * argv[]) {
 }
 
 void pit_msleep(size_t ms) {
-    FILE * pit = open("/dev/pit0", FILE_R);
+    FILE * pit = open("/dev/pit0", O_RDONLY);
     size_t ticks;
 
     read(pit, &ticks, 8);

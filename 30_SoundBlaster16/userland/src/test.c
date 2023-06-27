@@ -6,7 +6,7 @@ int main(int argc, char * argv[]) {
     sb16_player_t my_player;
     stat st;
 
-    FILE * audio_file = open("/root/music.raw", FILE_R);
+    FILE * audio_file = open("/root/music.raw", O_RDONLY);
     if (audio_file == NULL) {
         puts("Error opening file\n");
         return 1;
@@ -14,7 +14,7 @@ int main(int argc, char * argv[]) {
 
     fstat(audio_file, &st);
 
-    FILE * dsp = open("/dev/dsp", FILE_W);
+    FILE * dsp = open("/dev/dsp", O_RDWR);
     if (dsp == NULL) {
         puts("Error opening dsp\n");
         return 1;
@@ -35,10 +35,6 @@ int main(int argc, char * argv[]) {
     my_player.data          = audio_buf;
 
     write(dsp, &my_player, sizeof(sb16_player_t));
-
-    close(dsp);
-    dsp = open("/dev/dsp", FILE_R);
-
     while (my_player.playing) {
         read(dsp, &my_player, sizeof(sb16_player_t));
     }

@@ -10,10 +10,10 @@ enum FILETYPE {
     FILE_DEV,
 };
 
-enum FILEMODE {
-    FILE_R = 0,
-    FILE_W,
-};
+typedef uint16_t mode_t;
+#define O_RDONLY 1
+#define O_WRONLY 2
+#define O_RDWR   3
 
 enum SEEKMODE {
     SEEK_SET = 0,
@@ -39,7 +39,7 @@ typedef void FILE;
 typedef void DIR;
 typedef uint16_t pid_t;
 
-FILE * open(char * path, enum FILEMODE mode);
+FILE * open(char * path, mode_t mode);
 void close(FILE * file);
 size_t read(FILE * file, void * buf, size_t size);
 size_t write(FILE * file, void * buf, size_t size);
