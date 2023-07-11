@@ -77,7 +77,7 @@ typedef struct process_t {
 
     volatile PROCESS_STATE state;
 
-    void * stack_heap;  // The position of the stack in heap memory (it is mapped to sth like ELF_DEF_RSP)
+    void * stack_heap;  // The STARTING LOW position of the stack in heap memory (it is mapped to sth like ELF_DEF_RSP)
     size_t stack_pages;
 
     volatile bool to_fork; // Should this process be forked during next scheduling tick?
