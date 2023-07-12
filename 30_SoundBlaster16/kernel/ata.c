@@ -216,12 +216,12 @@ void ata_resetdrive(drive_t drive) {
     uint16_t port = ATA_CTRL_PORTS[drive >> 1];
 
     uint8_t status = inb(port);
-    port |= 1 << 2; // SRST (Software reset, affects both drives on the bus)
+    status |= 1 << 2; // SRST (Software reset, affects both drives on the bus)
     outb(port, status);
 
     // We should have our 5us by now
 
     status = inb(port);
-    port &= ~(1 << 2);
+    status &= ~(1 << 2);
     outb(port, status);
 }
