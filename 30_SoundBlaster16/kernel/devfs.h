@@ -25,7 +25,9 @@ typedef struct devfs_dev_t {
     size_t (* write)   (void * f, void * buf, size_t count);
     void * (* readdir) (void * f);
 
-    part_t p; // Used when the device is a HDD
+    union {
+        part_t p; // Used when the device is a HDD
+    } spec; // Specific fields
 } devfs_dev_t;
 
 devfs_t * get_devfs(void * p);
@@ -46,3 +48,5 @@ size_t devfs_read_vesa(void * f, void * buf, size_t count);
 size_t devfs_write_vesa(void * f, void * buf, size_t count);
 size_t devfs_read_mem(void * f, void * buf, size_t count);
 size_t devfs_write_mem(void * f, void * buf, size_t count);
+size_t devfs_read_hdd(void * f, void * buf, size_t count);
+size_t devfs_write_hdd(void * f, void * buf, size_t count);

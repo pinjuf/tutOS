@@ -56,7 +56,7 @@ int ata_read48(drive_t drive, uint64_t lba, uint16_t count, void * buf) {
             for (size_t j = 0; j < 5; j++)
                 s = inb(port + ATA_STATUS);
 
-            if ((s & ATA_ERR) || (s & ATA_DF)) return 1;
+            if ((s & ATA_ERR) || (s & ATA_DF)) return 0;
             if ((s & ATA_DRQ) && !(s & ATA_BSY)) break;
         }
 

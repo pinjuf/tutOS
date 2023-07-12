@@ -50,6 +50,7 @@ enum ATA_IO_REGS {
 
 typedef uint8_t drive_t;
 
+// Depends on ATA_DRIVES
 extern uint8_t drive_bitmap;
 
 int ata_read48(drive_t drive, uint64_t lba, uint16_t count, void * buf);

@@ -28,6 +28,7 @@ devfs_t * get_devfs(void * p) {
     dev.readdir   = devfs_readdir_rootdir;
     devfs_register_dev(out, &dev);
 
+    // stdin, stdout etc.
     memcpy(dev.name, "tty", 4);
     dev.type      = FILE_DEV;
     dev.size      = 0;
@@ -37,6 +38,7 @@ devfs_t * get_devfs(void * p) {
     dev.readdir   = NULL;
     devfs_register_dev(out, &dev);
 
+    // VESA/VBE framebuffer
     memcpy(dev.name, "vesa", 5);
     dev.type      = FILE_BLK;
     dev.size      = bpob->vbe_mode_info.bpp / 8 \
@@ -48,6 +50,7 @@ devfs_t * get_devfs(void * p) {
     dev.readdir   = NULL;
     devfs_register_dev(out, &dev);
 
+    // entire RAM
     memcpy(dev.name, "mem", 4);
     dev.type      = FILE_BLK;
     dev.size      = 0;
@@ -56,6 +59,45 @@ devfs_t * get_devfs(void * p) {
     dev.write     = devfs_write_mem;
     dev.readdir   = NULL;
     devfs_register_dev(out, &dev);
+
+    // HDDs
+    ata_checkdrives();
+    for (size_t i = 0; i < ATA_DRIVES; i++) {
+        if (!((1<<i) & drive_bitmap)) {
+            continue;
+        }
+
+        memcpy(dev.name, "hd", 2);
+        dev.name[2]   = 'a' + i;
+        dev.type      = FILE_BLK;
+        dev.size      = 0;
+        dev.avl_modes = O_RDWR;
+        dev.read      = devfs_read_hdd;
+        dev.write     = devfs_write_hdd;
+        dev.readdir   = NULL;
+        dev.spec.p.d = i;
+        dev.spec.p.n = GPT_WHOLEDISK;
+        devfs_register_dev(out, &dev);
+
+        if (!gpt_hasmagic(i)) {
+            continue;
+        }
+
+        for (size_t j = 0; j < get_part_count(i); j++) {
+            memcpy(dev.name, "hd", 2); // Some of this is redundant because of above, IK/IDC
+            dev.name[2]   = 'a' + i;
+            itoa(j+1, &dev.name[3], 10);
+            dev.type      = FILE_BLK;
+            dev.size      = 0;
+            dev.avl_modes = O_RDWR;
+            dev.read      = devfs_read_hdd;
+            dev.write     = devfs_write_hdd;
+            dev.readdir   = NULL;
+            dev.spec.p.d = i;
+            dev.spec.p.n = j;
+            devfs_register_dev(out, &dev);
+        }
+    }
 
     return (void*)out;
 }
@@ -599,4 +641,48 @@ size_t devfs_write_mem(void * f, void * buf, size_t count) {
     }
 
     return count;
+}
+
+size_t devfs_read_hdd(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+    filehandle_t * fh = f;
+    devfs_file_t * intern = fh->internal_file;
+    devfs_t * fs = (devfs_t *) mountpoints[fh->mountpoint].internal_fs;
+
+    devfs_dev_t * dev = NULL;
+    for (size_t i = 0; i < ll_len(fs->devs); i++) {
+        if (((devfs_dev_t*)ll_get(fs->devs, i))->id == intern->id) {
+            dev = (devfs_dev_t*) ll_get(fs->devs, i);
+            break;
+        }
+    }
+    // If dev still is NULL, we messed up big time
+    // (this means a HDD was unregistered but a filehandle still wants use it)
+
+    int res = part_read(&dev->spec.p, fh->curr, count, buf);
+
+    fh->curr += count;
+
+    return res ? 0 : count;
+}
+
+size_t devfs_write_hdd(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+    filehandle_t * fh = f;
+    devfs_file_t * intern = fh->internal_file;
+    devfs_t * fs = (devfs_t *) mountpoints[fh->mountpoint].internal_fs;
+
+    devfs_dev_t * dev = NULL;
+    for (size_t i = 0; i < ll_len(fs->devs); i++) {
+        if (((devfs_dev_t*)ll_get(fs->devs, i))->id == intern->id) {
+            dev = (devfs_dev_t*) ll_get(fs->devs, i);
+            break;
+        }
+    }
+
+    int res = part_write(&dev->spec.p, fh->curr, count, buf);
+
+    fh->curr += count;
+
+    return res ? 0 : count;
 }
