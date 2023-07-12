@@ -100,7 +100,7 @@ static const filesystem_t FILESYSTEMS[] = {
     },
 
     {"devfs",
-        NULL,
+        (void* (*) (part_t * p)) get_devfs,
         (filehandle_t * (*) (void * internal_fs, char * path, mode_t)) devfs_getfile,
         (void (*) (filehandle_t * f)) devfs_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_readfile,

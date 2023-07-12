@@ -8,127 +8,116 @@
 #include "isr.h"
 #include "sb16.h"
 
+devfs_t * get_devfs(void * p) {
+    // All FS initializers must take a partition, but devfs doesn't NEED it
+    (void)p;
+
+    devfs_t * out = (devfs_t*) kmalloc(sizeof(devfs_t));
+    out->devs = create_ll(sizeof(devfs_dev_t));
+    out->id_counter = 0; // Each devices gets a unique ID upon registering
+
+    devfs_dev_t dev;
+
+    // The "/dev/"-directory itself
+    memcpy(dev.name, "", 1);
+    dev.type      = FILE_DIR;
+    dev.size      = 0;
+    dev.avl_modes = O_RDONLY;
+    dev.read      = NULL;
+    dev.write     = NULL;
+    dev.readdir   = devfs_readdir_rootdir;
+    devfs_register_dev(out, &dev);
+
+    memcpy(dev.name, "tty", 4);
+    dev.type      = FILE_DEV;
+    dev.size      = 0;
+    dev.avl_modes = O_RDWR;
+    dev.read      = devfs_read_tty;
+    dev.write     = devfs_write_tty;
+    dev.readdir   = NULL;
+    devfs_register_dev(out, &dev);
+
+    memcpy(dev.name, "vesa", 5);
+    dev.type      = FILE_BLK;
+    dev.size      = bpob->vbe_mode_info.bpp / 8 \
+                  * bpob->vbe_mode_info.width   \
+                  * bpob->vbe_mode_info.height;
+    dev.avl_modes = O_RDWR;
+    dev.read      = devfs_read_vesa;
+    dev.write     = devfs_write_vesa;
+    dev.readdir   = NULL;
+    devfs_register_dev(out, &dev);
+
+    memcpy(dev.name, "mem", 4);
+    dev.type      = FILE_BLK;
+    dev.size      = 0;
+    dev.avl_modes = O_RDWR;
+    dev.read      = devfs_read_mem;
+    dev.write     = devfs_write_mem;
+    dev.readdir   = NULL;
+    devfs_register_dev(out, &dev);
+
+    return (void*)out;
+}
+
+devfs_id_t devfs_register_dev(devfs_t * fs, devfs_dev_t * dev) {
+    if (fs->id_counter == UINT32_MAX) {
+        kwarn(__FILE__,__func__,"what the fuck"); // Oops, 4294967295 devices...
+    }
+
+    devfs_id_t new_id = fs->id_counter++;
+
+    devfs_dev_t * new_dev = (devfs_dev_t*) ll_push(fs->devs);
+
+    memcpy(new_dev, dev, sizeof(devfs_dev_t));
+
+    new_dev->id = new_id;
+
+    return new_id;
+}
+
+void devfs_unregister_dev(devfs_t * fs, devfs_id_t dev) {
+    // Delete the linked list entry with that id
+    // (doesn't do anything if the device is not present)
+
+    for (size_t i = 0; i < ll_len(fs->devs); i++) {
+        if (((devfs_dev_t*)ll_get(fs->devs, i))->id == dev) {
+            ll_del(fs->devs, i);
+            return;
+        }
+    }
+}
+
 void * devfs_getfile(void * internal_fs, char * path, uint16_t m) {
-    (void) internal_fs;
-
-    mode_t mode = m;
-
-    filehandle_t * out = (filehandle_t *) kmalloc(sizeof(filehandle_t));
+    devfs_t * fs          = internal_fs;
+    mode_t mode           = m;
+    filehandle_t * out    = (filehandle_t *) kmalloc(sizeof(filehandle_t));
     devfs_file_t * intern = (devfs_file_t *) kmalloc(sizeof(devfs_file_t));
 
     out->internal_file = intern;
 
-    if (!strcmp(path, "vesafb")) {
-        intern->type = DEVFS_VESA;
-        out->curr = 0;
-        out->type = FILE_BLK;
-        out->size = bpob->vbe_mode_info.bpp/8 \
-                  * bpob->vbe_mode_info.height \
-                  * bpob->vbe_mode_info.width;
+    devfs_dev_t * dev = NULL;
 
-    } else if (!strcmp(path, "pcspk")) {
-        intern->type = DEVFS_PCSPK;
-        out->curr = 0;
-        out->type = FILE_DEV;
-        out->size = 0;
-
-        if (mode & O_RDONLY) {
-            kwarn(__FILE__,__func__,"cannot read sound");
-            return NULL;
+    for (size_t i = 0; i < ll_len(fs->devs); i++) {
+        if (!strcmp(((devfs_dev_t*)ll_get(fs->devs, i))->name, path)) {
+            dev = ll_get(fs->devs, i);
+            break;
         }
-
-    } else if (!strcmp(path, "tty")) {
-        intern->type = DEVFS_TTY;
-        out->curr = 0;
-        out->type = FILE_DEV;
-        out->size = 0;
-
-    } else if (!strcmp(path, "")) {
-        intern->type = DEVFS_DIR;
-        out->curr = 2; // 0 is UNKN device, 1 is the /DEV dir, our devices start at 2
-        out->type = FILE_DIR;
-        out->size = 0;
-
-        memset(&intern->p, 0, sizeof(part_t));
-        intern->p.n = GPT_WHOLEDISK;
-
-        if (mode & O_WRONLY) {
-            kwarn(__FILE__,__func__,"cannot write to devfs root dir");
-            return NULL;
-        }
-
-    } else if (!strcmp(path, "mem")) {
-        intern->type = DEVFS_MEM;
-        out->curr = 0;
-        out->type = FILE_BLK;
-        out->size = 0;
-
-    } else if (!strcmp(path, "qemudbg")) {
-        intern->type = DEVFS_QEMUDBG;
-        out->curr = 0;
-        out->type = FILE_DEV;
-        out->size = 0;
-
-        if (mode & O_RDONLY) {
-            kwarn(__FILE__,__func__,"cannot read from qemu dbg io");
-            return NULL;
-        }
-
-    } else if (!strcmp(path, "pit0")) {
-        // Lists pit0 ticks
-        intern->type = DEVFS_PIT0;
-        out->curr = 0;
-        out->type = FILE_DEV;
-        out->size = 0;
-
-    } else if (!strcmp(path, "dsp")) {
-        // Set/get DSP/SB16 status
-        intern->type = DEVFS_DSP;
-        out->curr = 0;
-        out->type = FILE_DEV;
-        out->size = 0;
-
-    } else if (strlen(path) > 2 \
-            && path[0] == 'h' \
-            && path[1] == 'd') {
-
-        intern->type = DEVFS_HDD;
-        ata_checkdrives();
-
-        drive_t drive_n = path[2] - 'a';
-        size_t part_n = strlen(path+3) ? atoi(path+3, 10)-1 : GPT_WHOLEDISK; // Partition numbering starts at #1
-
-        if ((drive_bitmap & (1<<drive_n)) == 0) {
-            kwarn(__FILE__,__func__,"drive not present");
-            return NULL;
-        }
-
-        if (part_n != GPT_WHOLEDISK && !gpt_hasmagic(drive_n)) {
-            kwarn(__FILE__,__func__,"no gpt");
-            return NULL;
-        }
-
-        if (part_n != GPT_WHOLEDISK && part_n >= get_part_count(drive_n)) {
-            // We assume that there are no holes (unused entries) in the GPT
-            kwarn(__FILE__,__func__,"partition non-existant");
-            return NULL;
-        }
-
-        part_t * p = get_part(drive_n, part_n);
-        memcpy(&intern->p, p, sizeof(part_t));
-        kfree(p);
-
-        out->curr = 0;
-        out->type = FILE_BLK;
-        out->size = 0;
-
-        if (part_n != GPT_WHOLEDISK)
-            out->size = intern->p.size * SECTOR_SIZE;
-
-    } else {
-        kwarn(__FILE__,__func__,"file not found");
-        return NULL;
     }
+
+    if (dev == NULL) {
+        kwarn(__FILE__,__func__,"file not found");
+    }
+
+    // There has got to be a cleaner way
+    if (!((mode & O_RDWR) == (mode & dev->avl_modes & O_RDWR))) {
+        kwarn(__FILE__,__func__,"requested RW mode(s) not available");
+    }
+
+    intern->id = dev->id;
+    out->curr  = 0;
+    out->type  = dev->type;
+    out->size  = dev->size;
 
     return out;
 }
@@ -144,6 +133,23 @@ size_t devfs_readfile(void * f, void * buf, size_t count) {
     filehandle_t * fh = f;
     devfs_file_t * intern = fh->internal_file;
 
+    devfs_t * fs = (devfs_t *) mountpoints[fh->mountpoint].internal_fs;
+
+    devfs_dev_t * dev = NULL;
+    for (size_t i = 0; i < ll_len(fs->devs); i++) {
+        if (((devfs_dev_t*)ll_get(fs->devs, i))->id == intern->id) {
+            dev = (devfs_dev_t*) ll_get(fs->devs, i);
+            break;
+        }
+    }
+
+    if (dev == NULL) {
+        kwarn(__FILE__,__func__,"device not registered");
+    }
+
+    return dev->read(f, buf, count);
+}
+/*
     switch (intern->type) {
         case DEVFS_VESA: {
              if (fh->curr > fh->size) {
@@ -218,12 +224,30 @@ size_t devfs_readfile(void * f, void * buf, size_t count) {
             kwarn(__FILE__,__func__,"cannot read (no impl?)");
             return 0;
     }
-}
+*/
 
 size_t devfs_writefile(void * f, void * buf, size_t count) {
     filehandle_t * fh = f;
     devfs_file_t * intern = fh->internal_file;
 
+    devfs_t * fs = (devfs_t *) mountpoints[fh->mountpoint].internal_fs;
+
+    devfs_dev_t * dev = NULL;
+    for (size_t i = 0; i < ll_len(fs->devs); i++) {
+        if (((devfs_dev_t*)ll_get(fs->devs, i))->id == intern->id) {
+            dev = (devfs_dev_t*) ll_get(fs->devs, i);
+            break;
+        }
+    }
+
+    if (dev == NULL) {
+        kwarn(__FILE__,__func__,"device not registerd");
+    }
+
+    return dev->write(f, buf, count);
+}
+
+/*
     switch (intern->type) {
         case DEVFS_VESA: {
             if (fh->curr > fh->size) {
@@ -309,21 +333,29 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
             kwarn(__FILE__,__func__,"cannot write (no impl?)");
             return 0;
     }
-}
+    */
 
 void * devfs_readdir(void * f) {
     filehandle_t * fh = f;
     devfs_file_t * intern = fh->internal_file;
 
-    if (intern->type != DEVFS_DIR) {
-        kwarn(__FILE__,__func__,"trying to dir-read not /dev");
-        return NULL;
+    devfs_t * fs = (devfs_t *) mountpoints[fh->mountpoint].internal_fs;
+
+    devfs_dev_t * dev = NULL;
+    for (size_t i = 0; i < ll_len(fs->devs); i++) {
+        if (((devfs_dev_t*)ll_get(fs->devs, i))->id == intern->id) {
+            dev = (devfs_dev_t*) ll_get(fs->devs, i);
+            break;
+        }
     }
 
-    enum DEVFS_DEV current = fh->curr;
+    if (dev == NULL) {
+        kwarn(__FILE__,__func__,"device not registered");
+    }
 
-    dirent * out = kcalloc(sizeof(dirent));
-
+    return dev->readdir(f);
+}
+/*
     // This SHOULD be in enum DEVFS_DEV order
     switch (current) {
         case DEVFS_VESA:
@@ -383,7 +415,7 @@ void * devfs_readdir(void * f) {
 
             // Notice how we fall through into the next one
             fh->curr++;
-            /* fall through */
+            fall through 
             // Holy shit, a marker comment!
  
         case DEVFS_TTY:
@@ -429,4 +461,142 @@ void * devfs_readdir(void * f) {
         default:
             return NULL;
     }
+*/
+
+void * devfs_readdir_rootdir(void * f) {
+    filehandle_t * fh     = f;
+    devfs_t * fs = (devfs_t *) mountpoints[fh->mountpoint].internal_fs;
+
+    if (fh->curr >= ll_len(fs->devs))
+        return NULL;
+
+    devfs_dev_t * dev = ll_get(fs->devs, fh->curr++);
+
+    dirent * out  = (dirent *) kmalloc(sizeof(dirent));
+    out->d_type   = dev->type;
+    out->d_size   = dev->size;
+    out->d_namlen = strlen(dev->name);
+    memcpy(out->d_name, dev->name, out->d_namlen + 1);
+
+    // Hacky hecky hicky hocky hucky rooty directory
+    if (out->d_namlen == 0) {
+        out->d_namlen = 1;
+        memcpy(out->d_name, ".", 2);
+    }
+
+    return out;
+}
+
+size_t devfs_read_tty(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+
+    for (size_t i = 0; i < count; i++) {
+        ((char*)buf)[i] = kbd_get_last_ascii();
+    }
+
+    return count;
+}
+
+size_t devfs_write_tty(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+
+    for (size_t i = 0; i < count; i++) {
+        kputc(((char*)buf)[i]);
+    }
+
+    return count;
+}
+
+size_t devfs_read_vesa(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+    filehandle_t * fh = f;
+
+     if (fh->curr > fh->size) {
+         return 0;
+     }
+
+     size_t to_read = count;
+     if (fh->curr + to_read > fh->size) {
+         to_read = fh->size - fh->curr;
+     }
+
+     for (size_t i = 0; i < to_read; i++) {
+         // We need to take pitch into account!
+         // <=====WIDTH * BPP=========>
+         // | ACTUAL ROW              | PAD |
+         // <=============PITCH=============>
+
+         const size_t pad = bpob->vbe_mode_info.pitch \
+                          - bpob->vbe_mode_info.width \
+                          * bpob->vbe_mode_info.bpp/8;
+
+         const size_t full_rows = fh->curr \
+                                / bpob->vbe_mode_info.width \
+                                / bpob->vbe_mode_info.bpp/8;
+
+         size_t actual = fh->curr + full_rows * pad;
+         ((char*)buf)[i] = *((char*) ((size_t)VESA_VIRT_FB + actual));
+
+         fh->curr++;
+     }
+
+     return to_read;
+}
+
+size_t devfs_write_vesa(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+    filehandle_t * fh = f;
+
+    if (fh->curr > fh->size) {
+        return 0;
+    }
+
+    size_t to_write = count;
+    if (fh->curr + to_write > fh->size) {
+        to_write = fh->size - fh->curr;
+    }
+
+    for (size_t i = 0; i < to_write; i++) {
+        // We need to take pitch into account!
+        // <=====WIDTH * BPP=========>
+        // | ACTUAL ROW              | PAD |
+        // <=============PITCH=============>
+
+        const size_t pad = bpob->vbe_mode_info.pitch \
+                         - bpob->vbe_mode_info.width \
+                         * bpob->vbe_mode_info.bpp/8;
+
+        const size_t full_rows = fh->curr \
+                               / bpob->vbe_mode_info.width \
+                               / bpob->vbe_mode_info.bpp/8;
+
+        size_t actual = fh->curr + full_rows * pad;
+        *((char*) ((size_t)VESA_VIRT_FB + actual)) = ((char*)buf)[i];
+
+        fh->curr++;
+    }
+
+    return to_write;
+}
+
+size_t devfs_read_mem(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+    filehandle_t * fh = f;
+
+    for (size_t i = 0; i < count; i++) {
+        ((char*)buf)[i] = *((char*)(fh->curr++));
+    }
+
+    return count;
+}
+
+size_t devfs_write_mem(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+    filehandle_t * fh = f;
+
+    for (size_t i = 0; i < count; i++) {
+        *((char*)(fh->curr++)) = ((char*)buf)[i];
+    }
+
+    return count;
 }

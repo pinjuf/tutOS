@@ -114,6 +114,27 @@ int ll_del(ll_head * head, size_t index) {
     return 0;
 }
 
+int ll_delp(ll_head * head, void * p) {
+    // Deletes the pointed to element
+    // TODO: test
+
+    p = (void*)((size_t)p - sizeof(ll_nodeattr));
+
+    ll_nodeattr * curr = head->start;
+    size_t i = 0;
+
+    while (curr) {
+        if (curr == p) {
+            return ll_del(head, i); // yes, i am that lazy, and yes, that should always return 0
+        }
+
+        curr = curr->next;
+        i++;
+    }
+
+    return 1;
+}
+
 void * ll_next(void * current) {
     ll_nodeattr * attr = (void*)((uint64_t)current - sizeof(ll_nodeattr));
 
