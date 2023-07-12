@@ -43,10 +43,23 @@ boot_start:
 
     sti
 
+    ; Load first 64K
     mov dl, [bootdrive]
     mov ah, 0x42
     mov si, daps
     int 0x13
+
+    ; Load next 64K
+    mov byte  [daps_sect], 0x80
+    mov word  [daps_offs], 0
+    mov word  [daps_sel],  0x1900
+    mov dword [daps_lbal], 0x81
+    mov dword [daps_lbah], 0x00
+    mov dl, [bootdrive]
+    mov ah, 0x42
+    mov si, daps
+    int 0x13
+
 
     jmp 0x9000
 
@@ -57,7 +70,7 @@ daps: ; Disk Address Packet Structure
     daps_res:   db 0x00   ; Reserved
     daps_sect:  dw 0x80   ; Number of sectors to read (max value for QEMU) (int 0x13 sets this to the amount of sectors actually read)
     daps_offs:  dw 0      ; Offset in buffer (see daps_sel)
-    daps_sel:   dw 0x900 ; Segment selector for buffer (= write to 0x9000)
+    daps_sel:   dw 0x900  ; Segment selector for buffer (= write to 0x9000)
     daps_lbal:  dd 0x1    ; Low 32 bits of LBA
     daps_lbah:  dd 0x0    ; High 32 bits of LBA
 
