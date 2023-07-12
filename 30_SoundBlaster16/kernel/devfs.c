@@ -105,6 +105,7 @@ devfs_t * get_devfs(void * p) {
         }
     }
 
+    // PIT0 ticks
     memcpy(dev.name, "pit0", 5);
     dev.type      = FILE_DEV;
     dev.size      = 0;
@@ -114,12 +115,32 @@ devfs_t * get_devfs(void * p) {
     dev.readdir   = NULL;
     devfs_register_dev(out, &dev);
 
+    // SoundBlaster16/DSP
     memcpy(dev.name, "dsp", 4);
     dev.type      = FILE_DEV;
     dev.size      = 0;
     dev.avl_modes = O_RDWR;
     dev.read      = devfs_read_dsp;
     dev.write     = devfs_write_dsp;
+    dev.readdir   = NULL;
+    devfs_register_dev(out, &dev);
+
+    // PC PIT2 Speaker
+    memcpy(dev.name, "pcspk", 6);
+    dev.type      = FILE_DEV;
+    dev.size      = 0;
+    dev.avl_modes = O_WRONLY;
+    dev.read      = NULL;
+    dev.write     = devfs_write_pcspk;
+    dev.readdir   = NULL;
+    devfs_register_dev(out, &dev);
+
+    // QEMU debug port
+    memcpy(dev.name, "qemudbg", 8);
+    dev.size      = 0;
+    dev.avl_modes = O_WRONLY;
+    dev.read      = NULL;
+    dev.write     = devfs_write_qemudbg;
     dev.readdir   = NULL;
     devfs_register_dev(out, &dev);
 
@@ -217,82 +238,6 @@ size_t devfs_readfile(void * f, void * buf, size_t count) {
 
     return dev->read(f, buf, count);
 }
-/*
-    switch (intern->type) {
-        case DEVFS_VESA: {
-             if (fh->curr > fh->size) {
-                 return 0;
-             }
-
-             size_t to_read = count;
-             if (fh->curr + to_read > fh->size) {
-                 to_read = fh->size - fh->curr;
-             }
-
-             for (size_t i = 0; i < to_read; i++) {
-                 // We need to take pitch into account!
-                 // <=====WIDTH * BPP=========>
-                 // | ACTUAL ROW              | PAD |
-                 // <=============PITCH=============>
-
-                 const size_t pad = bpob->vbe_mode_info.pitch \
-                                  - bpob->vbe_mode_info.width \
-                                  * bpob->vbe_mode_info.bpp/8;
-
-                 const size_t full_rows = fh->curr \
-                                        / bpob->vbe_mode_info.width \
-                                        / bpob->vbe_mode_info.bpp/8;
-
-                 size_t actual = fh->curr + full_rows * pad;
-                 ((char*)buf)[i] = *((char*) ((size_t)VESA_VIRT_FB + actual));
-
-                 fh->curr++;
-             }
-
-             return to_read;
-        }
-
-        case DEVFS_TTY: {
-            for (size_t i = 0; i < count; i++) {
-                ((char*)buf)[i] = kbd_get_last_ascii();
-            }
-
-            return count;
-        }
-
-        case DEVFS_MEM: {
-            for (size_t i = 0; i < count; i++) {
-                ((char*)buf)[i] = *((char*)(fh->curr++));
-            }
-
-            return count;
-        }
-
-        case DEVFS_HDD: {
-            int res = part_read(&intern->p, fh->curr, count, buf);
-
-            fh->curr += count;
-
-            return res ? 0 : count;
-        }
-
-        case DEVFS_PIT0: {
-            memcpy(buf, &pit0_ticks, sizeof(size_t));
-
-            return sizeof(size_t); // yes, we force this, no, we won't tell you why
-        }
-
-        case DEVFS_DSP: {
-            memcpy(buf, sb16_player, sizeof(sb16_player_t));
-
-            return sizeof(sb16_player_t);
-        }
-
-        default:
-            kwarn(__FILE__,__func__,"cannot read (no impl?)");
-            return 0;
-    }
-*/
 
 size_t devfs_writefile(void * f, void * buf, size_t count) {
     filehandle_t * fh = f;
@@ -314,94 +259,6 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
 
     return dev->write(f, buf, count);
 }
-
-/*
-    switch (intern->type) {
-        case DEVFS_VESA: {
-            if (fh->curr > fh->size) {
-                return 0;
-            }
-
-            size_t to_write = count;
-            if (fh->curr + to_write > fh->size) {
-                to_write = fh->size - fh->curr;
-            }
-
-            for (size_t i = 0; i < to_write; i++) {
-                // We need to take pitch into account!
-                // <=====WIDTH * BPP=========>
-                // | ACTUAL ROW              | PAD |
-                // <=============PITCH=============>
-
-                const size_t pad = bpob->vbe_mode_info.pitch \
-                                 - bpob->vbe_mode_info.width \
-                                 * bpob->vbe_mode_info.bpp/8;
-
-                const size_t full_rows = fh->curr \
-                                       / bpob->vbe_mode_info.width \
-                                       / bpob->vbe_mode_info.bpp/8;
-
-                size_t actual = fh->curr + full_rows * pad;
-                *((char*) ((size_t)VESA_VIRT_FB + actual)) = ((char*)buf)[i];
-
-                fh->curr++;
-            }
-
-            return to_write;
-        }
-
-        case DEVFS_PCSPK: {
-            init_pit2(*(uint32_t*)buf);
-
-            return 4;
-        }
-
-        case DEVFS_TTY: {
-            for (size_t i = 0; i < count; i++) {
-                kputc(((char*)buf)[i]);
-            }
-
-            return count;
-        }
-
-        case DEVFS_MEM: {
-            for (size_t i = 0; i < count; i++) {
-                *((char*)(fh->curr++)) = ((char*)buf)[i];
-            }
-
-            return count;
-        }
-
-        case DEVFS_HDD: {
-            int res = part_write(&intern->p, fh->curr, count, buf);
-
-            fh->curr += count;
-
-            return res ? 0 : count;
-        }
-
-        case DEVFS_QEMUDBG: {
-            for (size_t i = 0; i < count; i++) {
-                qemu_putc(((char*)buf)[i]);
-            }
-
-            return count;
-        }
-
-        case DEVFS_DSP: {
-            memcpy(sb16_player, buf, sizeof(sb16_player_t));
-
-            if (sb16_player->playing)
-                sb16_start_play();
-
-            return sizeof(sb16_player_t);
-        }
-
-        default:
-            kwarn(__FILE__,__func__,"cannot write (no impl?)");
-            return 0;
-    }
-    */
 
 void * devfs_readdir(void * f) {
     filehandle_t * fh = f;
@@ -630,4 +487,20 @@ size_t devfs_write_dsp(void * f, void * buf, size_t count) {
         sb16_stop_play();
 
     return sizeof(sb16_player_t);
+}
+
+size_t devfs_write_pcspk(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+    init_pit2(*(uint32_t*)buf);
+
+    return 4;
+}
+
+size_t devfs_write_qemudbg(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+    for (size_t i = 0; i < count; i++) {
+        qemu_putc(((char*)buf)[i]);
+    }
+
+    return count;
 }
