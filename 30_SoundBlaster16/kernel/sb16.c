@@ -111,3 +111,8 @@ void isr_irq5() {
         sb16_player->playing = false;
     }
 }
+
+void sb16_stop_play() {
+    outb(DSP_WRITE, 0xD0);
+    outb(DSP_WRITE, 0xD5);
+}

@@ -30,6 +30,7 @@
 void init_sb16();
 void sb16_volume(uint8_t volume);
 void sb16_start_play();
+void sb16_stop_play();
 
 // Generic structure for what we are currently playing
 typedef struct sb16_player_t {

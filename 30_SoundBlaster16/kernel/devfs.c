@@ -105,6 +105,24 @@ devfs_t * get_devfs(void * p) {
         }
     }
 
+    memcpy(dev.name, "pit0", 5);
+    dev.type      = FILE_DEV;
+    dev.size      = 0;
+    dev.avl_modes = O_RDONLY;
+    dev.read      = devfs_read_pit0;
+    dev.write     = NULL;
+    dev.readdir   = NULL;
+    devfs_register_dev(out, &dev);
+
+    memcpy(dev.name, "dsp", 4);
+    dev.type      = FILE_DEV;
+    dev.size      = 0;
+    dev.avl_modes = O_RDWR;
+    dev.read      = devfs_read_dsp;
+    dev.write     = devfs_write_dsp;
+    dev.readdir   = NULL;
+    devfs_register_dev(out, &dev);
+
     return (void*)out;
 }
 
@@ -403,113 +421,6 @@ void * devfs_readdir(void * f) {
 
     return dev->readdir(f);
 }
-/*
-    // This SHOULD be in enum DEVFS_DEV order
-    switch (current) {
-        case DEVFS_VESA:
-            out->d_type = FILE_DEV;
-            out->d_namlen = 6;
-            memcpy(out->d_name, (char*)"vesafb", 7); // Satan fears me
-            out->d_size = bpob->vbe_mode_info.bpp/8 \
-                  * bpob->vbe_mode_info.height \
-                  * bpob->vbe_mode_info.width;
-            fh->curr++;
-            return out;
-
-        case DEVFS_PCSPK:
-            out->d_type = FILE_DEV;
-            out->d_namlen = 5;
-            memcpy(out->d_name, (char*)"pcspk", 6);
-            out->d_size = 0;
-            fh->curr++;
-            return out;
-
-        case DEVFS_HDD:
-            out->d_type = FILE_BLK;
-            // This one is a little bit autistic...
-            ata_checkdrives();
-
-            out->d_namlen = 3;
-            out->d_size = 0;
-            memcpy(out->d_name, (char*)"hd", 3);
-
-            bool has_gpt = gpt_hasmagic(intern->p.d);
-            size_t partitions = 1;
-            if (has_gpt)
-                partitions = 1 + get_part_count(intern->p.d);
-
-            if (intern->p.n >= (partitions-1) && intern->p.n != GPT_WHOLEDISK) {
-                intern->p.n = GPT_WHOLEDISK;
-                intern->p.d++;
-            }
-
-            while (!(drive_bitmap & (1 << intern->p.d))  && intern->p.d < 8)
-                intern->p.d++;
-
-            if (intern->p.d < 8) {
-                out->d_name[2] = intern->p.d + 'a';
-
-                char buf[6] = {0};
-                if (intern->p.n != GPT_WHOLEDISK)
-                    itoa(intern->p.n + 1, buf, 10);
-
-                out->d_namlen += strlen(buf);
-                memcpy(out->d_name + 3, buf, strlen(buf));
-
-                intern->p.n++;
-
-                return out;
-            }
-
-            // Notice how we fall through into the next one
-            fh->curr++;
-            fall through 
-            // Holy shit, a marker comment!
- 
-        case DEVFS_TTY:
-            out->d_type = FILE_DEV;
-            out->d_namlen = 3;
-            memcpy(out->d_name, (char*)"tty", 4);
-            out->d_size = 0;
-            fh->curr++;
-            return out;
-
-        case DEVFS_QEMUDBG:
-            out->d_type = FILE_DEV;
-            out->d_namlen = 7;
-            memcpy(out->d_name, (char*)"qemudbg", 8);
-            out->d_size = 0;
-            fh->curr++;
-            return out;
-
-        case DEVFS_MEM:
-            out->d_type = FILE_DEV;
-            out->d_namlen = 3;
-            memcpy(out->d_name, (char*)"mem", 4);
-            out->d_size = 0;
-            fh->curr++;
-            return out;
-
-        case DEVFS_PIT0:
-            out->d_type = FILE_DEV;
-            out->d_namlen = 4;
-            memcpy(out->d_name, (char*)"pit0", 5);
-            out->d_size = 0;
-            fh->curr++;
-            return out;
-
-        case DEVFS_DSP:
-            out->d_type = FILE_DEV;
-            out->d_namlen = 3;
-            memcpy(out->d_name, (char*)"dsp", 4);
-            out->d_size = 0;
-            fh->curr++;
-            return out;
-
-        default:
-            return NULL;
-    }
-*/
 
 void * devfs_readdir_rootdir(void * f) {
     filehandle_t * fh     = f;
@@ -691,4 +602,30 @@ size_t devfs_write_hdd(void * f, void * buf, size_t count) {
     fh->curr += count;
 
     return res ? 0 : count;
+}
+
+size_t devfs_read_pit0(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+    memcpy(buf, &pit0_ticks, sizeof(pit0_ticks));
+
+    return sizeof(pit0_ticks); // yes, we force this, no, we won't tell you why
+}
+
+size_t devfs_read_dsp(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+    memcpy(buf, sb16_player, sizeof(sb16_player_t));
+
+    return sizeof(sb16_player_t);
+}
+
+size_t devfs_write_dsp(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+    memcpy(sb16_player, buf, sizeof(sb16_player_t));
+
+    if (sb16_player->playing)
+        sb16_start_play();
+    else
+        sb16_stop_play();
+
+    return sizeof(sb16_player_t);
 }

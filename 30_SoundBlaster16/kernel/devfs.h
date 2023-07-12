@@ -50,3 +50,6 @@ size_t devfs_read_mem(void * f, void * buf, size_t count);
 size_t devfs_write_mem(void * f, void * buf, size_t count);
 size_t devfs_read_hdd(void * f, void * buf, size_t count);
 size_t devfs_write_hdd(void * f, void * buf, size_t count);
+size_t devfs_read_pit0(void * f, void * buf, size_t count);
+size_t devfs_read_dsp(void * f, void * buf, size_t count);
+size_t devfs_write_dsp(void * f, void * buf, size_t count);
