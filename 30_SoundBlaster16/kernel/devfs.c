@@ -75,8 +75,11 @@ devfs_t * get_devfs(void * p) {
         dev.read      = devfs_read_hdd;
         dev.write     = devfs_write_hdd;
         dev.readdir   = NULL;
-        dev.spec.p.d = i;
-        dev.spec.p.n = GPT_WHOLEDISK;
+
+        part_t * part = get_part(i, GPT_WHOLEDISK);
+        memcpy(&dev.spec.p, part, sizeof(part_t));
+        kfree(part);
+
         devfs_register_dev(out, &dev);
 
         if (!gpt_hasmagic(i)) {
@@ -93,8 +96,11 @@ devfs_t * get_devfs(void * p) {
             dev.read      = devfs_read_hdd;
             dev.write     = devfs_write_hdd;
             dev.readdir   = NULL;
-            dev.spec.p.d = i;
-            dev.spec.p.n = j;
+
+            part_t * part = get_part(i, j);
+            memcpy(&dev.spec.p, part, sizeof(part_t));
+            kfree(part);
+
             devfs_register_dev(out, &dev);
         }
     }
