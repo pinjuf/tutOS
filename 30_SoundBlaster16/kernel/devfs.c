@@ -173,11 +173,13 @@ void * devfs_getfile(void * internal_fs, char * path, uint16_t m) {
 
     if (dev == NULL) {
         kwarn(__FILE__,__func__,"file not found");
+        return NULL;
     }
 
     // There has got to be a cleaner way
     if (!((mode & O_RDWR) == (mode & dev->avl_modes & O_RDWR))) {
         kwarn(__FILE__,__func__,"requested RW mode(s) not available");
+        return NULL;
     }
 
     intern->id = dev->id;
