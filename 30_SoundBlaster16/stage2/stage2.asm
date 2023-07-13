@@ -163,6 +163,9 @@ reload_cs:
     mov ss, ax
     mov esp, 0x9000
 
+    ; Init the x87 FPU
+    finit
+
     ; Enabling MMX, SSE & SSE2
     ; Step 1: Check for features
     mov eax, 0x1
