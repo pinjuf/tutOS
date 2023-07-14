@@ -90,6 +90,30 @@ void schedule(void * regframe_ptr) {
             memcpy(buf, current_process->pagemaps[i].virt, current_process->pagemaps[i].n * PAGE_SIZE);
         }
     }
+
+    if (!current_process->sighandling && current_process->sigqueue_sz) {
+        // There is a pending signal a process is ready to handle
+
+        int signum            = pop_proc_sig(current_process);
+        struct sigaction * sa = get_proc_sigaction(current_process, signum);
+
+        if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
+            // TODO: Default handler
+        } else if ((uint64_t)sa->sa_handler != SIG_IGN) {
+            // A handler has been registered by the program and must now be jumped to.
+
+            current_process->sighandling = true;
+
+            // Just copy pretty much the entire context
+            memcpy(&current_process->sigregs, &current_process->regs, sizeof(int_regframe_t));
+
+            current_process->sigregs.rip = (uint64_t)sa->sa_handler;
+            current_process->sigregs.rdi = signum; // Argument #0 for handler
+
+            memcpy(rf, &current_process->sigregs, sizeof(int_regframe_t));
+
+        } // SIG_IGN is, well, ignored
+    }
 }
 
 void proc_set_args(process_t * proc, int argc, char * argv[]) {

@@ -14,5 +14,7 @@ int main(int argc, char * argv[]) {
     sa.sa_handler = testhandler;
     sigaction(69, &sa);
 
+    puts("Hello from test program!\n");
+
     return 0;
 }

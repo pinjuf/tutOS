@@ -137,7 +137,8 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             }
 
             // We cannot be sure elf_load will succeed, but if it does, it will overwrite the pagemaps
-            size_t original_pn = current_process->pagemaps_n;
+            size_t original_pn    = current_process->pagemaps_n;
+            ll_head * original_sa = current_process->sigactions;
             pagemap_t * original_p  = current_process->pagemaps;
 
             void * elf_buf = kmalloc(elf_handle->size);
@@ -157,9 +158,15 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                 free_pages((void*)addr, original_p[i].n);
             }
             kfree(original_p);
+            destroy_ll(original_sa);
 
             proc_set_args(current_process, argc, argv);
             kfree(elf_buf);
+
+            // Context changes don't pass signals on
+            current_process->sigactions  = create_ll(sizeof(struct sigaction));
+            current_process->sigqueue_sz = 0;
+            current_process->sighandling = false;
 
             current_process->to_exec = true;
 
@@ -181,6 +188,13 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             current_process->state = PROCESS_ZOMBIE;
             current_process->exitcode = return_code;
+
+            // Notify the parent that the child died
+            // TODO: Check for sa_flags
+            if (current_process->parent && get_proc_by_pid(current_process->parent)) {
+                push_proc_sig(get_proc_by_pid(current_process->parent), SIGCHLD);
+            }
+
             current_process = NULL; // The scheduler will see this and pick us up
 
             sti;

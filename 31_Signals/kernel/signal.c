@@ -41,10 +41,8 @@ void register_sigaction(process_t * proc, struct sigaction * action) {
     struct sigaction * sa = get_proc_sigaction(proc, action->sa_sig);
 
     if (sa) {
-        kputs("CHNG SIG!");
         memcpy(sa, action, sizeof(struct sigaction));
     } else {
-        kputs("NEW SIGNAL!");
         struct sigaction * sa2 = ll_push(proc->sigactions);
         memcpy(sa2, sa, sizeof(struct sigaction));
     }

@@ -13,7 +13,7 @@ int main(int argc, char * argv[]) {
 
     struct sigaction sa;
     sa.sa_handler = sigchld;
-    sigaction(SIGCHLD, sa);
+    sigaction(SIGCHLD, &sa);
 
     puts("< tutOS sh >\n");
 
