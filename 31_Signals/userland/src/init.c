@@ -89,7 +89,7 @@ int main(int argc, char * argv[]) {
         int argc = 0;
         char * acurr = cmdbuf;
         while (*acurr) {
-            argv[argc++] = curr;
+            argv[argc++] = acurr;
             while (*acurr && *acurr != ' ')
                 acurr++;
             if (*acurr)

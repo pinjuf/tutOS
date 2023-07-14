@@ -1,4 +1,4 @@
-all: init test ls echo cat wavplay
+all: init test ls echo cat wavplay kill
 
 CC = gcc
 CFLAGS = -T linker.ld -Wall -Wextra -Wpedantic -nostdlib -ffreestanding -fno-pie -fno-stack-protector -fno-asynchronous-unwind-tables \
