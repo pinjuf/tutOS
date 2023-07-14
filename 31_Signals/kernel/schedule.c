@@ -93,6 +93,12 @@ void schedule(void * regframe_ptr) {
         }
     }
 
+    if (current_process->to_sigreturn) {
+        current_process->sighandling  = false;
+        current_process->to_sigreturn = false;
+        write_proc_regs(current_process, rf);
+    }
+
     if (!current_process->sighandling && current_process->sigqueue_sz) {
         // There is a pending signal a process is ready to handle
 
@@ -104,7 +110,8 @@ void schedule(void * regframe_ptr) {
         } else if ((uint64_t)sa->sa_handler != SIG_IGN) {
             // A handler has been registered by the program and must now be jumped to.
 
-            current_process->sighandling = true;
+            current_process->sighandling  = true;
+            current_process->to_sigreturn = false;
 
             // Just copy pretty much the entire context
             memcpy(&current_process->sigregs, &current_process->regs, sizeof(int_regframe_t));

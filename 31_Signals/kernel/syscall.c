@@ -105,6 +105,16 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return 0;
         }
+        case 15: { // sigreturn
+            if (!current_process->sighandling)
+                return -1;
+
+            current_process->to_sigreturn = true;
+
+            // Scheduler will see the flag and pick us up
+            sti;
+            while (1);
+        }
         case 39: { // getpid
             return current_process->pid;
         }

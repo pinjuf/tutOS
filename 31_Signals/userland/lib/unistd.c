@@ -77,3 +77,7 @@ int fstat(FILE * fd, stat * statbuf) {
 int sigaction(int sig, struct sigaction * act) {
     return syscall(13, (uint64_t)sig, (uint64_t)act, 0, 0, 0, 0);
 }
+
+int sigreturn() {
+    return syscall(15, 0, 0, 0, 0, 0, 0);
+}

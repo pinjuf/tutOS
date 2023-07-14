@@ -99,6 +99,7 @@ typedef struct process_t {
     int_regframe_t regs;
 
     volatile bool sighandling; // Is this process currently handling a signal?
+    volatile bool to_sigreturn; // Will this process return from a sighandler next tick?
     size_t sigqueue_sz;
     int sigqueue[SIGQUEUE_SZ]; // FIFO queue
     int_regframe_t sigregs;

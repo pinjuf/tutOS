@@ -56,3 +56,4 @@ dirent * readdir(DIR * d);
 int pstat(char * pathname, stat * statbuf);
 int fstat(FILE * fd, stat * statbuf);
 int sigaction(int sig, struct sigaction * act);
+int sigreturn();
