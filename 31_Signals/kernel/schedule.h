@@ -125,3 +125,6 @@ void clear_none_procs();
 
 void write_proc_regs(process_t * proc, int_regframe_t * regs);
 void read_proc_regs(process_t * proc, int_regframe_t * regs);
+
+void free_pagemaps(pagemap_t * maps, size_t n);
+void kill_process(process_t * proc, uint8_t return_code);

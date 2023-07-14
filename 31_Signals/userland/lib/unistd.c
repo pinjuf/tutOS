@@ -81,3 +81,7 @@ int sigaction(int sig, struct sigaction * act) {
 int sigreturn() {
     return syscall(15, 0, 0, 0, 0, 0, 0);
 }
+
+int kill(pid_t pid, int sig) {
+    return syscall(62, pid, sig, 0, 0, 0, 0);
+}

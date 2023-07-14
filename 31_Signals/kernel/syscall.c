@@ -147,9 +147,9 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             }
 
             // We cannot be sure elf_load will succeed, but if it does, it will overwrite the pagemaps
-            size_t original_pn    = current_process->pagemaps_n;
-            ll_head * original_sa = current_process->sigactions;
+            ll_head * original_sa   = current_process->sigactions;
             pagemap_t * original_p  = current_process->pagemaps;
+            size_t original_pn      = current_process->pagemaps_n;
 
             void * elf_buf = kmalloc(elf_handle->size);
             kread(elf_handle, elf_buf, elf_handle->size);
@@ -160,13 +160,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                 return 1;
             }
 
-            for (size_t i = 0; i < original_pn; i++) {
-                // Dirty, I know...
-                uint64_t addr = (uint64_t)original_p[i].phys;
-                addr -= HEAP_PHYS;
-                addr += HEAP_VIRT;
-                free_pages((void*)addr, original_p[i].n);
-            }
+            free_pagemaps(original_p, original_pn);
             kfree(original_p);
             destroy_ll(original_sa);
 
@@ -186,24 +180,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
         case 60: { // exit
             uint8_t return_code = arg0 & 0xFF;
 
-            // Free the memory
-            for (size_t i = 0; i < current_process->pagemaps_n; i++) {
-                uint64_t addr = (uint64_t)current_process->pagemaps[i].phys;
-                addr -= HEAP_PHYS;
-                addr += HEAP_VIRT;
-                free_pages((void*)addr, current_process->pagemaps[i].n);
-            }
-            kfree(current_process->pagemaps);
-            destroy_ll(current_process->sigactions);
-
-            current_process->state = PROCESS_ZOMBIE;
-            current_process->exitcode = return_code;
-
-            // Notify the parent that the child died
-            // TODO: Check for sa_flags
-            if (current_process->parent && get_proc_by_pid(current_process->parent)) {
-                push_proc_sig(get_proc_by_pid(current_process->parent), SIGCHLD);
-            }
+            kill_process(current_process, return_code);
 
             current_process = NULL; // The scheduler will see this and pick us up
 
@@ -228,6 +205,18 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                 proc->state = PROCESS_NONE;
 
             return pid;
+        }
+        case 62: { // kill
+            pid_t pid = arg0;
+            int   sig = arg1;
+
+            process_t * target = get_proc_by_pid(pid);
+            if (!target)
+                return -1;
+
+            push_proc_sig(target, sig);
+
+            return 0;
         }
         case 78: { // getdents (technically getdents64)
             filehandle_t * dir = (void*)arg0;

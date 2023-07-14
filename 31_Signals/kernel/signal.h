@@ -15,6 +15,8 @@ struct sigaction {
 
 enum SIGNAL { // TODO: Fill this up
     SIGCHLD,
+    SIGTERM,
+    SIGKILL,
 };
 
 void push_proc_sig(process_t * proc, int sig);

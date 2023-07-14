@@ -178,3 +178,29 @@ void read_proc_regs(process_t * proc, int_regframe_t * regs) {
     else
         memcpy(&proc->regs, regs, sizeof(int_regframe_t));
 }
+
+void free_pagemaps(pagemap_t * maps, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        uint64_t addr = (uint64_t)maps[i].phys;
+        // Dirty, I know...
+        addr -= HEAP_PHYS;
+        addr += HEAP_VIRT;
+        free_pages((void*)addr, maps[i].n);
+    }
+}
+
+void kill_process(process_t * proc, uint8_t return_code) {
+    // Free the memory
+    free_pagemaps(proc->pagemaps, proc->pagemaps_n);
+    kfree(proc->pagemaps);
+    destroy_ll(proc->sigactions);
+
+    proc->state = PROCESS_ZOMBIE;
+    proc->exitcode = return_code;
+
+    // Notify the parent that the child died
+    // TODO: Check for sa_flags
+    if (proc->parent && get_proc_by_pid(proc->parent)) {
+        push_proc_sig(get_proc_by_pid(proc->parent), SIGCHLD);
+    }
+}

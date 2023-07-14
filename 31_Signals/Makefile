@@ -33,9 +33,9 @@ kernel/kernel.bin: kernel/
 kernel/kernel.elf: kernel/
 	$(MAKE) -C kernel kernel.elf
 
-userland.img: .FORCE userland/
+userland.img: .FORCE userland
 	dd if=/dev/zero of=$@ bs=1048576 count=32
 	mkfs.ext2 -d userland $@
 
-userland:
+userland: userland/
 	$(MAKE) -C userland
