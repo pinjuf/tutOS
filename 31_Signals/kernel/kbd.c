@@ -15,8 +15,8 @@ size_t mouse_ylim = 600;
 
 uint8_t * kbd_bitmap;
 
-char kbd_last_ascii;
-uint16_t kbd_last_scancode;
+volatile char kbd_last_ascii;
+volatile uint16_t kbd_last_scancode;
 
 void kbd_setkey(uint16_t key, bool status) {
     uint16_t i = key/8;
@@ -49,7 +49,6 @@ char scancode_shift_to_ascii(uint8_t s) {
 }
 
 // Should it be necessary to get the last key WITHOUT blocking, you can just read kbd_last_ascii
-__attribute__((optimize("O0"))) // GCC will transform "kbd_last_ascii==0" into "true"
 char kbd_get_last_ascii() {
     while (kbd_last_ascii == 0);
     char o = kbd_last_ascii;
@@ -57,7 +56,6 @@ char kbd_get_last_ascii() {
     return o;
 }
 
-__attribute__((optimize("O0")))
 uint16_t kbd_get_last_scancode() {
     while (kbd_last_scancode == 0);
     uint16_t o = kbd_last_scancode;

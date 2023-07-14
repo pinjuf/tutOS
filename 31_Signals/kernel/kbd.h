@@ -38,8 +38,8 @@ extern uint8_t mouse_scroll;
 extern uint8_t * kbd_bitmap;
 
 // A simple handle to access the last pressed key as ASCII
-extern char kbd_last_ascii;
-extern uint16_t kbd_last_scancode;
+extern volatile char kbd_last_ascii;
+extern volatile uint16_t kbd_last_scancode;
 
 void kbd_setkey(uint16_t key, bool status);
 bool kbd_getkey(uint16_t key);

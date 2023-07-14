@@ -105,6 +105,20 @@ void schedule(void * regframe_ptr) {
         int signum            = pop_proc_sig(current_process);
         struct sigaction * sa = get_proc_sigaction(current_process, signum);
 
+        // Unhandleable signals
+        switch (signum) {
+            case SIGKILL:
+                kill_process(current_process, UINT8_MAX);
+                current_process = NULL;
+
+                // Just run the scheduler over everything again
+                schedule(rf);
+                return;
+
+            default:
+                break;
+        }
+
         if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
             // TODO: Default handler
         } else if ((uint64_t)sa->sa_handler != SIG_IGN) {
