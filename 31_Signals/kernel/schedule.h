@@ -72,6 +72,8 @@ typedef struct pagemap_t {
     size_t n;
 } pagemap_t;
 
+#define SIGQUEUE_SZ 8
+
 typedef struct process_t {
     pid_t pid;
 
@@ -95,6 +97,11 @@ typedef struct process_t {
     size_t pagemaps_n;
 
     int_regframe_t regs;
+
+    volatile bool sighandling; // Is this process currently handling a signal?
+    size_t sigqueue_sz;
+    int sigqueue[SIGQUEUE_SZ]; // FIFO queue
+    int_regframe_t sigregs;
 } process_t;
 
 #define MAX_PROCESSES 256
@@ -113,3 +120,6 @@ process_t * add_process();
 process_t * get_proc_by_pid(pid_t pid);
 
 void clear_none_procs();
+
+void push_proc_sig(process_t * proc, int sig);
+int pop_proc_sig(process_t * proc);

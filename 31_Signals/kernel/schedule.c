@@ -129,3 +129,23 @@ void clear_none_procs() {
         }
     }
 }
+
+void push_proc_sig(process_t * proc, int sig) {
+    if (proc->sigqueue_sz == SIGQUEUE_SZ) {
+        kwarn(__FILE__,__func__,"signal queue full");
+        return;
+    }
+
+    proc->sigqueue[proc->sigqueue_sz++] = sig;
+}
+
+int pop_proc_sig(process_t * proc) {
+    if (!proc->sigqueue_sz) {
+        kwarn(__FILE__,__func__,"signal queue empty");
+        return -1;
+    }
+
+    int out = proc->sigqueue[0];
+    memcpy(&proc->sigqueue[0], &proc->sigqueue[1], sizeof(int) * (proc->sigqueue_sz-- - 1));
+    return out;
+}
