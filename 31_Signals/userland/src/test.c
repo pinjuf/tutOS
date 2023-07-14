@@ -3,18 +3,12 @@
 #include "string.h"
 #include "unistd.h"
 
-void testhandler(int sig) {
-    puts(" | SIGNAL | ");
-}
-
 int main(int argc, char * argv[]) {
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-
-    sa.sa_handler = testhandler;
-    sigaction(69, &sa);
-
     puts("Hello from test program!\n");
+
+    pit_msleep(20000);
+
+    puts("Bye from test program!\n");
 
     return 0;
 }
