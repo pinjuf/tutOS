@@ -68,7 +68,7 @@ void _kmain() {
     kputs("VFS OK\n");
 
     init_vesa();
-    vesa_clear(RGB32(0, 0, 0));
+    vesa_clear(vfont_bg);
     kputs("VBE OK\n");
 
     init_sb16();
