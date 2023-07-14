@@ -26,3 +26,4 @@ int ll_del(ll_head * head, size_t index);
 int ll_delp(ll_head * head, void * p);
 void * ll_next(void * current);
 void * ll_nextla(ll_head * head, void * current);
+ll_head * ll_copy(ll_head * head);

@@ -40,10 +40,9 @@ struct sigaction * get_proc_sigaction(process_t * proc, int sig) {
 void register_sigaction(process_t * proc, struct sigaction * action) {
     struct sigaction * sa = get_proc_sigaction(proc, action->sa_sig);
 
-    if (sa) {
-        memcpy(sa, action, sizeof(struct sigaction));
-    } else {
-        struct sigaction * sa2 = ll_push(proc->sigactions);
-        memcpy(sa2, sa, sizeof(struct sigaction));
+    if (!sa) {
+        sa = ll_push(proc->sigactions);
     }
+
+    memcpy(sa, action, sizeof(struct sigaction));
 }

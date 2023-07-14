@@ -155,3 +155,16 @@ void * ll_nextla(ll_head * head, void * current) {
 
     return (void*)((uint64_t)attr->next + sizeof(ll_nodeattr));
 }
+
+ll_head * ll_copy(ll_head * head) {
+    // Copies the given linked list
+    ll_head * out = create_ll(head->node_sz);
+
+    for (size_t i = 0; i < ll_len(head); i++) {
+        void * p = ll_get(head, i);
+        void * new = ll_push(out);
+        memcpy(new, p, head->node_sz);
+    }
+
+    return out;
+}

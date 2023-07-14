@@ -77,6 +77,8 @@ void schedule(void * regframe_ptr) {
         child->latest_child = 0;
         child->parent = current_process->pid;
 
+        child->sigactions = ll_copy(current_process->sigactions);
+
         child->pagemaps = kmalloc(child->pagemaps_n * sizeof(pagemap_t));
         for (size_t i = 0; i < child->pagemaps_n; i++) {
             child->pagemaps[i].virt = current_process->pagemaps[i].virt;
@@ -108,7 +110,7 @@ void schedule(void * regframe_ptr) {
             memcpy(&current_process->sigregs, &current_process->regs, sizeof(int_regframe_t));
 
             current_process->sigregs.rip = (uint64_t)sa->sa_handler;
-            current_process->sigregs.rdi = signum; // Argument #0 for handler
+            proc_set_args(current_process, signum, 0);
 
             memcpy(rf, &current_process->sigregs, sizeof(int_regframe_t));
 
