@@ -13,7 +13,7 @@ struct sigaction {
     int    sa_flags; // TODO: Add flags (e.g. SA_NOCLDWAIT)
 } __attribute__((packed));
 
-enum SIGNAL { // TODO: Fill this up
+enum SIGNAL {
     SIGCHLD,
     SIGTERM,
     SIGKILL,

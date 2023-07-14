@@ -4,10 +4,6 @@
 #include "string.h"
 
 void sigchld(int signum) {
-    puts(" | GOT SIGCHLD | ");
-    pit_msleep(1000);
-    puts(" | HANDLER DONE | ");
-
     sigreturn();
 }
 
@@ -18,6 +14,9 @@ int main(int argc, char * argv[]) {
     struct sigaction sa;
     sa.sa_handler = sigchld;
     sigaction(SIGCHLD, &sa);
+
+    sa.sa_handler = SIG_IGN;
+    sigaction(SIGTERM, &sa);
 
     puts("< tutOS sh >\n");
 

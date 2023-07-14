@@ -1,12 +1,13 @@
 #include "schedule.h"
 #include "util.h"
 #include "mm.h"
+#include "main.h"
 #include "signal.h"
 
 ll_head * processes;
 process_t * current_process = NULL;
 bool do_scheduling = false;
-pid_t pid_counter = 1;
+pid_t pid_counter = INIT_PID;
 
 void init_scheduling() {
     processes = create_ll(sizeof(process_t));

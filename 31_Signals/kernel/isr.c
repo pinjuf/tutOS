@@ -131,6 +131,17 @@ void isr_irq1(void) {
         kbd_last_scancode = c + special * 256;
     }
 
+    // Safeguard key combination, CTRL+SHIFT+C SIGKILLs all processes except the init
+    if (!release && kbd_getkey(SCS1_LSHIFT) && kbd_getkey(SCS1_CTRL)) {
+        for (size_t i = 0; i < ll_len(processes); i++) {
+            process_t * proc = ll_get(processes, i);
+            if (proc->pid == INIT_PID)
+                continue;
+
+            push_proc_sig(proc, SIGKILL);
+        }
+    }
+
     // Just to be sure, clear the 8042 output buffer
     while (read_status_8042ps2() & 1)
         read_data_8042ps2();

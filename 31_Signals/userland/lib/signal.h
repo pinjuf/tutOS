@@ -13,4 +13,6 @@ struct sigaction {
 
 enum SIGNAL { // TODO: Fill this up
     SIGCHLD,
+    SIGTERM,
+    SIGKILL,
 };
