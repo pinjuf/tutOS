@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "ll.h"
+#include "signal.h"
 
 // A "jiffy"
 #define TICKS_PER_SCHEDULE 4
@@ -102,6 +103,7 @@ typedef struct process_t {
     size_t sigqueue_sz;
     int sigqueue[SIGQUEUE_SZ]; // FIFO queue
     int_regframe_t sigregs;
+    ll_head * sigactions;
 } process_t;
 
 #define MAX_PROCESSES 256
@@ -120,6 +122,3 @@ process_t * add_process();
 process_t * get_proc_by_pid(pid_t pid);
 
 void clear_none_procs();
-
-void push_proc_sig(process_t * proc, int sig);
-int pop_proc_sig(process_t * proc);

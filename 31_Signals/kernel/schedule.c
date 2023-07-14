@@ -100,6 +100,7 @@ process_t * add_process() {
     process_t * out = ll_push(processes);
     memset(out, 0, sizeof(process_t));
     out->pid = pid_counter++;
+    out->sigactions = create_ll(sizeof(struct sigaction));
     return out;
 }
 
@@ -128,24 +129,4 @@ void clear_none_procs() {
             i--;
         }
     }
-}
-
-void push_proc_sig(process_t * proc, int sig) {
-    if (proc->sigqueue_sz == SIGQUEUE_SZ) {
-        kwarn(__FILE__,__func__,"signal queue full");
-        return;
-    }
-
-    proc->sigqueue[proc->sigqueue_sz++] = sig;
-}
-
-int pop_proc_sig(process_t * proc) {
-    if (!proc->sigqueue_sz) {
-        kwarn(__FILE__,__func__,"signal queue empty");
-        return -1;
-    }
-
-    int out = proc->sigqueue[0];
-    memcpy(&proc->sigqueue[0], &proc->sigqueue[1], sizeof(int) * (proc->sigqueue_sz-- - 1));
-    return out;
 }

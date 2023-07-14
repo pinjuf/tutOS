@@ -166,6 +166,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                 free_pages((void*)addr, current_process->pagemaps[i].n);
             }
             kfree(current_process->pagemaps);
+            destroy_ll(current_process->sigactions);
 
             current_process->state = PROCESS_ZOMBIE;
             current_process->exitcode = return_code;
