@@ -1,5 +1,6 @@
 #include "signal.h"
 #include "util.h"
+#include "schedule.h"
 
 void push_proc_sig(process_t * proc, int sig) {
     if (proc->sigqueue_sz == SIGQUEUE_SZ) {
@@ -40,8 +41,10 @@ void register_sigaction(process_t * proc, struct sigaction * action) {
     struct sigaction * sa = get_proc_sigaction(proc, action->sa_sig);
 
     if (sa) {
+        kputs("CHNG SIG!");
         memcpy(sa, action, sizeof(struct sigaction));
     } else {
+        kputs("NEW SIGNAL!");
         struct sigaction * sa2 = ll_push(proc->sigactions);
         memcpy(sa2, sa, sizeof(struct sigaction));
     }

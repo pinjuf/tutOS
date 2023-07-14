@@ -1,6 +1,7 @@
 #include "schedule.h"
 #include "util.h"
 #include "mm.h"
+#include "signal.h"
 
 ll_head * processes;
 process_t * current_process = NULL;

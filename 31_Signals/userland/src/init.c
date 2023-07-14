@@ -3,9 +3,17 @@
 #include "stdio.h"
 #include "string.h"
 
+void sigchld(int signum) {
+    puts(" | GOT SIGCHLD | ");
+}
+
 int main(int argc, char * argv[]) {
     char * cmdbuf = malloc(256);
     char c;
+
+    struct sigaction sa;
+    sa.sa_handler = sigchld;
+    sigaction(SIGCHLD, sa);
 
     puts("< tutOS sh >\n");
 

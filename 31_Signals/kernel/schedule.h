@@ -2,7 +2,6 @@
 
 #include "types.h"
 #include "ll.h"
-#include "signal.h"
 
 // A "jiffy"
 #define TICKS_PER_SCHEDULE 4

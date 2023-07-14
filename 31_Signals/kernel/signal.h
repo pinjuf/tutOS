@@ -13,6 +13,10 @@ struct sigaction {
     int    sa_flags; // TODO: Add flags (e.g. SA_NOCLDWAIT)
 } __attribute__((packed));
 
+enum SIGNAL { // TODO: Fill this up
+    SIGCHLD,
+};
+
 void push_proc_sig(process_t * proc, int sig);
 int pop_proc_sig(process_t * proc);
 struct sigaction * get_proc_sigaction(process_t * proc, int sig);

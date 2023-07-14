@@ -10,3 +10,7 @@ struct sigaction {
     void (*sa_handler)(int);
     int    sa_flags;
 } __attribute__((packed));
+
+enum SIGNAL { // TODO: Fill this up
+    SIGCHLD,
+};

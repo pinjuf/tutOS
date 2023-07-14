@@ -4,6 +4,7 @@
 #include "schedule.h"
 #include "mm.h"
 #include "elf.h"
+#include "signal.h"
 
 extern void syscall_stub(void);
 
