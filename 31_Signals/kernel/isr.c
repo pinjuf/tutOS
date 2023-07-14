@@ -3,6 +3,7 @@
 #include "main.h"
 #include "schedule.h"
 #include "util.h"
+#include "signal.h"
 
 uint64_t pit0_ticks = 0;
 

@@ -108,6 +108,10 @@ void schedule(void * regframe_ptr) {
         // Unhandleable signals
         switch (signum) {
             case SIGKILL:
+                kputs(" < PROCESS #");
+                kputdec(current_process->pid);
+                kputs(" KILLED (SIGKILL) > ");
+
                 kill_process(current_process, UINT8_MAX);
                 current_process = NULL;
 
@@ -120,7 +124,25 @@ void schedule(void * regframe_ptr) {
         }
 
         if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
-            // TODO: Default handler
+            // Default handler
+            switch (signum) {
+                case SIGTERM:
+                    kputs(" < PROCESS #");
+                    kputdec(current_process->pid);
+                    kputs(" KILLED (SIGTERM) > ");
+
+                    kill_process(current_process, UINT8_MAX);
+                    current_process = NULL;
+
+                    // Just run the scheduler over everything again
+                    schedule(rf);
+                    return;
+
+                default:
+                    break;
+
+            }
+
         } else if ((uint64_t)sa->sa_handler != SIG_IGN) {
             // A handler has been registered by the program and must now be jumped to.
 
