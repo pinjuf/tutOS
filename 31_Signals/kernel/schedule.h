@@ -121,3 +121,6 @@ process_t * add_process();
 process_t * get_proc_by_pid(pid_t pid);
 
 void clear_none_procs();
+
+void write_proc_regs(process_t * proc, int_regframe_t * regs);
+void read_proc_regs(process_t * proc, int_regframe_t * regs);

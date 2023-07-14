@@ -40,7 +40,7 @@ void schedule(void * regframe_ptr) {
     } else {
         // Save current process, given that it is not about to undergo a context change
         if (!current_process->to_exec)
-            memcpy(&current_process->regs, rf, sizeof(int_regframe_t));
+            read_proc_regs(current_process, rf);
         else
             current_process->to_exec = false;
         current_process->state = PROCESS_NOT_RUNNING;
@@ -52,7 +52,7 @@ void schedule(void * regframe_ptr) {
                  current_process->state == PROCESS_ZOMBIE);
     }
 
-    memcpy(rf, &current_process->regs, sizeof(int_regframe_t));
+    write_proc_regs(current_process, rf);
     current_process->state = PROCESS_RUNNING;
 
     for (size_t i = 0; i < current_process->pagemaps_n; i++) {
@@ -112,7 +112,7 @@ void schedule(void * regframe_ptr) {
             current_process->sigregs.rip = (uint64_t)sa->sa_handler;
             proc_set_args(current_process, signum, 0);
 
-            memcpy(rf, &current_process->sigregs, sizeof(int_regframe_t));
+            write_proc_regs(current_process, rf);
 
         } // SIG_IGN is, well, ignored
     }
@@ -156,4 +156,18 @@ void clear_none_procs() {
             i--;
         }
     }
+}
+
+void write_proc_regs(process_t * proc, int_regframe_t * regs) {
+    if (proc->sighandling)
+        memcpy(regs, &proc->sigregs, sizeof(int_regframe_t));
+    else
+        memcpy(regs, &proc->regs, sizeof(int_regframe_t));
+}
+
+void read_proc_regs(process_t * proc, int_regframe_t * regs) {
+    if (proc->sighandling)
+        memcpy(&proc->sigregs, regs, sizeof(int_regframe_t));
+    else
+        memcpy(&proc->regs, regs, sizeof(int_regframe_t));
 }

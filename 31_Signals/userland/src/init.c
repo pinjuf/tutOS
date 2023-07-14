@@ -5,6 +5,8 @@
 
 void sigchld(int signum) {
     puts(" | GOT SIGCHLD | ");
+    pit_msleep(1000);
+    puts(" | HANDLER DONE | ");
 }
 
 int main(int argc, char * argv[]) {
