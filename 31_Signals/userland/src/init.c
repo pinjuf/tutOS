@@ -15,7 +15,7 @@ int main(int argc, char * argv[]) {
     sa.sa_handler = sigchld;
     sigaction(SIGCHLD, &sa);
 
-    sa.sa_handler = SIG_IGN;
+    sa.sa_handler = (void(*)())SIG_IGN;
     sigaction(SIGTERM, &sa);
 
     puts("< tutOS sh >\n");
@@ -76,29 +76,41 @@ int main(int argc, char * argv[]) {
             continue;
         }
 
+        bool do_waitpid = true;
+
+        // Let process run in background
+        if (*(curr-1) == '&') {
+            *(curr-1)  = '\0';
+            do_waitpid = false;
+        }
+
+        // We need to transform cmdbuf into a char*argv[]
+        char ** argv = malloc(sizeof(char*) * 16);
+        int argc = 0;
+        char * acurr = cmdbuf;
+        while (*acurr) {
+            argv[argc++] = curr;
+            while (*acurr && *acurr != ' ')
+                acurr++;
+            if (*acurr)
+                *acurr++ = '\0';
+        }
+        argv[argc] = NULL;
+        char * cmdbuf2 = malloc(256);
+        memcpy(cmdbuf2, cmdbuf, 256);
+
         pid_t p = fork();
         if (p == 0) {
-            // We need to transform cmdbuf into a char*argv[]
-            char ** argv = malloc(sizeof(char*) * 16);
-            int argc = 0;
-            char * curr = cmdbuf;
-            while (*curr) {
-                argv[argc++] = curr;
-                while (*curr && *curr != ' ')
-                    curr++;
-                if (*curr)
-                    *curr++ = '\0';
-            }
-            argv[argc] = NULL;
-
-            exec(cmdbuf, argv);
+            exec(cmdbuf2, argv);
             puts("could not exec command\n");
             exit(1);
         }
 
-        waitpid(p, &status);
-        putc(status + '0');
-        putc(' ');
+        if (do_waitpid) {
+            waitpid(p, &status);
+            putc(status + '0');
+            putc(' ');
+        }
     }
 
     free(cmdbuf);
