@@ -132,7 +132,7 @@ void isr_irq1(void) {
     }
 
     // Safeguard key combination, CTRL+SHIFT+C SIGKILLs all processes except the init
-    if (!release && kbd_getkey(SCS1_LSHIFT) && kbd_getkey(SCS1_CTRL)) {
+    if (!release && !special && kbd_getkey(SCS1_LSHIFT) && kbd_getkey(SCS1_CTRL) && scancode_to_ascii(c) == 'c') {
         for (size_t i = 0; i < ll_len(processes); i++) {
             process_t * proc = ll_get(processes, i);
             if (proc->pid == INIT_PID)
@@ -140,6 +140,9 @@ void isr_irq1(void) {
 
             push_proc_sig(proc, SIGKILL);
         }
+
+        kbd_last_scancode = 0;
+        kbd_last_ascii    = 0;
     }
 
     // Just to be sure, clear the 8042 output buffer
