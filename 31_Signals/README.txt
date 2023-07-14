@@ -25,3 +25,8 @@ Using another syscall, the process will be able to reset that flag and return
 to its original execution.
 
 FAQ:
+
+man-references:
+    - sigaction
+    - sigreturn
+    - sigaltstack

@@ -94,6 +94,16 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return fh->curr;
         }
+        case 13: { // sigaction
+            int signum                = arg0;
+            struct sigaction * action = (void*)arg1;
+
+            action->sa_sig = signum;
+
+            register_sigaction(current_process, action);
+
+            return 0;
+        }
         case 39: { // getpid
             return current_process->pid;
         }

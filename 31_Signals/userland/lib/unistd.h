@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "signal.h"
 
 enum FILETYPE {
     FILE_UNKN,
@@ -54,3 +55,4 @@ size_t getdents(DIR * fd, dirent * dirp, size_t count);
 dirent * readdir(DIR * d);
 int pstat(char * pathname, stat * statbuf);
 int fstat(FILE * fd, stat * statbuf);
+int sigaction(int sig, struct sigaction * act);

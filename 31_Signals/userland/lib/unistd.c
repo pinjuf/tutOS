@@ -2,6 +2,7 @@
 #include "syscall.h"
 #include "dirent.h"
 #include "stdlib.h"
+#include "signal.h"
 
 FILE * open(char * path, mode_t mode) {
     return (void*) syscall(2, (uint64_t)path, (size_t)mode, 0, 0, 0, 0);
@@ -71,4 +72,8 @@ int pstat(char * pathname, stat * statbuf) {
 
 int fstat(FILE * fd, stat * statbuf) {
     return syscall(5, (uint64_t)fd, (uint64_t)statbuf, 0, 0, 0, 0);
+}
+
+int sigaction(int sig, struct sigaction * act) {
+    return syscall(13, (uint64_t)sig, (uint64_t)act, 0, 0, 0, 0);
 }
