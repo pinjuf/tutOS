@@ -234,6 +234,7 @@ size_t devfs_readfile(void * f, void * buf, size_t count) {
 
     if (dev == NULL) {
         kwarn(__FILE__,__func__,"device not registered");
+        return 0;
     }
 
     return dev->read(f, buf, count);
@@ -255,6 +256,7 @@ size_t devfs_writefile(void * f, void * buf, size_t count) {
 
     if (dev == NULL) {
         kwarn(__FILE__,__func__,"device not registered");
+        return 0;
     }
 
     return dev->write(f, buf, count);
@@ -276,6 +278,7 @@ void * devfs_readdir(void * f) {
 
     if (dev == NULL) {
         kwarn(__FILE__,__func__,"device not registered");
+        return 0;
     }
 
     return dev->readdir(f);
