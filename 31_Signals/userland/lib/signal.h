@@ -11,7 +11,7 @@ struct sigaction {
     int    sa_flags;
 } __attribute__((packed));
 
-enum SIGNAL { // TODO: Fill this up
+enum SIGNAL {
     SIGCHLD,
     SIGTERM,
     SIGKILL,

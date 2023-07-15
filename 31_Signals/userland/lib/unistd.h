@@ -58,3 +58,4 @@ int fstat(FILE * fd, stat * statbuf);
 int sigaction(int sig, struct sigaction * act);
 int sigreturn();
 int kill(pid_t pid, int sig);
+int raise(int sig);

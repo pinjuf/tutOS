@@ -85,3 +85,9 @@ int sigreturn() {
 int kill(pid_t pid, int sig) {
     return syscall(62, pid, sig, 0, 0, 0, 0);
 }
+
+int raise(int sig) {
+    return kill(getpid(), sig);
+    // note: it might be wise here to wait until the next jiffy
+    // to make sure the handler gets executed before this function returns
+}
