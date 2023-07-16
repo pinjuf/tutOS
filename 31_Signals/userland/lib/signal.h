@@ -17,5 +17,15 @@ enum SIGNAL {
     SIGKILL,
 };
 
+typedef struct stack_t {
+    void * ss_sp;
+    size_t ss_size;
+    int ss_flags;
+} __attribute__((packed)) stack_t;
+
 // Flags for sigaction.sa_flags
 #define SA_NOCLDWAIT 1
+#define SA_ONSTACK   2
+
+// Flags for stack_t.ss_flags
+#define SS_DISABLE 1 // Don't use the stack

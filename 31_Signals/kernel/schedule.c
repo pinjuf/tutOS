@@ -97,6 +97,10 @@ void schedule(void * regframe_ptr) {
     if (current_process->to_sigreturn) {
         current_process->sighandling  = false;
         current_process->to_sigreturn = false;
+
+        // Mark the stack as unused
+        current_process->altstack.ss_flags &= ~(SS_ONSTACK);
+
         write_proc_regs(current_process, rf);
     }
 
@@ -157,7 +161,14 @@ void schedule(void * regframe_ptr) {
             current_process->sigregs.cs = current_process->kmode ? (1*8) : ((6*8) | 3);
             current_process->sigregs.ss = current_process->kmode ? (2*8) : ((5*8) | 3);
 
-            // TODO: sigaltstack
+            // Install the sigaltstack if demanded and possible
+            if ((sa->sa_flags & SA_ONSTACK) && !(current_process->altstack.ss_flags & SS_DISABLE)) {
+                current_process->sigregs.rsp = (uint64_t)current_process->altstack.ss_sp \
+                                             + current_process->altstack.ss_size;
+                current_process->sigregs.rbp = current_process->sigregs.rsp;
+
+                current_process->altstack.ss_flags |= SS_ONSTACK;
+            }
 
             current_process->sigregs.rip = (uint64_t)sa->sa_handler;
             current_process->sigregs.rdi = signum;

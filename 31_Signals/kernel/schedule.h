@@ -74,6 +74,12 @@ typedef struct pagemap_t {
 
 #define SIGQUEUE_SZ 8
 
+typedef struct stack_t {
+    void * ss_sp;
+    size_t ss_size;
+    int ss_flags;
+} __attribute__((packed)) stack_t;
+
 typedef struct process_t {
     pid_t pid;
 
@@ -106,6 +112,7 @@ typedef struct process_t {
     int sigqueue[SIGQUEUE_SZ]; // FIFO queue
     int_regframe_t sigregs;
     ll_head * sigactions;
+    stack_t altstack;
 } process_t;
 
 #define MAX_PROCESSES 256

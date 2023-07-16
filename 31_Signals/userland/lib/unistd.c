@@ -98,3 +98,7 @@ int signal(int sig, void (*func)(int)) {
     sa.sa_flags   = 0;
     return sigaction(sig, &sa);
 }
+
+int sigaltstack(stack_t * ss) {
+    return syscall(131, (uint64_t)ss, 0, 0, 0, 0, 0);
+}

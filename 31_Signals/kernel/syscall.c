@@ -239,6 +239,13 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
         case 110: { // getppid
             return current_process->parent;
         }
+        case 131: { // sigaltstack
+            struct stack_t * altstack = (void*)arg0;
+
+            memcpy(&current_process->altstack, altstack, sizeof(struct stack_t));
+
+            return 0;
+        }
         case 336: { // malloc
             size_t n = arg0;
             return (uint64_t)kmalloc(n);

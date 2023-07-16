@@ -4,6 +4,7 @@
 #include "string.h"
 
 void sigchld(int signum) {
+    asm("int $0x81");
     sigreturn();
 }
 
@@ -11,7 +12,17 @@ int main(int argc, char * argv[]) {
     char * cmdbuf = malloc(256);
     char c;
 
-    signal(SIGCHLD, sigchld);
+    //signal(SIGCHLD, sigchld);
+    stack_t ss;
+    ss.ss_sp = malloc(0x1000);
+    ss.ss_size = 0x1000;
+    ss.ss_flags = 0;
+    sigaltstack(&ss);
+
+    struct sigaction sa;
+    sa.sa_handler = sigchld;
+    sa.sa_flags   = SA_ONSTACK;
+    sigaction(SIGCHLD, &sa);
 
     puts("< tutOS sh >\n");
 
