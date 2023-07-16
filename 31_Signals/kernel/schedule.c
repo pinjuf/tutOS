@@ -242,8 +242,14 @@ void kill_process(process_t * proc, uint8_t return_code) {
     proc->exitcode = return_code;
 
     // Notify the parent that the child died
-    // TODO: Check for sa_flags
     if (proc->parent && get_proc_by_pid(proc->parent)) {
-        push_proc_sig(get_proc_by_pid(proc->parent), SIGCHLD);
+        process_t * parent = get_proc_by_pid(proc->parent);
+
+        push_proc_sig(parent, SIGCHLD);
+
+        // Check for SA_NOCLDWAIT (no zombie)
+        struct sigaction * sa_sigchld = get_proc_sigaction(parent, SIGCHLD);
+        if (sa_sigchld->sa_flags & SA_NOCLDWAIT)
+            proc->state = PROCESS_NONE;
     }
 }

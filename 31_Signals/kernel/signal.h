@@ -19,6 +19,9 @@ enum SIGNAL {
     SIGKILL,
 };
 
+// Flags for sigaction.sa_flags
+#define SA_NOCLDWAIT 1
+
 void push_proc_sig(process_t * proc, int sig);
 int pop_proc_sig(process_t * proc);
 struct sigaction * get_proc_sigaction(process_t * proc, int sig);

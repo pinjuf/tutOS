@@ -16,3 +16,6 @@ enum SIGNAL {
     SIGTERM,
     SIGKILL,
 };
+
+// Flags for sigaction.sa_flags
+#define SA_NOCLDWAIT 1
