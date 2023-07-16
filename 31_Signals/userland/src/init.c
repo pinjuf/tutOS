@@ -11,12 +11,7 @@ int main(int argc, char * argv[]) {
     char * cmdbuf = malloc(256);
     char c;
 
-    struct sigaction sa;
-    sa.sa_handler = sigchld;
-    sigaction(SIGCHLD, &sa);
-
-    sa.sa_handler = (void(*)())SIG_IGN;
-    sigaction(SIGTERM, &sa);
+    signal(SIGCHLD, sigchld);
 
     puts("< tutOS sh >\n");
 

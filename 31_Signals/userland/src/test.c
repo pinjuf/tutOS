@@ -10,9 +10,7 @@ void sigterm(int signum) {
 
 int main(int argc, char * argv[]) {
 
-    struct sigaction sa;
-    sa.sa_handler = sigterm;
-    sigaction(SIGTERM, &sa);
+    signal(SIGTERM, sigterm);
 
     puts("Hello from test program!\n");
 

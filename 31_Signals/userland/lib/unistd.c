@@ -91,3 +91,10 @@ int raise(int sig) {
     // note: it might be wise here to wait until the next jiffy
     // to make sure the handler gets executed before this function returns
 }
+
+int signal(int sig, void (*func)(int)) {
+    struct sigaction sa;
+    sa.sa_handler = func;
+    sa.sa_flags   = 0;
+    return sigaction(sig, &sa);
+}
