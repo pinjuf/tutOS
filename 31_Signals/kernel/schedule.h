@@ -87,6 +87,8 @@ typedef struct process_t {
 
     volatile bool to_exec; // Will this process jump to a new context (through exec()) next scheduling tick?
 
+    bool kmode; // Is this running in ring 0?
+
     int argc;
     char ** argv;
 

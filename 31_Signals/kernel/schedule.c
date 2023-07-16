@@ -153,8 +153,14 @@ void schedule(void * regframe_ptr) {
             // Just copy pretty much the entire context
             memcpy(&current_process->sigregs, &current_process->regs, sizeof(int_regframe_t));
 
+            // If a program is running in usermode, all of its handlers are too!
+            current_process->sigregs.cs = current_process->kmode ? (1*8) : ((6*8) | 3);
+            current_process->sigregs.ss = current_process->kmode ? (2*8) : ((5*8) | 3);
+
+            // TODO: sigaltstack
+
             current_process->sigregs.rip = (uint64_t)sa->sa_handler;
-            proc_set_args(current_process, signum, 0);
+            current_process->sigregs.rdi = signum;
 
             write_proc_regs(current_process, rf);
 

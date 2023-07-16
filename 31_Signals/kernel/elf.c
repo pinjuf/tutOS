@@ -33,6 +33,8 @@ int elf_load(process_t * out, void * buf, size_t stack_pages, bool kmode) {
     out->regs.cs = kmode ? (1*8) : ((6*8) | 3);
     out->regs.ss = kmode ? (2*8) : ((5*8) | 3);
 
+    out->kmode = kmode;
+
     out->pagemaps = kmalloc(sizeof(pagemap_t) * (hdr->e_phnum + 1)); // Some overhead, I know...
     out->pagemaps_n = 0;
 
