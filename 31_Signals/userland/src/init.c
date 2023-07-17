@@ -102,8 +102,7 @@ int main(int argc, char * argv[]) {
         }
 
         if (do_waitpid) {
-            //waitpid(p, &status);
-            pause();
+            waitpid(p, &status);
             putc(status + '0');
             putc(' ');
         }

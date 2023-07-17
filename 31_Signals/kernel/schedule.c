@@ -268,3 +268,13 @@ void kill_process(process_t * proc, uint8_t return_code) {
             proc->state = PROCESS_NONE;
     }
 }
+
+PROCESS_STATE get_proc_state(process_t * proc) {
+    PROCESS_STATE out = proc->state;
+
+    // The (NOT_)RUNNING distinction only matters to the scheduler
+    if (out == PROCESS_NOT_RUNNING)
+        out = PROCESS_RUNNING;
+
+    return out;
+}
