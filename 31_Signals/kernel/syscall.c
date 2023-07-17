@@ -115,6 +115,16 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             sti;
             while (1);
         }
+        case 34: { // pause
+            sti;
+
+            current_process->pausing = true;
+            while (current_process->pausing);
+
+            cli;
+
+            return 0;
+        }
         case 39: { // getpid
             return current_process->pid;
         }

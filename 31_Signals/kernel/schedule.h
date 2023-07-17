@@ -9,6 +9,8 @@
 
 typedef uint16_t pid_t;
 
+extern volatile uint64_t schedule_ticks;
+
 typedef struct fpu_fxsave_t {
     uint16_t fcw;
     uint16_t fsw;
@@ -108,11 +110,12 @@ typedef struct process_t {
 
     volatile bool sighandling; // Is this process currently handling a signal?
     volatile bool to_sigreturn; // Will this process return from a sighandler next tick?
-    size_t sigqueue_sz;
+    volatile size_t sigqueue_sz;
     int sigqueue[SIGQUEUE_SZ]; // FIFO queue
     int_regframe_t sigregs;
     ll_head * sigactions;
     stack_t altstack;
+    volatile bool pausing; // Is the process doing a pause()-syscall?
 } process_t;
 
 #define MAX_PROCESSES 256

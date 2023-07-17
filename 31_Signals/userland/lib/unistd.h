@@ -61,3 +61,4 @@ int kill(pid_t pid, int sig);
 int raise(int sig);
 int signal(int sig, void (*func)(int));
 int sigaltstack(stack_t * ss);
+int pause();

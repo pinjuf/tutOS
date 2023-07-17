@@ -66,6 +66,7 @@ void isr_irq0(int_regframe_t * regframe) {
     pit0_ticks++;
 
     if (!(pit0_ticks % TICKS_PER_SCHEDULE) && do_scheduling) {
+        schedule_ticks++;
         schedule(regframe);
     }
 

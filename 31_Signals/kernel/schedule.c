@@ -8,6 +8,7 @@ ll_head * processes;
 process_t * current_process = NULL;
 bool do_scheduling = false;
 pid_t pid_counter = INIT_PID;
+volatile uint64_t schedule_ticks = 0;
 
 void init_scheduling() {
     processes = create_ll(sizeof(process_t));
@@ -109,6 +110,9 @@ void schedule(void * regframe_ptr) {
 
         int signum            = pop_proc_sig(current_process);
         struct sigaction * sa = get_proc_sigaction(current_process, signum);
+
+        // A signal has been caught
+        current_process->pausing = false;
 
         // Unhandleable signals
         switch (signum) {
