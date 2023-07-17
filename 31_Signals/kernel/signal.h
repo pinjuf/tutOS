@@ -17,6 +17,8 @@ enum SIGNAL {
     SIGCHLD,
     SIGTERM,
     SIGKILL,
+    SIGSTOP,
+    SIGCONT,
 };
 
 // Flags for sigaction.sa_flags

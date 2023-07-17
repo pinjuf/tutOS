@@ -64,6 +64,7 @@ typedef enum PROCESS_STATE {
     PROCESS_NONE = 0,
     PROCESS_NOT_RUNNING,
     PROCESS_RUNNING,
+    PROCESS_STOPPED,
     PROCESS_ZOMBIE,
 } PROCESS_STATE;
 
@@ -142,3 +143,5 @@ void free_pagemaps(pagemap_t * maps, size_t n);
 void kill_process(process_t * proc, uint8_t return_code);
 
 PROCESS_STATE get_proc_state(process_t * proc);
+
+size_t proc_has_sig(process_t * proc, int signum);

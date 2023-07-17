@@ -34,11 +34,15 @@ void schedule(void * regframe_ptr) {
         // Look for the first process we can run
 
         for (size_t i = 0; i < ll_len(processes); i++) {
-            if (((process_t*)ll_get(processes, i))->state != PROCESS_NONE && \
-                ((process_t*)ll_get(processes, i))->state != PROCESS_ZOMBIE) {
+            if (get_proc_state((process_t*)ll_get(processes, i)) == PROCESS_RUNNING) {
                 current_process = ll_get(processes, i);
             }
         }
+
+        if (!current_process) {
+
+        }
+
     } else {
         // Save current process, given that it is not about to undergo a context change
         if (!current_process->to_exec)
@@ -50,8 +54,18 @@ void schedule(void * regframe_ptr) {
         // Get the next or the current process
         do {
             current_process = ll_nextla(processes, current_process);
-        } while (current_process->state == PROCESS_NONE || \
-                 current_process->state == PROCESS_ZOMBIE);
+
+            // Note: If the signal queue is full, no SIGCONT will be able to be delivered!
+            size_t sigstop_prio = proc_has_sig(current_process, SIGSTOP);
+            if (sigstop_prio)
+                current_process->state = PROCESS_STOPPED;
+
+            // Is there a more RECENT SIGCONT in the queue?
+            size_t sigcont_prio = proc_has_sig(current_process, SIGCONT);
+            if (sigcont_prio > sigstop_prio)
+                current_process->state = PROCESS_RUNNING;
+
+        } while (get_proc_state(current_process) != PROCESS_RUNNING);
     }
 
     write_proc_regs(current_process, rf);
@@ -275,6 +289,20 @@ PROCESS_STATE get_proc_state(process_t * proc) {
     // The (NOT_)RUNNING distinction only matters to the scheduler
     if (out == PROCESS_NOT_RUNNING)
         out = PROCESS_RUNNING;
+
+    return out;
+}
+
+size_t proc_has_sig(process_t * proc, int signum) {
+    // Check if a signal is in the signal queue.
+    // Returns the signals HIGHEST (newest) index in the queue + 1,
+    // or 0 if it is not present
+
+    size_t out = 0;
+    for (size_t i = 0; i < proc->sigqueue_sz; i++) {
+        if (proc->sigqueue[i] == signum)
+            out = i + 1;
+    }
 
     return out;
 }
