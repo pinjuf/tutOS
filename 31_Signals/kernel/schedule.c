@@ -17,41 +17,28 @@ void init_scheduling() {
 void schedule(void * regframe_ptr) {
     int_regframe_t * rf = (int_regframe_t*)regframe_ptr;
 
-    bool process_to_run = false;
-    for (size_t i = 0; i < ll_len(processes); i++) {
-        if (((process_t*)ll_get(processes, i))->state != PROCESS_NONE && \
-            ((process_t*)ll_get(processes, i))->state != PROCESS_ZOMBIE) {
-            process_to_run = true;
-        }
-    }
-
-    if (!process_to_run) {
-        kwarn(__FILE__,__func__,"no process to run, halting");
-        asm volatile ("hlt");
-    }
-
     if (!current_process) { // First time loading in? / Last process killed?
         // Look for the first process we can run
 
         for (size_t i = 0; i < ll_len(processes); i++) {
-            if (get_proc_state((process_t*)ll_get(processes, i)) == PROCESS_RUNNING) {
+            if (((process_t*)ll_get(processes, i))->state == PROCESS_RUNNING) {
                 current_process = ll_get(processes, i);
             }
         }
 
         if (!current_process) {
-
+            kwarn(__FILE__,__func__,"no process to run, halting...");
+            while (1);
         }
-
     } else {
         // Save current process, given that it is not about to undergo a context change
         if (!current_process->to_exec)
             read_proc_regs(current_process, rf);
         else
             current_process->to_exec = false;
-        current_process->state = PROCESS_NOT_RUNNING;
 
         // Get the next or the current process
+        // This will loop indefinetly if there is nothing to run!
         do {
             current_process = ll_nextla(processes, current_process);
 
@@ -64,12 +51,10 @@ void schedule(void * regframe_ptr) {
             size_t sigcont_prio = proc_has_sig(current_process, SIGCONT);
             if (sigcont_prio > sigstop_prio)
                 current_process->state = PROCESS_RUNNING;
-
-        } while (get_proc_state(current_process) != PROCESS_RUNNING);
+        } while (current_process->state != PROCESS_RUNNING);
     }
 
     write_proc_regs(current_process, rf);
-    current_process->state = PROCESS_RUNNING;
 
     for (size_t i = 0; i < current_process->pagemaps_n; i++) {
         mmap_pages(current_process->pagemaps[i].virt,
@@ -88,8 +73,6 @@ void schedule(void * regframe_ptr) {
         memcpy(child, current_process, sizeof(process_t));
 
         child->pid = current_process->latest_child;
-
-        child->state = PROCESS_NOT_RUNNING;
         child->latest_child = 0;
         child->parent = current_process->pid;
 
@@ -281,16 +264,6 @@ void kill_process(process_t * proc, uint8_t return_code) {
         if (sa_sigchld->sa_flags & SA_NOCLDWAIT)
             proc->state = PROCESS_NONE;
     }
-}
-
-PROCESS_STATE get_proc_state(process_t * proc) {
-    PROCESS_STATE out = proc->state;
-
-    // The (NOT_)RUNNING distinction only matters to the scheduler
-    if (out == PROCESS_NOT_RUNNING)
-        out = PROCESS_RUNNING;
-
-    return out;
 }
 
 size_t proc_has_sig(process_t * proc, int signum) {

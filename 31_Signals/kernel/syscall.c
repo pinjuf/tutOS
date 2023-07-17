@@ -205,11 +205,11 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             if (!proc)
                 return -1;
 
-            volatile PROCESS_STATE orig = get_proc_state(proc);
+            volatile PROCESS_STATE orig = proc->state;
 
             sti;
 
-            while (orig == get_proc_state(proc));
+            while (orig == proc->state);
 
             cli;
 
