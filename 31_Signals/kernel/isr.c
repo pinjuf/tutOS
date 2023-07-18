@@ -32,7 +32,8 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
 
         push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
 
-        manual_schedule();
+        // Trigger a manual schedule
+        asm volatile ("int $0x82");
     }
 
     // Kernel error with no process running
@@ -73,7 +74,8 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
 
         push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
 
-        manual_schedule();
+        // Trigger a manual schedule
+        asm volatile ("int $0x82");
     }
 
     // Kernel error with no process running
@@ -359,13 +361,7 @@ void isr_debugcall(int_regframe_t * regframe) {
     kputs("< DEBUGCALL END >\n");
 }
 
-void manual_schedule() {
+void isr_schedule(int_regframe_t * rf) {
     // Warning: THIS IS DIRTY AND WILL CAUSE LOSS OF EXECUTION IF A PROCESS IS RUNNING AS WELL AS A MICRO-TIMESHIFT!
-    // TODO: Create a dedicated scheduling interrupt
-    current_process = NULL;
-    do_scheduling   = true;
-
-    while (1) {
-        asm volatile ("int $0x20");
-    }
+    schedule(rf);
 }

@@ -15,6 +15,7 @@ void isr_irq1(void);
 void isr_irq12(void);
 
 void isr_debugcall(int_regframe_t * regframe);
+void isr_schedule(int_regframe_t * regframe);
 
 extern uint64_t pit0_ticks;
 

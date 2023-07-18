@@ -33,3 +33,4 @@ void init_idt(void);
 
 #define SYSCALL_INT   0x80
 #define DEBUGCALL_INT 0x81
+#define SCHEDULE_INT  0x82

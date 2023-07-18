@@ -12,6 +12,7 @@ extern void isr_irq5_stub();
 extern void isr_irq12_stub();
 extern void isr_syscall_stub();
 extern void isr_debugcall_stub();
+extern void isr_schedule_stub();
 
 void fill_idt_desc(idt_entry_t * entry, void (* isr)(), uint8_t flags, uint8_t selector) {
     entry->offset_low = (uint64_t)isr & 0xFFFF;
@@ -44,6 +45,7 @@ void init_idt(void) {
 
     fill_idt_desc(&kidt[SYSCALL_INT], isr_syscall_stub, IDT_P | IDT_INT | IDT_DPL, 0x08);
     fill_idt_desc(&kidt[DEBUGCALL_INT], isr_debugcall_stub, IDT_P | IDT_INT | IDT_DPL, 0x08);
+    fill_idt_desc(&kidt[SCHEDULE_INT], isr_schedule_stub, IDT_P | IDT_INT | IDT_DPL, 0x08); // Manual schedule
 
     asm volatile ("lidt %0" : : "m" (kidtr));
 }
