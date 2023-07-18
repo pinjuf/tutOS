@@ -33,6 +33,7 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
         push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
 
         // Trigger a manual schedule
+        current_process = NULL;
         asm volatile ("int $0x82");
     }
 
@@ -62,8 +63,8 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
 
         kputs(" < PEXC ");
         kputdec(n);
-        kputs(" (ERR=");
-        kputdec(err);
+        kputs(" (ERR=0x");
+        kputhex(err);
         kputs(", SIG=");
         kputdec(EXCEPTION_SIGNALS[n]);
         kputs(") AT 0x");
@@ -75,14 +76,15 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
         push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
 
         // Trigger a manual schedule
+        current_process = NULL;
         asm volatile ("int $0x82");
     }
 
     // Kernel error with no process running
     kputs(" < KEXC ");
     kputdec(n);
-    kputs(" (ERR=");
-    kputdec(err);
+    kputs(" (ERR=0x");
+    kputhex(err);
     kputs(") AT 0x");
     kputhex(rip);
     kputs(" > ");
