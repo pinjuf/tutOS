@@ -18,41 +18,30 @@ void schedule(void * regframe_ptr) {
     int_regframe_t * rf = (int_regframe_t*)regframe_ptr;
 
     if (!current_process) { // First time loading in? / Last process killed?
-        // Look for the first process we can run
-
-        for (size_t i = 0; i < ll_len(processes); i++) {
-            if (((process_t*)ll_get(processes, i))->state == PROCESS_RUNNING) {
-                current_process = ll_get(processes, i);
-            }
-        }
-
-        if (!current_process) {
-            kwarn(__FILE__,__func__,"no process to run, halting...");
-            while (1);
-        }
+        current_process = ll_get(processes, 0);
     } else {
         // Save current process, given that it is not about to undergo a context change
         if (!current_process->to_exec)
             read_proc_regs(current_process, rf);
         else
             current_process->to_exec = false;
-
-        // Get the next or the current process
-        // This will loop indefinetly if there is nothing to run!
-        do {
-            current_process = ll_nextla(processes, current_process);
-
-            // Note: If the signal queue is full, no SIGCONT will be able to be delivered!
-            size_t sigstop_prio = proc_has_sig(current_process, SIGSTOP);
-            if (sigstop_prio)
-                current_process->state = PROCESS_STOPPED;
-
-            // Is there a more RECENT SIGCONT in the queue?
-            size_t sigcont_prio = proc_has_sig(current_process, SIGCONT);
-            if (sigcont_prio > sigstop_prio)
-                current_process->state = PROCESS_RUNNING;
-        } while (current_process->state != PROCESS_RUNNING);
     }
+
+    // Get the next or the current process
+    // This will loop indefinetly if there is nothing to run!
+    do {
+        current_process = ll_nextla(processes, current_process);
+
+        // Note: If the signal queue is full, no SIGCONT will be able to be delivered!
+        size_t sigstop_prio = proc_has_sig(current_process, SIGSTOP);
+        if (sigstop_prio)
+            current_process->state = PROCESS_STOPPED;
+
+        // Is there a more RECENT SIGCONT in the queue?
+        size_t sigcont_prio = proc_has_sig(current_process, SIGCONT);
+        if (sigcont_prio > sigstop_prio)
+            current_process->state = PROCESS_RUNNING;
+    } while (current_process->state != PROCESS_RUNNING);
 
     write_proc_regs(current_process, rf);
 
