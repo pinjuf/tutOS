@@ -182,6 +182,8 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             current_process->sigqueue_sz = 0;
             current_process->sighandling = false;
 
+            memset(&current_process->altstack, 0, sizeof(stack_t));
+
             current_process->to_exec = true;
 
             sti; // Wait for the scheduler to pick us up
