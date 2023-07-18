@@ -10,7 +10,7 @@
 struct sigaction {
     int    sa_sig; // Signal number, set by syscall handler
     void (*sa_handler)(int);
-    int    sa_flags; // TODO: Add flags (e.g. SA_NOCLDWAIT)
+    int    sa_flags;
 } __attribute__((packed));
 
 enum SIGNAL {
@@ -19,6 +19,11 @@ enum SIGNAL {
     SIGKILL,
     SIGSTOP,
     SIGCONT,
+    SIGINT,
+    SIGILL,
+    SIGFPE,
+    SIGSEGV,
+    SIGTRAP,
 };
 
 // Flags for sigaction.sa_flags
@@ -33,3 +38,4 @@ void push_proc_sig(process_t * proc, int sig);
 int pop_proc_sig(process_t * proc);
 struct sigaction * get_proc_sigaction(process_t * proc, int sig);
 void register_sigaction(process_t * proc, struct sigaction * action);
+void manual_schedule();

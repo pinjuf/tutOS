@@ -114,10 +114,6 @@ void schedule(void * regframe_ptr) {
         // Unhandleable signals
         switch (signum) {
             case SIGKILL:
-                kputs(" < PROCESS #");
-                kputdec(current_process->pid);
-                kputs(" KILLED (SIGKILL) > ");
-
                 kill_process(current_process, UINT8_MAX);
                 current_process = NULL;
 
@@ -132,11 +128,12 @@ void schedule(void * regframe_ptr) {
         if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
             // Default handler
             switch (signum) {
-                case SIGTERM:
-                    kputs(" < PROCESS #");
-                    kputdec(current_process->pid);
-                    kputs(" KILLED (SIGTERM) > ");
-
+                case SIGTERM: // Generally cause process termination
+                case SIGINT:
+                case SIGILL:
+                case SIGFPE:
+                case SIGSEGV:
+                case SIGTRAP:
                     kill_process(current_process, UINT8_MAX);
                     current_process = NULL;
 

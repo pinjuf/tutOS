@@ -15,11 +15,32 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
     (void)rsp;
     (void)ss;
 
-    kputs("EXC ");
+    if (current_process) {
+        // This was caused by a process
+        // that will now have to answer
+        // for its crimes
+
+        kputs(" < PEXC ");
+        kputdec(n);
+        kputs(" (SIG=");
+        kputdec(EXCEPTION_SIGNALS[n]);
+        kputs(") AT 0x");
+        kputhex(rip);
+        kputs(" BY PID#");
+        kputdec(current_process->pid);
+        kputs(" > ");
+
+        push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
+
+        manual_schedule();
+    }
+
+    // Kernel error with no process running
+    kputs(" < KEXC ");
     kputdec(n);
     kputs(" AT 0x");
     kputhex(rip);
-    kputs("\n");
+    kputs(" > ");
 
     while (1);
 }
@@ -33,13 +54,36 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
     (void)rsp;
     (void)ss;
 
-    kputs("EXC ");
+    if (current_process) {
+        // This was caused by a process
+        // that will now have to answer
+        // for its crimes
+
+        kputs(" < PEXC ");
+        kputdec(n);
+        kputs(" (ERR=");
+        kputdec(err);
+        kputs(", SIG=");
+        kputdec(EXCEPTION_SIGNALS[n]);
+        kputs(") AT 0x");
+        kputhex(rip);
+        kputs(" BY PID#");
+        kputdec(current_process->pid);
+        kputs(" > ");
+
+        push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
+
+        manual_schedule();
+    }
+
+    // Kernel error with no process running
+    kputs(" < KEXC ");
     kputdec(n);
-    kputs(" (ERR=0x");
-    kputhex(err);
+    kputs(" (ERR=");
+    kputdec(err);
     kputs(") AT 0x");
     kputhex(rip);
-    kputs("\n");
+    kputs(" > ");
 
     while (1);
 }
@@ -140,6 +184,10 @@ void isr_irq1(void) {
                 continue;
 
             push_proc_sig(proc, SIGKILL);
+
+            kputs(" < SENT SIGKILL TO #");
+            kputdec(proc->pid);
+            kputs("> ");
         }
 
         kbd_last_scancode = 0;
@@ -153,6 +201,10 @@ void isr_irq1(void) {
                 continue;
 
             push_proc_sig(proc, SIGTERM);
+
+            kputs(" < SENT SIGTERM TO #");
+            kputdec(proc->pid);
+            kputs("> ");
         }
 
         kbd_last_scancode = 0;
@@ -305,4 +357,15 @@ void isr_debugcall(int_regframe_t * regframe) {
     kputc('\n');
 
     kputs("< DEBUGCALL END >\n");
+}
+
+void manual_schedule() {
+    // Warning: THIS IS DIRTY AND WILL CAUSE LOSS OF EXECUTION IF A PROCESS IS RUNNING AS WELL AS A MICRO-TIMESHIFT!
+    // TODO: Create a dedicated scheduling interrupt
+    current_process = NULL;
+    do_scheduling   = true;
+
+    while (1) {
+        asm volatile ("int $0x20");
+    }
 }

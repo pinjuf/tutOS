@@ -28,6 +28,7 @@ enum {
     PIC_COM2,
     PIC_COM1,
     PIC_LPT2,
+    PIC_DSP = 5,
     PIC_FLOPPY,
     PIC_LPT1,
     PIC_CMOS,

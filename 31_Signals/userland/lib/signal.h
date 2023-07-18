@@ -17,6 +17,11 @@ enum SIGNAL {
     SIGKILL,
     SIGSTOP,
     SIGCONT,
+    SIGINT,
+    SIGILL,
+    SIGFPE,
+    SIGSEGV,
+    SIGTRAP,
 };
 
 typedef struct stack_t {

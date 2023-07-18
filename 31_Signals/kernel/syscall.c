@@ -215,7 +215,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             *status = proc->exitcode;
 
-            if (current_process->pid == proc->parent)
+            if ((current_process->pid == proc->parent) && (current_process->state == PROCESS_ZOMBIE))
                 proc->state = PROCESS_NONE;
 
             return pid;
