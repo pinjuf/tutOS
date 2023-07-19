@@ -34,13 +34,16 @@ void schedule(void * regframe_ptr) {
 
         // Note: If the signal queue is full, no SIGCONT will be able to be delivered!
         size_t sigstop_prio = proc_has_sig(current_process, SIGSTOP);
-        if (sigstop_prio)
+        if ((current_process->state == PROCESS_RUNNING) && sigstop_prio) {
             current_process->state = PROCESS_STOPPED;
+        }
 
         // Is there a more RECENT SIGCONT in the queue?
         size_t sigcont_prio = proc_has_sig(current_process, SIGCONT);
-        if (sigcont_prio > sigstop_prio)
+        if ((current_process->state == PROCESS_STOPPED) && (sigcont_prio > sigstop_prio)) {
             current_process->state = PROCESS_RUNNING;
+        }
+
     } while (current_process->state != PROCESS_RUNNING);
 
     write_proc_regs(current_process, rf);
@@ -91,10 +94,10 @@ void schedule(void * regframe_ptr) {
         write_proc_regs(current_process, rf);
     }
 
-    if (!current_process->sighandling && current_process->sigqueue_sz) {
+    if (current_process->sigqueue_sz) {
         // There is a pending signal a process is ready to handle
 
-        int signum            = pop_proc_sig(current_process);
+        int signum            = current_process->sigqueue[0]; // We cannot be sure this signal will be taken care of, so don't handle it
         struct sigaction * sa = get_proc_sigaction(current_process, signum);
 
         // A signal has been caught
@@ -103,6 +106,8 @@ void schedule(void * regframe_ptr) {
         // Unhandleable signals
         switch (signum) {
             case SIGKILL:
+                pop_proc_sig(current_process);
+
                 kill_process(current_process, UINT8_MAX);
                 current_process = NULL;
 
@@ -115,6 +120,8 @@ void schedule(void * regframe_ptr) {
         }
 
         if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
+            pop_proc_sig(current_process);
+
             // Default handler
             switch (signum) {
                 case SIGTERM: // Generally cause process termination
@@ -132,12 +139,12 @@ void schedule(void * regframe_ptr) {
 
                 default:
                     break;
-
             }
 
-        } else if ((uint64_t)sa->sa_handler != SIG_IGN) {
-            // A handler has been registered by the program and must now be jumped to.
+        } else if (!current_process->sighandling && (uint64_t)sa->sa_handler != SIG_IGN) {
+            pop_proc_sig(current_process);
 
+            // A handler has been registered by the program and must now be jumped to.
             current_process->sighandling  = true;
             current_process->to_sigreturn = false;
 
@@ -162,7 +169,9 @@ void schedule(void * regframe_ptr) {
 
             write_proc_regs(current_process, rf);
 
-        } // SIG_IGN is, well, ignored
+        } else if ((uint64_t)sa->sa_handler == SIG_IGN) {
+            pop_proc_sig(current_process);
+        }
     }
 }
 
