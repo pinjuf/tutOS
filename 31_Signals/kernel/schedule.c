@@ -103,6 +103,8 @@ void schedule(void * regframe_ptr) {
         // A signal has been caught
         current_process->pausing = false;
 
+        // TODO: BUG HERE!!!!! IF SIGKILL OR STH SIMILAR IS NOT AT THE BOTTOM, IT WILL NOT BE HANDLES IMMEDIATLY AND MAY LET THE PROCESS GO BACK TO EXCEPTION CAUSING CODE!!!
+
         // Unhandleable signals
         switch (signum) {
             case SIGKILL:
