@@ -46,3 +46,12 @@ void register_sigaction(process_t * proc, struct sigaction * action) {
 
     memcpy(sa, action, sizeof(struct sigaction));
 }
+
+void del_proc_sig(process_t * proc, size_t index) {
+    if (index >= proc->sigqueue_sz) {
+        kwarn(__FILE__,__func__,"index too high");
+        return;
+    }
+
+    memcpy(&proc->sigqueue[index], &proc->sigqueue[index + 1], (--proc->sigqueue_sz - index) * sizeof(int));
+}
