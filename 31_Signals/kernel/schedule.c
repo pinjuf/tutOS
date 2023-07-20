@@ -94,35 +94,30 @@ void schedule(void * regframe_ptr) {
         write_proc_regs(current_process, rf);
     }
 
-    if (current_process->sigqueue_sz) {
-        // There is a pending signal a process is ready to handle
+    // Check if there are signals to handle
+    // Signals that are unhandleable, defaulted or ignored are handled immediately. Handlers are queued.
+    size_t og_sigqueue_sz      = current_process->sigqueue_sz;
+    size_t true_sigqueue_index = 0; // Elements in the queue may be deleted
 
-        int signum            = current_process->sigqueue[0]; // We cannot be sure this signal will be taken care of, so don't handle it
+    for (size_t i = 0; i < og_sigqueue_sz; i++) {
+        int signum            = current_process->sigqueue[true_sigqueue_index]; // We cannot be sure this signal will be taken care of, so don't handle it
         struct sigaction * sa = get_proc_sigaction(current_process, signum);
 
         // A signal has been caught
         current_process->pausing = false;
 
-        // TODO: BUG HERE!!!!! IF SIGKILL OR STH SIMILAR IS NOT AT THE BOTTOM, IT WILL NOT BE HANDLES IMMEDIATLY AND MAY LET THE PROCESS GO BACK TO EXCEPTION CAUSING CODE!!!
+        if (signum == SIGKILL) {
+            del_proc_sig(current_process, true_sigqueue_index);
 
-        // Unhandleable signals
-        switch (signum) {
-            case SIGKILL:
-                pop_proc_sig(current_process);
+            kill_process(current_process, UINT8_MAX);
+            current_process = NULL;
 
-                kill_process(current_process, UINT8_MAX);
-                current_process = NULL;
+            // Just run the scheduler over everything again
+            schedule(rf);
+            return;
 
-                // Just run the scheduler over everything again
-                schedule(rf);
-                return;
-
-            default:
-                break;
-        }
-
-        if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
-            pop_proc_sig(current_process);
+        } else if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
+            del_proc_sig(current_process, true_sigqueue_index);
 
             // Default handler
             switch (signum) {
@@ -143,10 +138,13 @@ void schedule(void * regframe_ptr) {
                     break;
             }
 
-        } else if (!current_process->sighandling && (uint64_t)sa->sa_handler != SIG_IGN) {
-            pop_proc_sig(current_process);
+        } else if ((uint64_t)sa->sa_handler == SIG_IGN) {
+            del_proc_sig(current_process, true_sigqueue_index);
 
-            // A handler has been registered by the program and must now be jumped to.
+        } else if (!current_process->sighandling) {
+            del_proc_sig(current_process, true_sigqueue_index);
+
+            // A handler has been registered by the program and must now be jumped to
             current_process->sighandling  = true;
             current_process->to_sigreturn = false;
 
@@ -158,7 +156,7 @@ void schedule(void * regframe_ptr) {
             current_process->sigregs.ss = current_process->kmode ? (2*8) : ((5*8) | 3);
 
             // Install the sigaltstack if demanded and possible
-            if ((sa->sa_flags & SA_ONSTACK) && !(current_process->altstack.ss_flags & SS_DISABLE)) {
+            if ((sa->sa_flags & SA_ONSTACK) && !(current_process->altstack.ss_flags & SS_DISABLE) && !(current_process->altstack.ss_flags & SS_ONSTACK)) {
                 current_process->sigregs.rsp = (uint64_t)current_process->altstack.ss_sp \
                                              + current_process->altstack.ss_size;
                 current_process->sigregs.rbp = current_process->sigregs.rsp;
@@ -171,8 +169,10 @@ void schedule(void * regframe_ptr) {
 
             write_proc_regs(current_process, rf);
 
-        } else if ((uint64_t)sa->sa_handler == SIG_IGN) {
-            pop_proc_sig(current_process);
+            // Other signals later in the queue will be handled too unless they require a handler (no break)
+        } else {
+            // Signal cannot be taken care of, advance to next one
+            true_sigqueue_index++;
         }
     }
 }
