@@ -3,7 +3,7 @@
 #include "schedule.h"
 
 void push_proc_sig(process_t * proc, int sig) {
-    if (proc->sigqueue_sz == SIGQUEUE_SZ) {
+    if (proc->sigqueue_sz >= SIGQUEUE_SZ) {
         kwarn(__FILE__,__func__,"signal queue full");
         return;
     }

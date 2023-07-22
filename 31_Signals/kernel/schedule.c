@@ -18,6 +18,11 @@ void schedule(void * regframe_ptr) {
     int_regframe_t * rf = (int_regframe_t*)regframe_ptr;
 
     if (!current_process) { // First time loading in? / Last process killed?
+        if (!ll_len(processes)) {
+            kputs("process list empty (halting)");
+            while (1);
+        }
+
         current_process = ll_get(processes, 0);
     } else {
         // Save current process, given that it is not about to undergo a context change
