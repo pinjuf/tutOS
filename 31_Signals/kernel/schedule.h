@@ -3,6 +3,8 @@
 #include "types.h"
 #include "ll.h"
 
+#include "../lib/signal.h"
+
 // A "jiffy"
 #define TICKS_PER_SCHEDULE 4
 #define PROC_CLEANER_TICKS 1000
@@ -75,12 +77,6 @@ typedef struct pagemap_t {
 } pagemap_t;
 
 #define SIGQUEUE_SZ 8
-
-typedef struct stack_t {
-    void * ss_sp;
-    size_t ss_size;
-    int ss_flags;
-} __attribute__((packed)) stack_t;
 
 typedef struct process_t {
     pid_t pid;

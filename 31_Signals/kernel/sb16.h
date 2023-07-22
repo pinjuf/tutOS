@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "../lib/dsp.h"
 
 #define DSP_BUF ((void*)0x200000)
 #define DSP_SIZE 0x10000
@@ -31,19 +32,6 @@ void init_sb16();
 void sb16_volume(uint8_t volume);
 void sb16_start_play();
 void sb16_stop_play();
-
-// Generic structure for what we are currently playing
-typedef struct sb16_player_t {
-    void * data;
-    size_t current;
-    size_t size; // Actual size, not the count
-    uint16_t sampling_rate;
-    uint8_t volume;
-    bool _16bit;
-    bool sign;
-    bool stereo;
-    bool playing;
-} __attribute__((packed)) sb16_player_t;
 
 extern sb16_player_t * sb16_player;
 
