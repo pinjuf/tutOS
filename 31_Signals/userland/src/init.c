@@ -71,12 +71,12 @@ int main(int argc, char * argv[]) {
             continue;
         }
 
-        bool do_waitpid = true;
+        bool fg = true;
 
         // Let process run in background
         if (*(curr-1) == '&') {
             *(curr-1)  = '\0';
-            do_waitpid = false;
+            fg = false;
         }
 
         // We need to transform cmdbuf into a char*argv[]
@@ -101,10 +101,16 @@ int main(int argc, char * argv[]) {
             exit(1);
         }
 
-        if (do_waitpid) {
+        if (fg) {
             waitpid(p, &status);
             putc(status + '0');
             putc(' ');
+        } else {
+            char buf[8];
+            itoa(p, buf, 10);
+            puts("bg: [");
+            puts(buf);
+            puts("]\n");
         }
     }
 

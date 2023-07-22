@@ -15,7 +15,7 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
     (void)rsp;
     (void)ss;
 
-    if (current_process) {
+    if (current_process && (cs & 3)) {
         // This was caused by a process
         // that will now have to answer
         // for its crimes
@@ -56,7 +56,7 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
     (void)rsp;
     (void)ss;
 
-    if (current_process) {
+    if (current_process && (cs & 3)) {
         // This was caused by a process
         // that will now have to answer
         // for its crimes
