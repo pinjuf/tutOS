@@ -5,27 +5,9 @@
 #include "fat.h"
 #include "ext2.h"
 #include "devfs.h"
+#include "../lib/unistd.h"
 
 #define DIRSEP '/'
-
-enum FILETYPE {
-    FILE_UNKN,
-    FILE_REG,
-    FILE_DIR,
-    FILE_BLK,
-    FILE_DEV,
-};
-
-enum SEEKMODE {
-    SEEK_SET = 0,
-    SEEK_CUR,
-    SEEK_END,
-};
-
-typedef uint16_t mode_t;
-#define O_RDONLY 1
-#define O_WRONLY 2
-#define O_RDWR   3
 
 typedef struct filehandle_t {
     size_t mountpoint; // Offset into the mountpoint table
@@ -35,13 +17,6 @@ typedef struct filehandle_t {
     size_t size;
     size_t curr;       // Current offset
 } filehandle_t;
-
-typedef struct dirent {
-    enum FILETYPE d_type;
-    size_t d_size;
-    uint8_t d_namlen;
-    char d_name[256];
-} dirent;
 
 // Generic structure describing an FS driver
 typedef struct filesystem_t {
@@ -70,12 +45,6 @@ typedef struct mountpoint_t {
     part_t * p;         // Might not be used on special filesystems
     char * path;        // Must end with "/"
 } mountpoint_t;
-
-typedef struct stat {
-    size_t st_dev; // device, a.k.a. mountpoint #N
-    uint8_t st_mode; // only FILETYPE here
-    size_t st_size;
-} stat;
 
 // Needs to be in the same order as FILESYSTEM!
 static const filesystem_t FILESYSTEMS[] = {
