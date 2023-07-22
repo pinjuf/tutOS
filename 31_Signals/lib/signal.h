@@ -22,6 +22,8 @@ enum SIGNAL {
     SIGFPE,
     SIGSEGV,
     SIGTRAP,
+    SIGUSR1,
+    SIGUSR2,
 };
 
 typedef struct stack_t {
