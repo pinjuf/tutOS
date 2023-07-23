@@ -38,7 +38,13 @@ void schedule(void * regframe_ptr) {
         current_process = ll_nextla(processes, current_process);
 
         // Note: If the signal queue is full, no SIGCONT will be able to be delivered!
-        size_t sigstop_prio = proc_has_sig(current_process, SIGSTOP);
+        size_t sigstop_prio   = proc_has_sig(current_process, SIGSTOP);
+        size_t sigtstp_prio   = proc_has_sig(current_process, SIGTSTP);
+        struct sigaction * sa = get_proc_sigaction(current_process, SIGTSTP);
+        if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
+            sigstop_prio = MAX(sigstop_prio, sigtstp_prio);
+        }
+
         if ((current_process->state == PROCESS_RUNNING) && sigstop_prio) {
             current_process->state = PROCESS_STOPPED;
         }
