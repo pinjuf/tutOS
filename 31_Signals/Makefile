@@ -6,7 +6,7 @@ QEMUFLAGS = -hda img -hdb c.img -m 320M -audiodev pa,id=audio0 -machine pcspk-au
 all: run
 
 run: img c.img
-	qemu-system-x86_64 $(QEMUFLAGS) -debugcon stdio
+	qemu-system-x86_64 $(QEMUFLAGS) -debugcon stdio -accel kvm
 
 debug: img c.img kernel/kernel.elf
 	qemu-system-x86_64 $(QEMUFLAGS) -s -S &

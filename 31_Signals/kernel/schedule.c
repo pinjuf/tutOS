@@ -37,6 +37,10 @@ void schedule(void * regframe_ptr) {
     do {
         current_process = ll_nextla(processes, current_process);
 
+        if (current_process->state == PROCESS_ZOMBIE || \
+            current_process->state == PROCESS_NONE)
+            continue;
+
         // Note: If the signal queue is full, no SIGCONT will be able to be delivered!
         size_t sigstop_prio   = proc_has_sig(current_process, SIGSTOP);
         size_t sigtstp_prio   = proc_has_sig(current_process, SIGTSTP);
@@ -198,6 +202,7 @@ process_t * add_process() {
     memset(out, 0, sizeof(process_t));
     out->pid = pid_counter++;
     out->sigactions = create_ll(sizeof(struct sigaction));
+
     return out;
 }
 

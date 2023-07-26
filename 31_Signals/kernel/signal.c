@@ -23,6 +23,11 @@ int pop_proc_sig(process_t * proc) {
 }
 
 struct sigaction * get_proc_sigaction(process_t * proc, int sig) {
+    // The list may already have been kfree'd
+    if (proc->state == PROCESS_ZOMBIE || \
+        proc->state == PROCESS_NONE)
+        return NULL;
+
     struct sigaction * out = NULL;
 
     for (size_t i = 0; i < ll_len(proc->sigactions); i++) {

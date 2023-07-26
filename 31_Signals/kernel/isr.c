@@ -28,7 +28,7 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
         kputhex(rip);
         kputs(" BY PID#");
         kputdec(current_process->pid);
-        kputs(" > ");
+        kputs(" >\n");
 
         push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
 
@@ -42,7 +42,7 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
     kputdec(n);
     kputs(" AT 0x");
     kputhex(rip);
-    kputs(" > ");
+    kputs(" >\n");
 
     while (1);
 }
@@ -71,7 +71,7 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
         kputhex(rip);
         kputs(" BY PID#");
         kputdec(current_process->pid);
-        kputs(" > ");
+        kputs(" >\n");
 
         push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
 
@@ -87,7 +87,7 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
     kputhex(err);
     kputs(") AT 0x");
     kputhex(rip);
-    kputs(" > ");
+    kputs(" >\n");
 
     while (1);
 }

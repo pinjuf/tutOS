@@ -6,16 +6,23 @@ ll_head * create_ll(size_t node_sz) {
     ll_head * out = kmalloc(sizeof(ll_head));
 
     out->start = NULL;
+    out->magic = LL_HEADMAGIC;
     out->node_sz = node_sz;
 
     return out;
 }
 
 void destroy_ll(ll_head * head) {
+    if (head->magic != LL_HEADMAGIC)
+        kwarn(__FILE__,__func__,"invalid head magic");
+
     ll_nodeattr * current = head->start;
     ll_nodeattr * next = NULL;
 
     while (current != NULL) {
+        if (current->magic != LL_NODEMAGIC)
+            kwarn(__FILE__,__func__,"invalid node magic");
+
         next = current->next;
         kfree(current);
         current = next;
@@ -25,11 +32,17 @@ void destroy_ll(ll_head * head) {
 }
 
 size_t ll_len(ll_head * head) {
+    if (head->magic != LL_HEADMAGIC)
+        kwarn(__FILE__,__func__,"invalid head magic");
+
     size_t out = 0;
 
     ll_nodeattr * current = head->start;
 
     while (current != NULL) {
+        if (current->magic != LL_NODEMAGIC)
+            kwarn(__FILE__,__func__,"invalid node magic");
+
         out++;
         current = current->next;
     }
@@ -41,12 +54,18 @@ void * ll_push(ll_head * head) {
     // Adds an empty element to the
     // end of the LL and returns it
 
+    if (head->magic != LL_HEADMAGIC)
+        kwarn(__FILE__,__func__,"invalid head magic");
+
     ll_nodeattr * new = kmalloc(sizeof(ll_nodeattr) + head->node_sz);
 
     ll_nodeattr * current = head->start;
     ll_nodeattr * prev = NULL;
 
     while (current != NULL) {
+        if (current->magic != LL_NODEMAGIC)
+            kwarn(__FILE__,__func__,"invalid node magic");
+
         prev = current;
         current = current->next;
     }
@@ -57,6 +76,7 @@ void * ll_push(ll_head * head) {
         prev->next = new;
     }
 
+    new->magic = LL_NODEMAGIC;
     new->next = NULL;
 
     return (void*)((uint64_t)new + sizeof(ll_nodeattr));
@@ -66,12 +86,18 @@ void * ll_get(ll_head * head, size_t index) {
     // Returns the element at the given index
     // or NULL if the index is out of bounds
 
+    if (head->magic != LL_HEADMAGIC)
+        kwarn(__FILE__,__func__,"invalid head magic");
+
     ll_nodeattr * current = head->start;
 
     for (size_t i = 0; i < index; i++) {
         if (current == NULL) {
             return NULL;
         }
+
+        if (current->magic != LL_NODEMAGIC)
+            kwarn(__FILE__,__func__,"invalid node magic");
 
         current = current->next;
     }
@@ -87,6 +113,9 @@ int ll_del(ll_head * head, size_t index) {
     // Deletes the element at the given index
     // or does nothing if the index is out of bounds
 
+    if (head->magic != LL_HEADMAGIC)
+        kwarn(__FILE__,__func__,"invalid head magic");
+
     ll_nodeattr * current = head->start;
     ll_nodeattr * prev = NULL;
 
@@ -94,6 +123,9 @@ int ll_del(ll_head * head, size_t index) {
         if (current == NULL) {
             return 1;
         }
+
+        if (current->magic != LL_NODEMAGIC)
+            kwarn(__FILE__,__func__,"invalid node magic");
 
         prev = current;
         current = current->next;
@@ -118,12 +150,18 @@ int ll_delp(ll_head * head, void * p) {
     // Deletes the pointed to element
     // TODO: test
 
+    if (head->magic != LL_HEADMAGIC)
+        kwarn(__FILE__,__func__,"invalid head magic");
+
     p = (void*)((size_t)p - sizeof(ll_nodeattr));
 
     ll_nodeattr * curr = head->start;
     size_t i = 0;
 
     while (curr) {
+        if (curr->magic != LL_NODEMAGIC)
+            kwarn(__FILE__,__func__,"invalid node magic");
+
         if (curr == p) {
             return ll_del(head, i); // yes, i am that lazy, and yes, that should always return 0
         }
@@ -138,6 +176,9 @@ int ll_delp(ll_head * head, void * p) {
 void * ll_next(void * current) {
     ll_nodeattr * attr = (void*)((uint64_t)current - sizeof(ll_nodeattr));
 
+    if (attr->magic != LL_NODEMAGIC)
+        kwarn(__FILE__,__func__,"invalid node magic");
+
     if (attr->next == NULL) {
         return NULL;
     }
@@ -147,7 +188,13 @@ void * ll_next(void * current) {
 
 void * ll_nextla(ll_head * head, void * current) {
     // Gives the next element, like ll_next, but with looparound
+    if (head->magic != LL_HEADMAGIC)
+        kwarn(__FILE__,__func__,"invalid head magic");
+
     ll_nodeattr * attr = (void*)((uint64_t)current - sizeof(ll_nodeattr));
+
+    if (attr->magic != LL_NODEMAGIC)
+        kwarn(__FILE__,__func__,"invalid node magic");
 
     if (attr->next == NULL) {
         return (void*)((uint64_t)head->start + sizeof(ll_nodeattr));
@@ -158,6 +205,9 @@ void * ll_nextla(ll_head * head, void * current) {
 
 ll_head * ll_copy(ll_head * head) {
     // Copies the given linked list
+    if (head->magic != LL_HEADMAGIC)
+        kwarn(__FILE__,__func__,"invalid head magic");
+
     ll_head * out = create_ll(head->node_sz);
 
     for (size_t i = 0; i < ll_len(head); i++) {
