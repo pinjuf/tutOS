@@ -24,9 +24,10 @@ int pop_proc_sig(process_t * proc) {
 
 struct sigaction * get_proc_sigaction(process_t * proc, int sig) {
     // The list may already have been kfree'd
-    if (proc->state == PROCESS_ZOMBIE || \
-        proc->state == PROCESS_NONE)
+    if (!IS_ALIVE(proc)) {
+        kwarn(__FILE__,__func__,"process is dead");
         return NULL;
+    }
 
     struct sigaction * out = NULL;
 
@@ -43,6 +44,11 @@ struct sigaction * get_proc_sigaction(process_t * proc, int sig) {
 }
 
 void register_sigaction(process_t * proc, struct sigaction * action) {
+    if (!IS_ALIVE(proc)) {
+        kwarn(__FILE__,__func__,"tried to register sigaction to dead process");
+        return;
+    }
+
     struct sigaction * sa = get_proc_sigaction(proc, action->sa_sig);
 
     if (!sa) {

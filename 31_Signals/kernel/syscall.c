@@ -230,6 +230,9 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             if (!target)
                 return -1;
 
+            if (!IS_ALIVE(target))
+                return -1;
+
             push_proc_sig(target, sig);
 
             return 0;

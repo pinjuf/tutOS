@@ -184,7 +184,7 @@ void isr_irq1(void) {
     if (!release && !special && kbd_getkey(SCS1_LSHIFT) && kbd_getkey(SCS1_CTRL) && scancode_to_ascii(c) == 'c') {
         for (size_t i = 0; i < ll_len(processes); i++) {
             process_t * proc = ll_get(processes, i);
-            if (proc->pid == INIT_PID)
+            if (proc->pid == INIT_PID || !IS_ALIVE(proc))
                 continue;
 
             push_proc_sig(proc, SIGKILL);
@@ -201,7 +201,7 @@ void isr_irq1(void) {
     if (!release && !special && kbd_getkey(SCS1_ALT) && kbd_getkey(SCS1_CTRL) && scancode_to_ascii(c) == 'c') {
         for (size_t i = 0; i < ll_len(processes); i++) {
             process_t * proc = ll_get(processes, i);
-            if (proc->pid == INIT_PID)
+            if (proc->pid == INIT_PID || !IS_ALIVE(proc))
                 continue;
 
             push_proc_sig(proc, SIGTERM);

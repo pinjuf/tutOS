@@ -27,9 +27,10 @@ int main(int argc, char * argv[]) {
 
     puts("Hello from test program!\n");
 
-    pit_msleep(5000);
+    //pit_msleep(5000);
     //asm ("cli"); // Causes a #GP
-    pit_msleep(5000);
+    //pit_msleep(5000);
+    pause();
 
     puts("Bye from test program!\n");
 

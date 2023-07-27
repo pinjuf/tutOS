@@ -69,6 +69,8 @@ typedef enum PROCESS_STATE {
     PROCESS_ZOMBIE,
 } PROCESS_STATE;
 
+#define IS_ALIVE(proc) (proc->state == PROCESS_RUNNING || proc->state == PROCESS_STOPPED)
+
 typedef struct pagemap_t {
     void * phys;
     void * virt;

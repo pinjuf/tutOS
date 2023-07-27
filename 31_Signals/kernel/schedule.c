@@ -37,8 +37,7 @@ void schedule(void * regframe_ptr) {
     do {
         current_process = ll_nextla(processes, current_process);
 
-        if (current_process->state == PROCESS_ZOMBIE || \
-            current_process->state == PROCESS_NONE)
+        if (!IS_ALIVE(current_process))
             continue;
 
         // Note: If the signal queue is full, no SIGCONT will be able to be delivered!
@@ -97,6 +96,8 @@ void schedule(void * regframe_ptr) {
 
             memcpy(buf, current_process->pagemaps[i].virt, current_process->pagemaps[i].n * PAGE_SIZE);
         }
+
+        child->sigqueue_sz = 0; // Pending signals are not inherited
     }
 
     if (current_process->to_sigreturn) {
@@ -258,6 +259,11 @@ void free_pagemaps(pagemap_t * maps, size_t n) {
 }
 
 void kill_process(process_t * proc, uint8_t return_code) {
+    if (!IS_ALIVE(proc)) {
+        kwarn(__FILE__,__func__,"tried to kill dead process");
+        return;
+    }
+
     // Free the memory
     free_pagemaps(proc->pagemaps, proc->pagemaps_n);
     kfree(proc->pagemaps);
