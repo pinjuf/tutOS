@@ -20,7 +20,6 @@ void sighandle(int signum) {
 }
 
 int main(int argc, char * argv[]) {
-
     signal(SIGSTOP, sighandle);
     signal(SIGCONT, sighandle);
     signal(SIGUSR1, sighandle);

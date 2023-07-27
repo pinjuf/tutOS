@@ -79,10 +79,13 @@ int main(int argc, char * argv[]) {
             fg = false;
         }
 
+        char * cmdbuf2 = malloc(256);
+        memcpy(cmdbuf2, cmdbuf, 256);
+
         // We need to transform cmdbuf into a char*argv[]
         char ** argv = malloc(sizeof(char*) * 16);
         int argc = 0;
-        char * acurr = cmdbuf;
+        char * acurr = cmdbuf2;
         while (*acurr) {
             argv[argc++] = acurr;
             while (*acurr && *acurr != ' ')
@@ -91,8 +94,6 @@ int main(int argc, char * argv[]) {
                 *acurr++ = '\0';
         }
         argv[argc] = NULL;
-        char * cmdbuf2 = malloc(256);
-        memcpy(cmdbuf2, cmdbuf, 256);
 
         pid_t p = fork();
         if (p == 0) {
