@@ -111,7 +111,7 @@ void schedule(void * regframe_ptr) {
         write_proc_regs(current_process, rf);
     }
 
-    if (pit0_ticks >= current_process->alarm) {
+    if (current_process->alarm && (pit0_ticks >= current_process->alarm)) {
         current_process->alarm = 0;
         push_proc_sig(current_process, SIGALRM);
     }

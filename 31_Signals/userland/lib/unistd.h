@@ -26,3 +26,4 @@ int raise(int sig);
 int signal(int sig, void (*func)(int));
 int sigaltstack(stack_t * ss);
 int pause();
+uint64_t alarm(uint64_t seconds);

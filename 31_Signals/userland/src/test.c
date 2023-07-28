@@ -11,6 +11,8 @@ void sighandle(int signum) {
     } else if (signum == SIGALRM) {
         puts("Got alarm!\n");
         alarm(1);
+    } else if (signum == SIGUSR1) {
+        puts("Got SIGUSR1!\n");
     } else {
         char buf[16];
         puts("Got signal #");
@@ -24,10 +26,10 @@ void sighandle(int signum) {
 
 int main(int argc, char * argv[]) {
     signal(SIGALRM, sighandle);
+    signal(SIGUSR1, sighandle);
 
-    alarm(1);
-
-    while (1);
+    raise(SIGUSR1);
+    puts("Raised SIGUSR1!\n");
 
     return 0;
 }
