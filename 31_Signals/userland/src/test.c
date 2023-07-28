@@ -8,6 +8,9 @@ void sighandle(int signum) {
         puts("I was stopped!\n");
     } else if (signum == SIGCONT) {
         puts("I was continued!\n");
+    } else if (signum == SIGALRM) {
+        puts("Got alarm!\n");
+        alarm(1);
     } else {
         char buf[16];
         puts("Got signal #");
@@ -20,19 +23,11 @@ void sighandle(int signum) {
 }
 
 int main(int argc, char * argv[]) {
-    signal(SIGSTOP, sighandle);
-    signal(SIGCONT, sighandle);
-    signal(SIGUSR1, sighandle);
-    signal(SIGUSR2, sighandle);
+    signal(SIGALRM, sighandle);
 
-    puts("Hello from test program!\n");
+    alarm(1);
 
-    //pit_msleep(5000);
-    //asm ("cli"); // Causes a #GP
-    //pit_msleep(5000);
-    pause();
-
-    puts("Bye from test program!\n");
+    while (1);
 
     return 0;
 }

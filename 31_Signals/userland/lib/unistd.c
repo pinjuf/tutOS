@@ -106,3 +106,7 @@ int sigaltstack(stack_t * ss) {
 int pause() {
     return syscall(34, 0, 0, 0, 0, 0, 0);
 }
+
+uint64_t alarm(uint64_t seconds) {
+    return syscall(37, seconds, 0, 0, 0, 0, 0);
+}

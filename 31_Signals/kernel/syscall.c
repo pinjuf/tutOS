@@ -5,6 +5,8 @@
 #include "mm.h"
 #include "elf.h"
 #include "signal.h"
+#include "isr.h"
+#include "main.h"
 
 extern void syscall_stub(void);
 
@@ -124,6 +126,23 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             cli;
 
             return 0;
+        }
+        case 37: { // alarm
+            uint64_t seconds = arg0;
+
+            // When would the next alarm have been? (rounded upwards to seconds)
+            uint64_t old_seconds;
+            if (current_process->alarm)
+                old_seconds = (current_process->alarm - pit0_ticks + PIT0_FREQ - 1) / PIT0_FREQ;
+            else
+                old_seconds = 0;
+
+            if (seconds)
+                current_process->alarm = pit0_ticks + seconds * PIT0_FREQ;
+            else // seconds = 0 means to cancel any alarm
+                current_process->alarm = 0;
+
+            return old_seconds;
         }
         case 39: { // getpid
             return current_process->pid;

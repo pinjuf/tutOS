@@ -3,6 +3,7 @@
 #include "mm.h"
 #include "main.h"
 #include "signal.h"
+#include "isr.h"
 
 ll_head * processes;
 process_t * current_process = NULL;
@@ -108,6 +109,11 @@ void schedule(void * regframe_ptr) {
         current_process->altstack.ss_flags &= ~(SS_ONSTACK);
 
         write_proc_regs(current_process, rf);
+    }
+
+    if (pit0_ticks >= current_process->alarm) {
+        current_process->alarm = 0;
+        push_proc_sig(current_process, SIGALRM);
     }
 
     // Check if there are signals to handle
