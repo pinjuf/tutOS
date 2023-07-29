@@ -221,20 +221,38 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
         case 61: { // wait4
             pid_t pid = arg0;
             int * status = (void*)arg1;
+            size_t options = arg2;
 
             process_t * proc = get_proc_by_pid(pid);
             if (!proc)
                 return -1;
 
+            if (options & WNOHANG) {
+                if (!IS_ALIVE(proc)) {
+                    if (status)
+                        *status = proc->exitcode;
+
+                    if ((current_process->pid == proc->parent) && (current_process->state == PROCESS_ZOMBIE))
+                        proc->state = PROCESS_NONE;
+
+                    return pid;
+                } else {
+                    return 0;
+                }
+            }
+
             volatile PROCESS_STATE orig = proc->state;
 
             sti;
 
-            while (orig == proc->state);
+            while (IS_ALIVE(proc) \
+                || ((options & WUNTRACED)  && (orig == PROCESS_RUNNING) && (proc->state != PROCESS_STOPPED)) \
+                || ((options & WCONTINUED) && (orig == PROCESS_STOPPED) && (proc->state != PROCESS_RUNNING)));
 
             cli;
 
-            *status = proc->exitcode;
+            if (status)
+                *status = proc->exitcode;
 
             if ((current_process->pid == proc->parent) && (current_process->state == PROCESS_ZOMBIE))
                 proc->state = PROCESS_NONE;

@@ -12,7 +12,7 @@ int64_t seek(FILE * file, int64_t offset, enum SEEKMODE mode);
 pid_t fork();
 int exec(char * file, char * argv[]);
 void exit(int code);
-pid_t waitpid(pid_t pid, int * status);
+pid_t waitpid(pid_t pid, int * status, size_t options);
 pid_t getpid();
 pid_t getppid();
 size_t getdents(DIR * fd, dirent * dirp, size_t count);

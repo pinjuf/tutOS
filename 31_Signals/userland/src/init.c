@@ -103,7 +103,7 @@ int main(int argc, char * argv[]) {
         }
 
         if (fg) {
-            waitpid(p, &status);
+            waitpid(p, &status, 0);
             putc(status + '0');
             putc(' ');
         } else {

@@ -39,3 +39,7 @@ typedef void FILE;
 typedef void DIR;
 typedef uint16_t pid_t;
 
+// wait4 options
+#define WNOHANG    1
+#define WUNTRACED  2
+#define WCONTINUED 4
