@@ -24,3 +24,4 @@ bool mm_is_used(size_t chunk);
 void * kmalloc(size_t n);
 void * kcalloc(size_t n);
 void kfree(void * ptr);
+void * krealloc(void * ptr, size_t n);

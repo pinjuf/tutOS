@@ -2,6 +2,8 @@
 
 #include "util.h"
 
+// Note: pretty much none of these functions are task-switching-safe
+
 uint16_t * mm_bitmap = (uint16_t*) 0x140000;
 
 void init_mm(void) {
@@ -82,6 +84,10 @@ size_t mm_first_free_chunk(void) {
 }
 
 void * kmalloc(size_t n) {
+
+    if (n == 0)
+        return NULL;
+
     n += 12; // Space for our header
 
     size_t needed = n / MM_CHUNKSIZE;
@@ -150,4 +156,30 @@ void kfree(void * ptr) {
     for (size_t i = 0; i < n; i++) {
         mm_set_used(start + i, 0);
     }
+}
+
+void * krealloc(void * ptr, size_t n) {
+    if (ptr == NULL)
+        return kmalloc(n);
+
+    if (((uint64_t)ptr - sizeof(size_t) - sizeof(uint32_t)) % MM_CHUNKSIZE) {
+        kwarn(__FILE__,__func__,"ptr not mm-chunk-aligned");
+    }
+
+    size_t old_n = *(size_t*)((uint64_t)ptr - sizeof(size_t));
+    uint32_t magic = *(uint32_t*)((uint64_t)ptr - sizeof(size_t) - sizeof(uint32_t));
+
+    if (magic != MM_MAGIC) {
+        kwarn(__FILE__,__func__,"no malloc signature");
+    }
+
+    if (n == 0) {
+        kfree(ptr);
+        return NULL;
+    }
+
+    void * new = kmalloc(n);
+    memcpy(new, ptr, old_n);
+    kfree(ptr);
+    return new;
 }
