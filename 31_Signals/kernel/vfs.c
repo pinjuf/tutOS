@@ -99,6 +99,16 @@ size_t kread(filehandle_t * f, void * buf, size_t count) {
     return FILESYSTEMS[mountpoints[f->mountpoint].type].read_file(f, buf, count);
 }
 
+size_t kreadat(filehandle_t * f, size_t off, void * buf, size_t count) {
+    // reads from an offset and preserves the cursor
+
+    size_t orig = f->curr;
+    f->curr = off;
+    size_t read = kread(f, buf, count);
+    f->curr = orig;
+    return read;
+}
+
 size_t kwrite(filehandle_t * f, void * buf, size_t count) {
     if (FILESYSTEMS[mountpoints[f->mountpoint].type].read_file == NULL) {
         kwarn(__FILE__,__func__,"no driver support");
@@ -110,6 +120,14 @@ size_t kwrite(filehandle_t * f, void * buf, size_t count) {
     }
 
     return FILESYSTEMS[mountpoints[f->mountpoint].type].write_file(f, buf, count);
+}
+
+size_t kwriteat(filehandle_t * f, size_t off, void * buf, size_t count) {
+    size_t orig = f->curr;
+    f->curr = off;
+    size_t written = kwrite(f, buf, count);
+    f->curr = orig;
+    return written;
 }
 
 dirent * kreaddir(filehandle_t * f) {
