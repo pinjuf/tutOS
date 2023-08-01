@@ -159,7 +159,7 @@ typedef struct ext2fs_file_t {
     void * cache; // TODO: Don't cache the whole file, only the current block
 } ext2fs_file_t;
 
-ext2fs_t * get_ext2fs(part_t * p);
+ext2fs_t * get_ext2fs(void * f);
 ext2_inode_t * ext2_get_inode(ext2fs_t * fs, uint32_t inode);
 void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf);
 char * ext2_lsdir(ext2fs_t * fs, ext2_inode_t * inode);

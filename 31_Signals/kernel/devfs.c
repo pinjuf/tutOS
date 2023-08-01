@@ -9,7 +9,7 @@
 #include "sb16.h"
 
 devfs_t * get_devfs(void * p) {
-    // All FS initializers must take a partition, but devfs doesn't NEED it
+    // All FS initializers must take a mountfile, but devfs doesn't NEED it
     (void)p;
 
     devfs_t * out = (devfs_t*) kmalloc(sizeof(devfs_t));

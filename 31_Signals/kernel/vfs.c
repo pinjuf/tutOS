@@ -7,18 +7,24 @@ mountpoint_t * mountpoints;
 void init_vfs() {
     mountpoints = (mountpoint_t *) kcalloc(sizeof(mountpoint_t) * MOUNTPOINTS_N);
 
-    mountpoints[0].type = FS_EXT2;
-    mountpoints[0].path = "/";
-    mountpoints[0].p    = get_part(1, 0);
+    mountpoints[0].type = FS_DEVFS;
+    mountpoints[0].path = "/dev/";
 
-    mountpoints[1].type = FS_DEVFS;
-    mountpoints[1].path = "/dev/";
+    mountpoints[1].type     = FS_EXT2;
+    mountpoints[1].path     = "/";
+    mountpoints[1].filepath = "/dev/hdb1";
 
     for (size_t i = 0; i < MOUNTPOINTS_N; i++) {
         if (mountpoints[i].type == FS_UNKN)
             continue;
-        if (FILESYSTEMS[mountpoints[i].type].get_fs)
-            mountpoints[i].internal_fs = FILESYSTEMS[mountpoints[i].type].get_fs(mountpoints[i].p);
+
+        if (mountpoints[i].filepath) {
+            mountpoints[i].file = kopen(mountpoints[i].filepath, O_RDWR);
+        }
+
+        if (FILESYSTEMS[mountpoints[i].type].get_fs) {
+            mountpoints[i].internal_fs = FILESYSTEMS[mountpoints[i].type].get_fs(mountpoints[i].file);
+        }
     }
 }
 

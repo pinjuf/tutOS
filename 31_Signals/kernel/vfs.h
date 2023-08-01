@@ -21,7 +21,7 @@ typedef struct filehandle_t {
 // Generic structure describing an FS driver
 typedef struct filesystem_t {
     char name[8];
-    void * (* get_fs)(part_t * p);
+    void * (* get_fs)(filehandle_t * f);
 
     filehandle_t * (* get_filehandle)(void * internal_fs, char * path, mode_t mode);
     void (* close_filehandle)(filehandle_t * f);
@@ -41,9 +41,10 @@ enum FILESYSTEM {
 
 typedef struct mountpoint_t {
     enum FILESYSTEM type;
-    void * internal_fs; // ext2fs_t, fat32fs_t, etc.
-    part_t * p;         // Might not be used on special filesystems
-    char * path;        // Must end with "/"
+    char * filepath;     // File that is mounted
+    filehandle_t * file;
+    void * internal_fs;  // ext2fs_t, fat32fs_t, etc.
+    char * path;         // Must end with "/"
 } mountpoint_t;
 
 // Needs to be in the same order as FILESYSTEM!
@@ -51,7 +52,7 @@ static const filesystem_t FILESYSTEMS[] = {
     {"unkn", NULL, NULL, NULL, NULL, NULL, NULL}, // Unknown FS
 
     {"ext2",
-        (void* (*) (part_t * p)) get_ext2fs,
+        (void* (*) (filehandle_t * f)) get_ext2fs,
         (filehandle_t * (*) (void * internal_fs, char * path, mode_t)) ext2_getfile,
         (void (*) (filehandle_t * f)) ext2_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) ext2_readfile,
@@ -60,8 +61,8 @@ static const filesystem_t FILESYSTEMS[] = {
     },
 
     {"fat32",
-        (void* (*) (part_t * p)) get_fat32fs,
-        NULL, // TODO: Implement fat32_getfile etc.
+        NULL, // TODO: Implement perhaps
+        NULL,
         NULL,
         NULL,
         NULL,
@@ -69,7 +70,7 @@ static const filesystem_t FILESYSTEMS[] = {
     },
 
     {"devfs",
-        (void* (*) (part_t * p)) get_devfs,
+        (void* (*) (filehandle_t * fh)) get_devfs,
         (filehandle_t * (*) (void * internal_fs, char * path, mode_t)) devfs_getfile,
         (void (*) (filehandle_t * f)) devfs_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_readfile,

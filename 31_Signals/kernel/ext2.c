@@ -3,15 +3,16 @@
 #include "mm.h"
 #include "vfs.h"
 
-ext2fs_t * get_ext2fs(part_t * p) {
+ext2fs_t * get_ext2fs(void * f) {
+    filehandle_t * fh = f;
+
     ext2fs_t * out = (ext2fs_t*)kmalloc(sizeof(ext2fs_t));
 
-    part_read(p, 1024, sizeof(ext2_superblock_t), &out->sb);
+    kreadat(fh, 1024, &out->sb, sizeof(ext2_superblock_t));
 
     if (out->sb.s_magic != EXT2_SUPER_MAGIC)
         kwarn(__FILE__,__func__,"wrong superblock magic");
 
-    memcpy(&out->p, p, sizeof(part_t));
     out->blocksize = 1024 << out->sb.s_log_block_size;
     out->groups_n = out->sb.s_blocks_count / out->sb.s_blocks_per_group;
     if (out->sb.s_blocks_count % out->sb.s_blocks_per_group)
@@ -24,7 +25,7 @@ ext2fs_t * get_ext2fs(part_t * p) {
     size_t grp_offset = out->blocksize == 1024 ? 2 : 1;
     out->grps = (ext2_blockgroupdescriptor_t *) kmalloc(sizeof(ext2_blockgroupdescriptor_t) * out->groups_n);
 
-    part_read(p, grp_offset * out->blocksize, sizeof(ext2_blockgroupdescriptor_t) * out->groups_n, out->grps);
+    kreadat(fh, grp_offset * out->blocksize, out->grps, sizeof(ext2_blockgroupdescriptor_t) * out->groups_n);
 
     return out;
 }
