@@ -27,6 +27,8 @@ ext2fs_t * get_ext2fs(void * f) {
 
     kreadat(fh, grp_offset * out->blocksize, out->grps, sizeof(ext2_blockgroupdescriptor_t) * out->groups_n);
 
+    out->fh = fh;
+
     return out;
 }
 
@@ -38,7 +40,7 @@ ext2_inode_t * ext2_get_inode(ext2fs_t * fs, uint32_t inode) {
 
     size_t offset = fs->grps[group].bg_inode_table * fs->blocksize + index * fs->inode_size;
 
-    part_read(&fs->p, offset, sizeof(ext2_inode_t), out);
+    kreadat(fs->fh, offset, out, sizeof(ext2_inode_t));
 
     return out;
 }
@@ -56,7 +58,7 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
             to_read = inode->i_size - read;
 
         if (inode->i_block[i]) {
-            part_read(&fs->p, inode->i_block[i] * fs->blocksize, to_read, curr);
+            kreadat(fs->fh, inode->i_block[i] * fs->blocksize, curr, to_read);
         } else {
             memset(curr, 0, to_read);
         }
@@ -72,7 +74,7 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
     if (inode->i_block[12]) {
         uint32_t * indirect = (uint32_t *) kmalloc(fs->blocksize);
 
-        part_read(&fs->p, inode->i_block[12] * fs->blocksize, fs->blocksize, indirect);
+        kreadat(fs->fh, inode->i_block[12] * fs->blocksize, indirect, fs->blocksize);
 
         for (size_t i = 0; i < ptrs_per_block; i++) {
             size_t to_read = fs->blocksize;
@@ -80,7 +82,7 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
                 to_read = inode->i_size - read;
 
             if (indirect[i]) {
-                part_read(&fs->p, indirect[i] * fs->blocksize, to_read, curr);
+                kreadat(fs->fh, indirect[i] * fs->blocksize, curr, to_read);
             } else {
                 memset(curr, 0, to_read);
             }
@@ -101,12 +103,12 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
     if (inode->i_block[13]) {
         uint32_t * bi_indirect = (uint32_t *) kmalloc(fs->blocksize);
 
-        part_read(&fs->p, inode->i_block[13] * fs->blocksize, fs->blocksize, bi_indirect);
+        kreadat(fs->fh, inode->i_block[13] * fs->blocksize, bi_indirect, fs->blocksize);
 
         for (size_t i = 0; i < ptrs_per_block; i++) {
             uint32_t * indirect = (uint32_t *) kmalloc(fs->blocksize);
 
-            part_read(&fs->p, bi_indirect[i] * fs->blocksize, fs->blocksize, indirect);
+            kreadat(fs->fh, bi_indirect[i] * fs->blocksize, indirect, fs->blocksize);
 
             for (size_t j = 0; j < ptrs_per_block; j++) {
                 size_t to_read = fs->blocksize;
@@ -114,7 +116,7 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
                     to_read = inode->i_size - read;
 
                 if (indirect[j]) {
-                    part_read(&fs->p, indirect[j] * fs->blocksize, to_read, curr);
+                    kreadat(fs->fh, indirect[j] * fs->blocksize, curr, to_read);
                 } else {
                     memset(curr, 0, to_read);
                 }
@@ -139,17 +141,17 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
     if (inode->i_block[14]) { // TODO: Test this (with a big enough file)
         uint32_t * tri_indirect = (uint32_t *) kmalloc(fs->blocksize);
 
-        part_read(&fs->p, inode->i_block[14] * fs->blocksize, fs->blocksize, tri_indirect);
+        kreadat(fs->fh, inode->i_block[14] * fs->blocksize, tri_indirect, fs->blocksize);
 
         for (size_t i = 0; i < ptrs_per_block; i++) {
             uint32_t * bi_indirect = (uint32_t *) kmalloc(fs->blocksize);
 
-            part_read(&fs->p, tri_indirect[i] * fs->blocksize, fs->blocksize, bi_indirect);
+            kreadat(fs->fh, tri_indirect[i] * fs->blocksize, bi_indirect, fs->blocksize);
 
             for (size_t j = 0; j < ptrs_per_block; j++) {
                 uint32_t * indirect = (uint32_t *) kmalloc(fs->blocksize);
 
-                part_read(&fs->p, bi_indirect[j] * fs->blocksize, fs->blocksize, indirect);
+                kreadat(fs->fh, bi_indirect[j] * fs->blocksize, indirect, fs->blocksize);
 
                 for (size_t k = 0; k < ptrs_per_block; k++) {
                     size_t to_read = fs->blocksize;
@@ -157,7 +159,7 @@ void ext2_read_inode(ext2fs_t * fs, ext2_inode_t * inode, void * buf) {
                         to_read = inode->i_size - read;
 
                     if (indirect[k]) {
-                        part_read(&fs->p, indirect[k] * fs->blocksize, to_read, curr);
+                        kreadat(fs->fh, indirect[k] * fs->blocksize, curr, to_read);
                     } else {
                         memset(curr, 0, to_read);
                     }
@@ -192,10 +194,10 @@ void ext2_read_inodeblock(ext2fs_t * fs, ext2_inode_t * inode, void * buf, size_
             return;
         }
 
-        part_read(&fs->p, inode->i_block[n] * fs->blocksize, fs->blocksize, buf);
+        kreadat(fs->fh, inode->i_block[n] * fs->blocksize, buf, fs->blocksize);
     } else if (n < (12 + ptrs_per_block)) {
         uint32_t * indirect = (uint32_t *) kmalloc(fs->blocksize);
-        part_read(&fs->p, inode->i_block[12] * fs->blocksize, fs->blocksize, indirect);
+        kreadat(fs->fh, inode->i_block[12] * fs->blocksize, indirect, fs->blocksize);
 
         if (!indirect[n - 12]) {
             memset(buf, 0, fs->blocksize);
@@ -204,17 +206,17 @@ void ext2_read_inodeblock(ext2fs_t * fs, ext2_inode_t * inode, void * buf, size_
         }
 
 
-        part_read(&fs->p, indirect[n - 12] * fs->blocksize, fs->blocksize, buf);
+        kreadat(fs->fh, indirect[n - 12] * fs->blocksize, buf, fs->blocksize);
 
         kfree(indirect);
     } else if (n < (12 + ptrs_per_block * ptrs_per_block)) {
         uint32_t * bi_indirect = (uint32_t *) kmalloc(fs->blocksize);
-        part_read(&fs->p, inode->i_block[13] * fs->blocksize, fs->blocksize, bi_indirect);
+        kreadat(fs->fh, inode->i_block[13] * fs->blocksize, bi_indirect, fs->blocksize);
 
         const uint32_t bi_offset = (n - 12 - ptrs_per_block)/ptrs_per_block;
 
         uint32_t * indirect = (uint32_t *) kmalloc(fs->blocksize);
-        part_read(&fs->p, bi_indirect[bi_offset] * fs->blocksize, fs->blocksize, indirect);
+        kreadat(fs->fh, bi_indirect[bi_offset] * fs->blocksize, indirect, fs->blocksize);
 
         const uint32_t offset = n - (12 + ptrs_per_block + ptrs_per_block * bi_offset);
 
@@ -225,7 +227,7 @@ void ext2_read_inodeblock(ext2fs_t * fs, ext2_inode_t * inode, void * buf, size_
             return;
         }
 
-        part_read(&fs->p, indirect[offset] * fs->blocksize, fs->blocksize, buf);
+        kreadat(fs->fh, indirect[offset] * fs->blocksize, buf, fs->blocksize);
 
         kfree(indirect);
         kfree(bi_indirect);
@@ -260,7 +262,9 @@ uint32_t ext2_get_inode_by_name(ext2fs_t * fs, ext2_inode_t * inode, char * name
     return 0;
 }
 
-void * ext2_getfile(ext2fs_t * fs, char * path, uint16_t m) {
+void * ext2_getfile(void * mn, char * path, uint16_t m) {
+    mountpoint_t * mnt = mn;
+    ext2fs_t     * fs  = mnt->internal_fs;
     mode_t mode = m; // compiler's fault
     char token[256];
 

@@ -35,7 +35,7 @@ devfs_t * get_devfs(void * p);
 devfs_id_t devfs_register_dev(devfs_t * fs, devfs_dev_t * dev);
 void devfs_unregister_dev(devfs_t * fs, devfs_id_t dev);
 
-void * devfs_getfile(void *, char * path, uint16_t);
+void * devfs_getfile(void * mn, char * path, uint16_t);
 void devfs_closefile(void * f);
 size_t devfs_readfile(void * f, void * buf, size_t count);
 size_t devfs_writefile(void * f, void * buf, size_t count);

@@ -23,7 +23,7 @@ typedef struct filesystem_t {
     char name[8];
     void * (* get_fs)(filehandle_t * f);
 
-    filehandle_t * (* get_filehandle)(void * internal_fs, char * path, mode_t mode);
+    filehandle_t * (* get_filehandle)(void * mountpoint, char * path, mode_t mode);
     void (* close_filehandle)(filehandle_t * f);
 
     size_t (* read_file)(filehandle_t * f, void * buf, size_t count);

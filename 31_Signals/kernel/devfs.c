@@ -175,8 +175,9 @@ void devfs_unregister_dev(devfs_t * fs, devfs_id_t dev) {
     }
 }
 
-void * devfs_getfile(void * internal_fs, char * path, uint16_t m) {
-    devfs_t * fs          = internal_fs;
+void * devfs_getfile(void * mn, char * path, uint16_t m) {
+    mountpoint_t * mnt    = mn;
+    devfs_t * fs          = mnt->internal_fs;
     mode_t mode           = m;
     filehandle_t * out    = (filehandle_t *) kmalloc(sizeof(filehandle_t));
     devfs_file_t * intern = (devfs_file_t *) kmalloc(sizeof(devfs_file_t));

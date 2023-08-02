@@ -72,7 +72,7 @@ filehandle_t * kopen(char * p, mode_t mode) {
         return NULL;
     }
 
-    filehandle_t * out = FILESYSTEMS[mountpoints[mountpoint].type].get_filehandle(mountpoints[mountpoint].internal_fs, path + length, mode);
+    filehandle_t * out = FILESYSTEMS[mountpoints[mountpoint].type].get_filehandle(&mountpoints[mountpoint], path + length, mode);
 
     if (out) {
         out->mountpoint = mountpoint;
