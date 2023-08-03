@@ -4,7 +4,7 @@ CFLAGS = -T linker.ld -Wall -Wextra -Wpedantic -nostdlib -ffreestanding -fno-pie
 		 -L../lib -I../lib -l:libtut.a -static -Wno-unused-parameter
 ASM = nasm
 
-TARGETS = init test ls echo cat wavplay kill
+TARGETS = init test ls echo cat wavplay kill tree
 
 all: $(TARGETS)
 
