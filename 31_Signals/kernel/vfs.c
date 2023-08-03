@@ -7,25 +7,53 @@ mountpoint_t * mountpoints;
 void init_vfs() {
     mountpoints = (mountpoint_t *) kcalloc(sizeof(mountpoint_t) * MOUNTPOINTS_N);
 
-    mountpoints[0].type = FS_DEVFS;
-    mountpoints[0].path = "/dev/";
+    mount(NULL, "/dev/", "devfs");
+    mount("/dev/hdb1", "/", "ext2");
+}
 
-    mountpoints[1].type     = FS_EXT2;
-    mountpoints[1].path     = "/";
-    mountpoints[1].filepath = "/dev/hdb1";
+int _mount(char * filepath, char * mountpoint, enum FILESYSTEM type) {
+    // Returns the mountpoint number if successful, else a negative error
 
+    mountpoint_t * mnt = NULL;
     for (size_t i = 0; i < MOUNTPOINTS_N; i++) {
-        if (mountpoints[i].type == FS_UNKN)
-            continue;
-
-        if (mountpoints[i].filepath) {
-            mountpoints[i].file = kopen(mountpoints[i].filepath, O_RDWR);
-        }
-
-        if (FILESYSTEMS[mountpoints[i].type].get_fs) {
-            mountpoints[i].internal_fs = FILESYSTEMS[mountpoints[i].type].get_fs(mountpoints[i].file);
+        if (mountpoints[i].type == FS_UNKN) {
+            mnt = &mountpoints[i];
+            break;
         }
     }
+
+    if (!mountpoint)
+        return -1;
+
+    memset(mnt, 0, sizeof(mountpoint_t));
+
+    mnt->type     = type;
+    mnt->path     = mountpoint;
+    mnt->filepath = filepath;
+
+    if (mnt->filepath) {
+        mnt->file = kopen(mnt->filepath, FILESYSTEMS[type].default_rw);
+        if (!mnt->file)
+            return -1;
+    }
+
+    if (FILESYSTEMS[type].get_fs) {
+        mnt->internal_fs = FILESYSTEMS[type].get_fs(mnt->file);
+    }
+
+    return 0;
+}
+
+int mount(char * filepath, char * mountpoint, char * type) {
+    enum FILESYSTEM etype = FS_UNKN;
+
+    for (size_t i = 0; i < sizeof(FILESYSTEMS)/sizeof(FILESYSTEMS[0]); i++) {
+        if (!strcmp(type, (char*)FILESYSTEMS[i].name)) {
+            etype = i;
+        }
+    }
+
+    return _mount(filepath, mountpoint, etype);
 }
 
 filehandle_t * kopen(char * p, mode_t mode) {

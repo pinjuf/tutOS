@@ -21,6 +21,9 @@ typedef struct filehandle_t {
 // Generic structure describing an FS driver
 typedef struct filesystem_t {
     char name[8];
+
+    uint16_t default_rw; // How the mountfile should be opened
+
     void * (* get_fs)(filehandle_t * f);
 
     filehandle_t * (* get_filehandle)(void * mountpoint, char * path, mode_t mode);
@@ -49,9 +52,10 @@ typedef struct mountpoint_t {
 
 // Needs to be in the same order as FILESYSTEM!
 static const filesystem_t FILESYSTEMS[] = {
-    {"unkn", NULL, NULL, NULL, NULL, NULL, NULL}, // Unknown FS
+    {"unkn", 0, NULL, NULL, NULL, NULL, NULL, NULL}, // Unknown FS
 
     {"ext2",
+        O_RDONLY,
         (void* (*) (filehandle_t * f)) get_ext2fs,
         (filehandle_t * (*) (void * internal_fs, char * path, mode_t)) ext2_getfile,
         (void (*) (filehandle_t * f)) ext2_closefile,
@@ -61,6 +65,7 @@ static const filesystem_t FILESYSTEMS[] = {
     },
 
     {"fat32",
+        0,
         NULL, // TODO: Implement perhaps
         NULL,
         NULL,
@@ -70,6 +75,7 @@ static const filesystem_t FILESYSTEMS[] = {
     },
 
     {"devfs",
+        O_RDWR,
         (void* (*) (filehandle_t * fh)) get_devfs,
         (filehandle_t * (*) (void * internal_fs, char * path, mode_t)) devfs_getfile,
         (void (*) (filehandle_t * f)) devfs_closefile,
@@ -83,6 +89,9 @@ extern mountpoint_t * mountpoints;
 #define MOUNTPOINTS_N 4
 
 void init_vfs();
+int _mount(char * filepath, char * mountpoint, enum FILESYSTEM type);
+int mount(char * filepath, char * mountpoint, char * type);
+
 filehandle_t * kopen(char * path, mode_t mode);
 void kclose(filehandle_t * f);
 size_t kread(filehandle_t * f, void * buf, size_t count);
