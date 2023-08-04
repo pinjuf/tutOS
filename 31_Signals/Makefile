@@ -27,15 +27,18 @@ boot/boot.bin: boot/
 stage2/stage2.bin: stage2/
 	$(MAKE) -C stage2 stage2.bin
 
-kernel/kernel.bin: kernel/
+kernel/kernel.bin: kernel/ lib/libtut_common.a
 	$(MAKE) -C kernel kernel.bin
 
-kernel/kernel.elf: kernel/
+kernel/kernel.elf: kernel/ lib/libtut_common.a
 	$(MAKE) -C kernel kernel.elf
 
 userland.img: .FORCE userland
 	dd if=/dev/zero of=$@ bs=1048576 count=32
 	mkfs.ext2 -d userland $@
 
-userland: userland/
+userland: userland/ lib/libtut_common.a
 	$(MAKE) -C userland
+
+lib/libtut_common.a: lib/
+	$(MAKE) -C lib libtut_common.a

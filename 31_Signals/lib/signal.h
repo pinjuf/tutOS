@@ -11,6 +11,7 @@ struct sigaction {
     int    sa_flags;
 } __attribute__((packed));
 
+// TutOS is not limited to the POSIX signals, any int_t is a valid signal
 enum SIGNAL {
     SIGCHLD,
     SIGTERM,
@@ -34,6 +35,11 @@ typedef struct stack_t {
     int ss_flags;
 } __attribute__((packed)) stack_t;
 
+typedef struct sigset_t {
+    uint32_t sig_n;
+    int sigs[128]; // Unordered, every signal can only appear once
+} __attribute((packed)) sigset_t;
+
 // Flags for sigaction.sa_flags
 #define SA_NOCLDWAIT 1
 #define SA_ONSTACK   2
@@ -41,3 +47,15 @@ typedef struct stack_t {
 // Flags for stack_t.ss_flags
 #define SS_DISABLE 1 // Don't use the stack
 #define SS_ONSTACK 2 // Stack in use
+
+enum SIG_MASKHOW {
+    SIG_BLOCK,
+    SIG_UNBLOCK,
+    SIG_SETMASK,
+};
+
+int sigemptyset(sigset_t * set);
+int sigfillset(sigset_t * set);
+int sigaddset(sigset_t * set, int signum);
+int sigdelset(sigset_t * set, int signum);
+int sigismember(sigset_t * set, int signum);
