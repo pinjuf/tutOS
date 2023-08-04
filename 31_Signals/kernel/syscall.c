@@ -107,6 +107,35 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return 0;
         }
+        case 14: { // sigprocmask
+            enum SIG_MASKHOW how = arg0;
+            sigset_t * set       = (void*)arg1;
+            // This technically a legacy syscall that doesn't need a setsize (however, the setsize is limited)
+
+            switch (how) {
+                case SIG_BLOCK:
+                    for (uint32_t i = 0; i < set->sig_n; i++) {
+                        if (sigaddset(&current_process->sigmask, set->sigs[i]))
+                            return -1;
+                    }
+                    break;
+
+                case SIG_UNBLOCK:
+                    for (uint32_t i = 0; i < set->sig_n; i++) {
+                        sigdelset(&current_process->sigmask, set->sigs[i]);
+                    }
+                    break;
+
+                case SIG_SETMASK:
+                    memcpy(&current_process->sigmask, set, sizeof(sigset_t));
+                    break;
+
+                default:
+                    return -1;
+            }
+
+            return 0;
+        }
         case 15: { // sigreturn
             if (!current_process->sighandling)
                 return -1;

@@ -1,7 +1,8 @@
 CC = gcc
 CFLAGS = -T linker.ld -Wall -Wextra -Wpedantic -nostdlib -ffreestanding -fno-pie \
 		 -fno-stack-protector -fno-asynchronous-unwind-tables \
-		 -L../lib -I../lib -l:libtut.a -static -Wno-unused-parameter
+		 -L../lib -I../lib -l:libtut.a -static -Wno-unused-parameter -L../../lib \
+	     -l:libtut_common.a
 ASM = nasm
 
 TARGETS = init test ls echo cat wavplay kill tree

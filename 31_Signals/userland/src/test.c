@@ -25,11 +25,19 @@ void sighandle(int signum) {
 }
 
 int main(int argc, char * argv[]) {
-    signal(SIGALRM, sighandle);
+    puts("Entering...\n");
+
     signal(SIGUSR1, sighandle);
 
-    raise(SIGUSR1);
-    puts("Raised SIGUSR1!\n");
+    sigset_t mask;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGUSR1);
+    //sigprocmask(SIG_BLOCK, &mask);
+
+    alarm(10);
+    pause();
+
+    puts("Exiting...\n");
 
     return 0;
 }

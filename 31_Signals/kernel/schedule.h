@@ -115,6 +115,7 @@ typedef struct process_t {
     stack_t altstack;
     volatile bool pausing; // Is the process doing a pause()-syscall?
     size_t alarm; // Alarm clock in PIT0-ticks (0 means none scheduled)
+    sigset_t sigmask;
 } process_t;
 
 #define MAX_PROCESSES 256

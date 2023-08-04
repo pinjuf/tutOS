@@ -110,3 +110,7 @@ int pause() {
 uint64_t alarm(uint64_t seconds) {
     return syscall(37, seconds, 0, 0, 0, 0, 0);
 }
+
+int sigprocmask(enum SIG_MASKHOW how, sigset_t * mask) {
+    return syscall(14, how, (size_t)mask, 0, 0, 0, 0);
+}

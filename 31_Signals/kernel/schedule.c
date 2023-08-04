@@ -125,9 +125,7 @@ void schedule(void * regframe_ptr) {
         int signum            = current_process->sigqueue[true_sigqueue_index]; // We cannot be sure this signal will be taken care of, so don't handle it
         struct sigaction * sa = get_proc_sigaction(current_process, signum);
 
-        // A signal has been caught
-        current_process->pausing = false;
-
+        // Unavoidable signals
         if (signum == SIGKILL) {
             del_proc_sig(current_process, true_sigqueue_index);
 
@@ -137,8 +135,18 @@ void schedule(void * regframe_ptr) {
             // Just run the scheduler over everything again
             schedule(rf);
             return;
+        }
 
-        } else if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
+        // Is the signal masked?
+        if (sigismember(&current_process->sigmask, signum)) {
+            true_sigqueue_index++;
+            continue;
+        }
+
+        // A signal has actually been caught
+        current_process->pausing = false;
+
+        if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
             del_proc_sig(current_process, true_sigqueue_index);
 
             // Default handler
@@ -209,6 +217,7 @@ process_t * add_process() {
     memset(out, 0, sizeof(process_t));
     out->pid = pid_counter++;
     out->sigactions = create_ll(sizeof(struct sigaction));
+    sigemptyset(&out->sigmask);
 
     return out;
 }
