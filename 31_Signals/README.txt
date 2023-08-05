@@ -25,8 +25,10 @@ Using another syscall, the process will be able to reset that flag and return
 to its original execution.
 
 FAQ:
+    - i don't get it either, but i think it's working...
 
 man-references:
     - sigaction
     - sigreturn
     - sigaltstack
+    - sigprocmask
