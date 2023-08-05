@@ -66,6 +66,8 @@ typedef uint32_t rgb32_t;
 #define SET_PIXEL(x, y, color) *(uint32_t*)((size_t)VESA_VIRT_FB + (y) * bpob->vbe_mode_info.pitch + (x) * sizeof(uint32_t)) = (color)
 #define GET_PIXEL(x, y) (*(uint32_t*)((size_t)VESA_VIRT_FB + (y) * bpob->vbe_mode_info.pitch + (x) * sizeof(uint32_t))) // TODO: Add double buffering
 
+rgb32_t col256_to_rgb32(uint8_t n);
+
 void vesa_clear(rgb32_t c);
 void vesa_drawrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, rgb32_t c);
 void vesa_drawcircle(uint32_t x, uint32_t y, int r, rgb32_t c);

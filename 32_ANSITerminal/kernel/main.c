@@ -81,6 +81,36 @@ void _kmain() {
         kwarn(__FILE__,__func__,"no init executable found");
     }
 
+    for (size_t i = 0; i < 8; i++) {
+        rgb32_t c = col256_to_rgb32(i);
+        vfont_bg = c;
+        kputs("        ");
+    }
+    kputc('\n');
+
+    for (size_t i = 0; i < 8; i++) {
+        rgb32_t c = col256_to_rgb32(8 + i);
+        vfont_bg = c;
+        kputs("        ");
+    }
+    kputc('\n');
+
+    for (size_t j = 0; j < 6; j++) {
+        for (size_t i = 0; i < 6*6; i++) {
+            rgb32_t c = col256_to_rgb32(16 + j * 6 * 6 + i);
+            vfont_bg = c;
+            kputs("  ");
+        }
+        kputc('\n');
+    }
+
+    for (size_t i = 0; i < 24; i++) {
+        rgb32_t c = col256_to_rgb32(232 + i);
+        vfont_bg = c;
+        kputs("   ");
+    }
+    kputs("\033[m\n");
+
     char * buf = kmalloc(init_fh->size);
     kread(init_fh, buf, init_fh->size);
     kclose(init_fh);

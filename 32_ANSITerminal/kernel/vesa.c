@@ -64,6 +64,29 @@ void init_vesa() {
     vesa_ready = true;
 }
 
+rgb32_t col256_to_rgb32(uint8_t n) {
+    rgb32_t out;
+
+    if (n < 16)
+        out = VESA_COLORS[n];
+    else if (n >= 16 && n <= 231) {
+        // 6x6x6 "cube" of 216 colours, see https://en.wikipedia.org/wiki/ANSI_escape_code
+        n -= 16;
+        uint8_t r = n / 36;
+        uint8_t g = (n - r * 36) / 6;
+        uint8_t b = (n - r * 36 - g * 6);
+
+        out = RGB32(r * 51, g * 51, b * 51);
+    } else {
+        // grayscale colours in 24 steps
+        n -= 232;
+
+        out = RGB32(255 * n/24, 255 * n/24, 255 * n/24);
+    }
+
+    return out;
+}
+
 void vesa_clear(rgb32_t c) {
     for (uint32_t y = 0; y < vheight; y++)
         for (uint32_t x = 0; x < vwidth; x++)
