@@ -16,6 +16,21 @@ rgb32_t vfont_bg = RGB32(0, 0, 0);
 uint32_t vesa_x = 0;
 uint32_t vesa_y = 0;
 
+bool vesa_bold      = false;
+bool vesa_italic    = false;
+bool vesa_underline = false;
+
+bool vesa_esc       = false;
+bool vesa_csi       = false;
+
+uint16_t vesa_csi_params[8];
+uint16_t vesa_csi_params_n  = 0;
+char vesa_csi_parambuf[8]   = {0};
+
+// Stored SCO positions
+uint32_t vesa_sco_x = 0;
+uint32_t vesa_sco_y = 0;
+
 void init_vesa() {
     // Map the framebuffer based on the physical address in the BPOB
     size_t fb_size = bpob->vbe_mode_info.height * bpob->vbe_mode_info.pitch;
@@ -80,26 +95,237 @@ void vesa_putc(char c) {
     const uint32_t vesa_cols = vwidth / vfont->width;
     const uint32_t vesa_rows = vheight / vfont->height;
 
-    switch (c) {
-        case '\r':
-            vesa_x = 0;
-            break;
-        case '\n':
-            vesa_x = 0;
-            vesa_y++;
-            break;
-        case '\t':
-            vesa_x += 4 - (vesa_x % 4);
-            break;
-        case '\b':
-            if (vesa_x)
-                vesa_x--;
-            psf2_putvesa(vfont, ' ', vesa_x * vfont->width, vesa_y * vfont->height);
-            break;
-        default:
-            psf2_putvesa(vfont, c, vesa_x * vfont->width, vesa_y * vfont->height);
-            vesa_x++;
-            break;
+    if (vesa_csi) {
+        // We are engaged in a special control sequence
+
+        if (c >= '0' && c <= '9') { // Integer parameter
+            vesa_csi_parambuf[strlen((char*)vesa_csi_parambuf)] = c;
+
+        } else if (c == ';') { // Semicolon separator
+
+            if (strlen((char*)vesa_csi_parambuf) == 0) {
+                vesa_csi_params[vesa_csi_params_n++] = 0;
+            } else {
+                vesa_csi_params[vesa_csi_params_n++] = atoi(vesa_csi_parambuf, 10);
+            }
+
+            memset(vesa_csi_parambuf, 0, sizeof(vesa_csi_parambuf));
+
+        } else if (c >= 0x40 && c <= 0x7E) { // Final byte
+            vesa_esc = vesa_csi = false;
+
+            // There may be an unseparated parameter
+            if (strlen((char*)vesa_csi_parambuf)) {
+                vesa_csi_params[vesa_csi_params_n++] = atoi(vesa_csi_parambuf, 10);
+            }
+
+            switch (c) {
+                case 'A': { // Cursor up
+                    uint16_t n = 1;
+                    if (vesa_csi_params_n) n = vesa_csi_params[0];
+                    vesa_y -= n;
+                    break;
+                }
+                case 'B': { // Cursor down
+                    uint16_t n = 1;
+                    if (vesa_csi_params_n) n = vesa_csi_params[0];
+                    vesa_y += n;
+                    break;
+                }
+                case 'C': { // Cursor right
+                    uint16_t n = 1;
+                    if (vesa_csi_params_n) n = vesa_csi_params[0];
+                    vesa_x += n;
+                    break;
+                }
+                case 'D': { // Cursor left
+                    uint16_t n = 1;
+                    if (vesa_csi_params_n) n = vesa_csi_params[0];
+                    vesa_x -= n;
+                    break;
+                }
+                case 'E': { // Cursor next line
+                    uint16_t n = 1;
+                    if (vesa_csi_params_n) n = vesa_csi_params[0];
+                    vesa_x = 0;
+                    vesa_y += n;
+                    break;
+                }
+                case 'F': { // Cursor previous line
+                    uint16_t n = 1;
+                    if (vesa_csi_params_n) n = vesa_csi_params[0];
+                    vesa_x = 0;
+                    vesa_y -= n;
+                    break;
+                }
+                case 'G': { // Cursor horizontal absolute
+                    uint16_t n = 1;
+                    if (vesa_csi_params_n) n = vesa_csi_params[0];
+                    vesa_x = n - 1;
+                    break;
+                }
+                case 'H': { // Cursor position
+                    uint16_t y = 1;
+                    uint16_t x = 1;
+                    if (vesa_csi_params_n) y = vesa_csi_params[0];
+                    if (vesa_csi_params_n > 1) x = vesa_csi_params[1];
+                    vesa_x = x - 1;
+                    vesa_y = y - 1;
+                    break;
+                }
+                case 'J': { // Erase in display
+                    uint16_t n = 0;
+                    if (vesa_csi_params_n) n = vesa_csi_params[0];
+                    switch (n) { // TODO
+                        case 0:
+                            // From cursor to bottom
+
+                            break;
+                        case 1:
+                            // From top to cursor
+
+                            break;
+                        case 2:
+                        case 3:
+                            // Entire screen
+                            vesa_clear(vfont_bg);
+
+                            break;
+                        default:
+                            break;
+                    }
+
+                    break;
+                }
+                case 'T': {
+                    uint16_t n = 1;
+                    if (vesa_csi_params_n) n = vesa_csi_params[0];
+
+                    vesa_scrolldown(n * vfont->height);
+                    break;
+                }
+                case 's': {
+                    vesa_sco_x = vesa_x;
+                    vesa_sco_y = vesa_y;
+
+                    break;
+                }
+                case 'u': {
+                    vesa_x = vesa_sco_x;
+                    vesa_y = vesa_sco_y;
+
+                    break;
+                }
+                case 'm': {
+                    uint16_t n = 0;
+                    if (vesa_csi_params_n) n = vesa_csi_params[0];
+
+                    if (n >= 30 && n <= 37) { // set foreground
+                        vfont_fg = VESA_COLORS[n - 30];
+                    } else if (n >= 40 && n <= 47) { // set background
+                        vfont_bg = VESA_COLORS[n - 40];
+                    } else if (n >= 90 && n <= 97) { // set bright foreground
+                        vfont_fg = VESA_COLORS[n - 90 + 8];
+                    } else if (n >= 100 && n <= 107) { // set bright background
+                        vfont_bg = VESA_COLORS[n - 100 + 8];
+                    } else {
+                        switch (n) {
+                            case 0: // reset
+                                vesa_bold = vesa_italic = vesa_underline = false;
+                                vfont_fg = RGB32(255, 255, 255);
+                                vfont_bg = RGB32(0, 0, 0);
+                                break;
+                            case 1: // bold
+                                vesa_bold = true;
+                                break;
+                            case 3: // italic
+                                vesa_italic = true;
+                                break;
+                            case 4: // underline
+                                vesa_underline = true;
+                                break;
+                            case 7: { // video invert
+                                rgb32_t orig_fg = vfont_fg;
+                                vfont_fg = vfont_bg;
+                                vfont_bg = orig_fg;
+                                break;
+                            }
+                            case 22: // bold off
+                                vesa_bold = false;
+                                break;
+                            case 23: // italic off
+                                vesa_italic = false;
+                                break;
+                            case 24: // underline off
+                                vesa_underline = false;
+                                break;
+                            case 27: { // video invert off
+                                rgb32_t orig_fg = vfont_fg;
+                                vfont_fg = vfont_bg;
+                                vfont_bg = orig_fg;
+                                break;
+                            }
+                            case 39: {
+                                vfont_fg = RGB32(255, 255, 255);
+                                break;
+                            }
+                            case 49: {
+                                vfont_bg = RGB32(0, 0, 0);
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                }
+                default: { // Unsupported / undefined
+                    break;
+                }
+            }
+
+            memset(vesa_csi_parambuf, 0, sizeof(vesa_csi_parambuf));
+            vesa_csi_params_n = 0;
+
+        } else { // Unsupported / malformed
+            vesa_esc = vesa_csi = false;
+            memset(vesa_csi_parambuf, 0, sizeof(vesa_csi_parambuf));
+            vesa_csi_params_n = 0;
+        }
+
+    } else {
+
+        switch (c) {
+            case '\r':
+                vesa_x = 0;
+                break;
+            case '\n':
+                vesa_x = 0;
+                vesa_y++;
+                break;
+            case '\t':
+                vesa_x += 4 - (vesa_x % 4);
+                break;
+            case '\b':
+                if (vesa_x)
+                    vesa_x--;
+                vesa_drawrect(vesa_x * vfont->width, vesa_y * vfont->height, vfont->width, vfont->height, vfont_bg);
+                break;
+            case '\033': // \e
+                vesa_esc = true;
+                break;
+            case '[':
+                if (vesa_esc) {
+                    vesa_esc = false;
+                    vesa_csi = true;
+                    break;
+                }
+                /* fall through */
+            default:
+                psf2_putvesa(vfont, c, vesa_x * vfont->width, vesa_y * vfont->height);
+                vesa_x++;
+                break;
+        }
     }
 
     if (vesa_x >= vesa_cols) {

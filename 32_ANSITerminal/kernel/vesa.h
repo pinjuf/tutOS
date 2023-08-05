@@ -76,6 +76,28 @@ extern psf2_header_t * vfont;
 extern rgb32_t vfont_fg, vfont_bg;
 extern bool vesa_ready;
 extern uint32_t vesa_x, vesa_y;
+extern bool vesa_bold, vesa_italic, vesa_underline;
 
 void vesa_putc(char c);
 void vesa_puts(char * s);
+
+// 1-8:  normal
+// 8-16: bright
+static const rgb32_t VESA_COLORS[] = {
+    RGB32(0, 0, 0),       // black
+    RGB32(170, 0, 0),     // red
+    RGB32(0, 170, 0),     // green
+    RGB32(170, 85, 0),    // yellow
+    RGB32(0, 0, 170),     // blue
+    RGB32(170, 0, 170),   // magenta
+    RGB32(0, 170, 170),   // cyan
+    RGB32(170, 170, 170), // white
+    RGB32(85, 85, 85),    // bright black
+    RGB32(255, 85, 85),   // bright red
+    RGB32(85, 255, 85),   // bright green
+    RGB32(255, 255, 85),  // bright yellow
+    RGB32(85, 85, 255),   // bright blue
+    RGB32(255, 85, 255),  // bright magenta
+    RGB32(85, 255, 255),  // bright cyan
+    RGB32(255, 255, 255)  // bright white
+};
