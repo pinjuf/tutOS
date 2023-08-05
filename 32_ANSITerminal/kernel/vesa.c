@@ -199,13 +199,15 @@ void vesa_putc(char c) {
                 case 'J': { // Erase in display
                     uint16_t n = 0;
                     if (vesa_csi_params_n) n = vesa_csi_params[0];
-                    switch (n) { // TODO
+                    switch (n) {
                         case 0:
                             // From cursor to bottom
+                            vesa_drawrect(0, vesa_y * vfont->height, vwidth, vheight - (vesa_x * vfont->height), vfont_fg);
 
                             break;
                         case 1:
                             // From top to cursor
+                            vesa_drawrect(0, 0, vwidth, vesa_x * vfont->height, vfont_fg);
 
                             break;
                         case 2:
@@ -288,11 +290,25 @@ void vesa_putc(char c) {
                                 vfont_bg = orig_fg;
                                 break;
                             }
-                            case 39: {
+                            case 38: { // set foreground
+                                if (vesa_csi_params[1] == 5)
+                                    vfont_fg = col256_to_rgb32(vesa_csi_params[2]);
+                                else if (vesa_csi_params[1] == 2)
+                                    vfont_fg = RGB32(vesa_csi_params[2], vesa_csi_params[3], vesa_csi_params[4]);
+                                break;
+                            }
+                            case 39: { // default foreground
                                 vfont_fg = RGB32(255, 255, 255);
                                 break;
                             }
-                            case 49: {
+                            case 48: { // set background
+                                if (vesa_csi_params[1] == 5)
+                                    vfont_bg = col256_to_rgb32(vesa_csi_params[2]);
+                                else if (vesa_csi_params[1] == 2)
+                                    vfont_bg = RGB32(vesa_csi_params[2], vesa_csi_params[3], vesa_csi_params[4]);
+                                break;
+                            }
+                            case 49: { // default background
                                 vfont_bg = RGB32(0, 0, 0);
                                 break;
                             }
