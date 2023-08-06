@@ -59,5 +59,7 @@ void _wrmsr(uint32_t msr, uint32_t lo, uint32_t hi);
 uint64_t rdmsr(uint32_t msr);
 void wrmsr(uint32_t msr, uint64_t val);
 
+void kprintf(char * fmt, ...);
+
 #define PS2_ACK 0xFA
 #define PS2_RESEND 0xFE

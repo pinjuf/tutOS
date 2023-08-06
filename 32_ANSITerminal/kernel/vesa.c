@@ -326,11 +326,7 @@ void vesa_putc(char c) {
             memset(vesa_csi_parambuf, 0, sizeof(vesa_csi_parambuf));
             vesa_csi_params_n = 0;
 
-        } else { // Unsupported / malformed
-            vesa_esc = vesa_csi = false;
-            memset(vesa_csi_parambuf, 0, sizeof(vesa_csi_parambuf));
-            vesa_csi_params_n = 0;
-        }
+        } else {} // Unsupported / malformed are ignored
 
     } else {
 

@@ -3,6 +3,7 @@
 #include "mm.h"
 #include "util.h"
 #include "vesa.h"
+#include <stdarg.h>
 
 void outb(uint16_t port, uint8_t value) {
     asm volatile ("outb %1, %0" : : "dN" (port), "a" (value));
@@ -413,4 +414,78 @@ size_t atoi(char * s, uint8_t base) {
     }
 
     return out;
+}
+
+void kprintf(char * fmt, ...) {
+    // Small and basic printf implementation
+    // Only conversion specs are supported
+    // All integers must be 64 bit!
+
+    va_list args;
+    va_start(args, fmt);
+
+    bool engaged = false;
+
+    for (size_t i = 0; i < strlen(fmt); i++) {
+        char c = fmt[i];
+
+        if (engaged) {
+            engaged = false;
+
+            switch (c) {
+                case 'd': // Signed integer
+                case 'i': {
+                    int64_t val = va_arg(args, int64_t);
+                    char buf[24];
+                    sitoa(val, buf, 10);
+                    kputs(buf);
+                    break;
+                }
+                case 'u': { // Unsigned integer
+                    uint64_t val = va_arg(args, uint64_t);
+                    char buf[24];
+                    itoa(val, buf, 10);
+                    kputs(buf);
+                    break;
+                }
+                case 'x': // Hexadecimal
+                case 'X': {
+                    uint64_t val = va_arg(args, uint64_t);
+                    char buf[24];
+                    itoa(val, buf, 16);
+                    kputs(buf);
+                    break;
+                }
+                case 'p': { // Pointer
+                    uint64_t val = va_arg(args, uint64_t);
+                    char buf[24];
+                    itoa(val, buf, 16);
+                    kputs("0x");
+                    kputleadingzeroes_hex(val, 16);
+                    kputs(buf);
+                    break;
+                }
+                case 's': { // String
+                    char * val = va_arg(args, char*);
+                    kputs(val);
+                    break;
+                }
+                case 'c': { // Character
+                    char val = va_arg(args, int);
+                    kputc(val);
+                    break;
+                }
+                case '%':
+                    kputc('%');
+                    break;
+                default: // Unknown/unsupported
+                    break;
+            }
+
+        } else if (c == '%') {
+            engaged = true;
+        } else {
+            kputc(c);
+        }
+    }
 }
