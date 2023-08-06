@@ -417,7 +417,7 @@ size_t atoi(char * s, uint8_t base) {
 }
 
 void kprintf(char * fmt, ...) {
-    // Small and basic printf implementation
+    // Small and basic NON STANDARD printf implementation
     // Only conversion specs are supported
     // All integers must be 64 bit!
 
@@ -448,11 +448,18 @@ void kprintf(char * fmt, ...) {
                     kputs(buf);
                     break;
                 }
-                case 'x': // Hexadecimal
-                case 'X': {
+                case 'x': { // Hexadecimal normal
                     uint64_t val = va_arg(args, uint64_t);
                     char buf[24];
                     itoa(val, buf, 16);
+                    kputs(buf);
+                    break;
+                }
+                case 'X': { // Hexadecimal padded to 64 bits
+                    uint64_t val = va_arg(args, uint64_t);
+                    char buf[24];
+                    itoa(val, buf, 16);
+                    kputleadingzeroes_hex(val, 16);
                     kputs(buf);
                     break;
                 }
