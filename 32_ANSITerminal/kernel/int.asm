@@ -91,8 +91,6 @@ global isr_stub_table, isr_default_stub, isr_irq0_stub, isr_irq1_stub, isr_irq5_
 
 %macro isr_err_stub 1
 isr_stub_%+%1:
-    cli
-
     ; Because of the FPU's 16-byte alignment,
     ; we are in a bit of a predicament here,
     ; because now, the CPU pushed 6 values
@@ -127,8 +125,6 @@ isr_stub_%+%1:
 
 %macro isr_noerr_stub 1
 isr_stub_%+%1:
-    cli ; This is a trap gate
-
     PUSH_ALL
 
     mov rdi, %1                     ; Exception number

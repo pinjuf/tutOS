@@ -30,7 +30,7 @@ void init_idt(void) {
 
     for (uint16_t i = 0; i < IDT_ENTRIES; i++) {
         if (i < 32) {
-            fill_idt_desc(&kidt[i], isr_stub_table[i], IDT_P | IDT_TRAP, 0x08);
+            fill_idt_desc(&kidt[i], isr_stub_table[i], IDT_P | IDT_INT, 0x08);
         } else {
             fill_idt_desc(&kidt[i], isr_default_stub, IDT_P | IDT_INT, 0x08);
         }
