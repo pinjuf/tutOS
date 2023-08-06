@@ -29,6 +29,11 @@ int main(int argc, char * argv[]) {
 
     signal(SIGUSR1, sighandle);
 
+    asm volatile ("cli");
+    //volatile int x = 123;
+    //volatile int y = 0;
+    //x /= y;
+
     sigset_t mask;
     sigemptyset(&mask);
     sigaddset(&mask, SIGUSR1);

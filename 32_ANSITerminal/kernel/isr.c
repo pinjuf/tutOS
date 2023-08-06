@@ -20,15 +20,7 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
         // that will now have to answer
         // for its crimes
 
-        kputs(" < PEXC ");
-        kputdec(n);
-        kputs(" (SIG=");
-        kputdec(EXCEPTION_SIGNALS[n]);
-        kputs(") AT 0x");
-        kputhex(rip);
-        kputs(" BY PID#");
-        kputdec(current_process->pid);
-        kputs(" >\n");
+        kprintf(" < PEXC %u (SIG=%d) AT 0x%x BY PID#%u >\n", n, EXCEPTION_SIGNALS[n], rip, current_process->pid);
 
         push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
 
@@ -38,11 +30,7 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
     }
 
     // Kernel error with no process running
-    kputs(" < KEXC ");
-    kputdec(n);
-    kputs(" AT 0x");
-    kputhex(rip);
-    kputs(" >\n");
+    kprintf(" < KEXC %u AT 0x%x >\n", n, rip);
 
     while (1);
 }
@@ -61,17 +49,7 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
         // that will now have to answer
         // for its crimes
 
-        kputs(" < PEXC ");
-        kputdec(n);
-        kputs(" (ERR=0x");
-        kputhex(err);
-        kputs(", SIG=");
-        kputdec(EXCEPTION_SIGNALS[n]);
-        kputs(") AT 0x");
-        kputhex(rip);
-        kputs(" BY PID#");
-        kputdec(current_process->pid);
-        kputs(" >\n");
+        kprintf(" < PEXC %u (ERR=0x%x, SIG=%d) AT 0x%x BY PID#%u >\n", n, err, EXCEPTION_SIGNALS[n], rip, current_process->pid);
 
         push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
 
@@ -81,13 +59,7 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
     }
 
     // Kernel error with no process running
-    kputs(" < KEXC ");
-    kputdec(n);
-    kputs(" (ERR=0x");
-    kputhex(err);
-    kputs(") AT 0x");
-    kputhex(rip);
-    kputs(" >\n");
+    kprintf(" < KEXC %u (ERR=0x%x) AT 0x%x >\n", n, err, rip);
 
     while (1);
 }
@@ -100,14 +72,12 @@ void isr_default_int(uint16_t n, uint64_t rip, uint64_t cs, uint64_t rflags, uin
     (void)rsp;
     (void)ss;
 
-    kputs("INT ");
+    kprintf("INT ");
     if (n == 0xFFFF)
-        kputs("[UNKN]");
+        kprintf("[UNKN]");
     else
-        kputdec(n);
-    kputs(" AT 0x");
-    kputhex(rip);
-    kputs("\n");
+        kprintf("%u", n);
+    kprintf(" AT 0x%x\n", rip);
 }
 
 void isr_irq0(int_regframe_t * regframe) {
@@ -189,9 +159,7 @@ void isr_irq1(void) {
 
             push_proc_sig(proc, SIGKILL);
 
-            kputs(" < SENT SIGKILL TO #");
-            kputdec(proc->pid);
-            kputs("> ");
+            kprintf(" < SENT SIGKILL TO #%u", proc->pid);
         }
 
         kbd_last_scancode = 0;
@@ -206,9 +174,7 @@ void isr_irq1(void) {
 
             push_proc_sig(proc, SIGTERM);
 
-            kputs(" < SENT SIGTERM TO #");
-            kputdec(proc->pid);
-            kputs("> ");
+            kprintf(" < SENT SIGTEMR TO #%u", proc->pid);
         }
 
         kbd_last_scancode = 0;

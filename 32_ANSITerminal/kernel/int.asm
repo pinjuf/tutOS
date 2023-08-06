@@ -104,15 +104,17 @@ isr_stub_%+%1:
     PUSH_ALL
 
     ; Notice the +8 alignment bytes
-    mov rdi, %1                       ; Exception number
-    mov rsi, [PUSH_ALL_SIZE+8+rsp]    ; ERR
-    mov rdx, [PUSH_ALL_SIZE+8+rsp+8]  ; RIP
-    mov rcx, [PUSH_ALL_SIZE+8+rsp+16] ; CS
-    mov r8,  [PUSH_ALL_SIZE+8+rsp+24] ; RFLAGS
-    mov r9,  [PUSH_ALL_SIZE+8+rsp+32] ; RSP
-    mov r9,  [PUSH_ALL_SIZE+8+rsp+40] ; SS
+    mov rdi, %1                         ; Exception number
+    mov rsi,   [PUSH_ALL_SIZE+8+rsp]    ; ERR
+    mov rdx,   [PUSH_ALL_SIZE+8+rsp+8]  ; RIP
+    mov rcx,   [PUSH_ALL_SIZE+8+rsp+16] ; CS
+    mov r8,    [PUSH_ALL_SIZE+8+rsp+24] ; RFLAGS
+    mov r9,    [PUSH_ALL_SIZE+8+rsp+32] ; RSP
+    push qword [PUSH_ALL_SIZE+8+rsp+40] ; SS
 
     call isr_err_exception
+
+    add rsp, 8 ; Pop SS
 
     POP_ALL
 
