@@ -236,97 +236,21 @@ void isr_irq12(void) {
 }
 
 void isr_debugcall(int_regframe_t * regframe) {
-    kputs("< DEBUGCALL START >\n");
+    kprintf("< DEBUGCALL START >\n");
 
-    kputs("RIP = 0x");
-    kputleadingzeroes_hex(regframe->rip, 16);
-    kputhex(regframe->rip);
-    kputs(" RSP = 0x");
-    kputleadingzeroes_hex(regframe->rsp, 16);
-    kputhex(regframe->rsp);
-    kputs("  CS = 0x");
-    kputleadingzeroes_hex(regframe->cs, 4);
-    kputhex(regframe->cs);
-    kputs("  SS = 0x");
-    kputleadingzeroes_hex(regframe->ss, 4);
-    kputhex(regframe->ss);
-    kputs(" RFLAGS = 0x");
-    kputleadingzeroes_hex(regframe->rflags, 16);
-    kputhex(regframe->rflags);
+    kprintf("RIP = 0x%X RSP = 0x%X CS=0x%x SS=0x%x RFLAGS=0x%X\n", regframe->rip, regframe->rsp, regframe->cs, regframe->ss, regframe->rflags);
 
-    kputc('\n');
+    kprintf("RBP = 0x%X GS = 0x%x FS=0x%x CR3=0x%X\n", regframe->rbp, regframe->gs, regframe->fs, regframe->cr3);
 
-    kputs("                         "); // Sorry not sorry, \t doesn't exist to me
-    kputs("RBP = 0x");
-    kputleadingzeroes_hex(regframe->rbp, 16);
-    kputhex(regframe->rbp);
-    kputs("  GS = 0x");
-    kputleadingzeroes_hex(regframe->gs, 4);
-    kputhex(regframe->gs);
-    kputs("  FS = 0x");
-    kputleadingzeroes_hex(regframe->fs, 4);
-    kputhex(regframe->fs);
-    kputs(" CR3    = 0x");
-    kputleadingzeroes_hex(regframe->cr3, 16);
-    kputhex(regframe->cr3);
+    kprintf("RAX = 0x%X RBX = 0x%X RCX = 0x%X RDX = 0x%X\n", regframe->rax, regframe->rbx, regframe->rcx, regframe->rdx);
 
-    kputc('\n');
+    kprintf(" R8 = 0x%X  R9 = 0x%X R10 = 0x%X R11 = 0x%X\n", regframe->r8, regframe->r9, regframe->r10, regframe->r11);
 
-    kputs("RAX = 0x");
-    kputleadingzeroes_hex(regframe->rax, 16);
-    kputhex(regframe->rax);
-    kputs(" RBX = 0x");
-    kputleadingzeroes_hex(regframe->rbx, 16);
-    kputhex(regframe->rbx);
-    kputs(" RCX = 0x");
-    kputleadingzeroes_hex(regframe->rcx, 16);
-    kputhex(regframe->rcx);
-    kputs(" RDX = 0x");
-    kputleadingzeroes_hex(regframe->rdx, 16);
-    kputhex(regframe->rdx);
+    kprintf("R12 = 0x%X R13 = 0x%X R14 = 0x%X R15 = 0x%X\n", regframe->r12, regframe->r13, regframe->r14, regframe->r15);
 
-    kputc('\n');
+    kprintf("RSI = 0x%X RDI = 0x%X\n", regframe->rsi, regframe->rdi);
 
-    kputs("RDI = 0x");
-    kputleadingzeroes_hex(regframe->rdi, 16);
-    kputhex(regframe->rdi);
-    kputs(" RSI = 0x");
-    kputleadingzeroes_hex(regframe->rsi, 16);
-    kputhex(regframe->rsi);
-    kputs("  R8 = 0x");
-    kputleadingzeroes_hex(regframe->r8, 16);
-    kputhex(regframe->r8);
-    kputs("  R9 = 0x");
-    kputleadingzeroes_hex(regframe->r9, 16);
-    kputhex(regframe->r9);
-
-    kputc('\n');
-
-    kputs("R10 = 0x");
-    kputleadingzeroes_hex(regframe->r10, 16);
-    kputhex(regframe->r10);
-    kputs(" R11 = 0x");
-    kputleadingzeroes_hex(regframe->r11, 16);
-    kputhex(regframe->r11);
-    kputs(" R12 = 0x");
-    kputleadingzeroes_hex(regframe->r12, 16);
-    kputhex(regframe->r12);
-    kputs(" R13 = 0x");
-    kputleadingzeroes_hex(regframe->r13, 16);
-    kputhex(regframe->r13);
-
-    kputc('\n');
-
-    kputs("R14 = 0x");
-    kputleadingzeroes_hex(regframe->r14, 16);
-    kputhex(regframe->r14);
-    kputs(" R15 = 0x");
-    kputleadingzeroes_hex(regframe->r15, 16);
-    kputhex(regframe->r15);
-
-    kputc('\n');
-
-    kputs("< DEBUGCALL END >\n");
+    kprintf("< DEBUGCALL END >\n");
 }
 
 void isr_schedule(int_regframe_t * rf) {

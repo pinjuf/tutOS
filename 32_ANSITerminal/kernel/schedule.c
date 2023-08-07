@@ -20,7 +20,7 @@ void schedule(void * regframe_ptr) {
 
     if (!current_process) { // First time loading in? / Last process killed?
         if (!ll_len(processes)) {
-            kputs("process list empty (halting)");
+            kwarn(__FILE__,__func__,"process list empty (halting)");
             while (1);
         }
 
