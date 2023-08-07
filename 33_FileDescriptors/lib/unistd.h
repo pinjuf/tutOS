@@ -34,9 +34,6 @@ typedef struct stat {
     size_t st_size;
 } stat;
 
-// I know, I know, don't judge me...
-typedef void FILE;
-typedef void DIR;
 typedef uint16_t pid_t;
 
 // wait4 options

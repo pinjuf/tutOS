@@ -4,11 +4,11 @@
 #include "../../lib/unistd.h"
 #include "../../lib/signal.h"
 
-FILE * open(char * path, mode_t mode);
-void close(FILE * file);
-size_t read(FILE * file, void * buf, size_t size);
-size_t write(FILE * file, void * buf, size_t size);
-int64_t seek(FILE * file, int64_t offset, enum SEEKMODE mode);
+int open(char * path, mode_t mode);
+void close(int file);
+size_t read(int file, void * buf, size_t size);
+size_t write(int file, void * buf, size_t size);
+int64_t seek(int file, int64_t offset, enum SEEKMODE mode);
 pid_t fork();
 int exec(char * file, char * argv[]);
 void exit(int code);
@@ -18,7 +18,7 @@ pid_t getppid();
 size_t getdents(DIR * fd, dirent * dirp, size_t count);
 dirent * readdir(DIR * d);
 int pstat(char * pathname, stat * statbuf);
-int fstat(FILE * fd, stat * statbuf);
+int fstat(int fd, stat * statbuf);
 int sigaction(int sig, struct sigaction * act);
 int sigreturn();
 int kill(pid_t pid, int sig);

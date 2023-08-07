@@ -1,7 +1,7 @@
 #include "libtut.h"
 #include "unistd.h"
 
-FILE * stdout, * stdin;
+int stdout, * stdin;
 
 void _start(int argc, char * argv[]) {
     stdout = open("/dev/tty", O_WRONLY);
@@ -16,7 +16,7 @@ void _start(int argc, char * argv[]) {
 }
 
 void pit_msleep(size_t ms) {
-    FILE * pit = open("/dev/pit0", O_RDONLY);
+    int pit = open("/dev/pit0", O_RDONLY);
     size_t ticks;
 
     read(pit, &ticks, 8);

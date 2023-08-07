@@ -3,7 +3,7 @@
 #include "stdio.h"
 #include "string.h"
 
-void tree_dir(FILE * dir, char * current_path, size_t depth) {
+void tree_dir(int dir, char * current_path, size_t depth) {
     dirent * d = readdir(dir);
 
     while (d) {
@@ -31,7 +31,7 @@ void tree_dir(FILE * dir, char * current_path, size_t depth) {
             strcpy(buf + strlen(buf), d->d_name);
             buf[strlen(buf)] = '/';
 
-            FILE * fd = open(buf, O_RDONLY);
+            int fd = open(buf, O_RDONLY);
             tree_dir(fd, buf, depth + 1);
             close(fd);
         }
@@ -46,7 +46,7 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
-    FILE * fd = open(argv[1], O_RDONLY);
+    int fd = open(argv[1], O_RDONLY);
     if (fd == 0) {
         puts("file not found\n");
         return 1;

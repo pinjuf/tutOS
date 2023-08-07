@@ -7,5 +7,5 @@
 
 int puts(char * s);
 int putchar(char c);
-int fputs(char * s, FILE * f);
-int fputc(char c, FILE * f);
+int fputs(char * s, int f);
+int fputc(char c, int f);

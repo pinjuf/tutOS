@@ -4,23 +4,23 @@
 #include "stdlib.h"
 #include "signal.h"
 
-FILE * open(char * path, mode_t mode) {
+int open(char * path, mode_t mode) {
     return (void*) syscall(2, (uint64_t)path, (size_t)mode, 0, 0, 0, 0);
 }
 
-void close(FILE * file) {
+void close(int file) {
     syscall(3, (uint64_t)file, 0, 0, 0, 0, 0);
 }
 
-size_t read(FILE * file, void * buf, size_t count) {
+size_t read(int file, void * buf, size_t count) {
     return syscall(0, (uint64_t)file, (uint64_t)buf, count, 0, 0, 0);
 }
 
-size_t write(FILE * file, void * buf, size_t count) {
+size_t write(int file, void * buf, size_t count) {
     return syscall(1, (uint64_t)file, (uint64_t)buf, count, 0, 0, 0);
 }
 
-int64_t seek(FILE * file, int64_t offset, enum SEEKMODE mode) {
+int64_t seek(int file, int64_t offset, enum SEEKMODE mode) {
     return syscall(8, (uint64_t)file, offset, (uint64_t)mode, 0, 0, 0);
 }
 
@@ -70,7 +70,7 @@ int pstat(char * pathname, stat * statbuf) {
     return syscall(4, (uint64_t)pathname, (uint64_t)statbuf, 0, 0, 0, 0);
 }
 
-int fstat(FILE * fd, stat * statbuf) {
+int fstat(int fd, stat * statbuf) {
     return syscall(5, (uint64_t)fd, (uint64_t)statbuf, 0, 0, 0, 0);
 }
 

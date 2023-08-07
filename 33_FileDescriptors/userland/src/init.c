@@ -53,7 +53,7 @@ int main(int argc, char * argv[]) {
         }
 
         if (!strcmp(cmdbuf, "spktst")) {
-            FILE * pcspk = open("/dev/pcspk", O_WRONLY);
+            int pcspk = open("/dev/pcspk", O_WRONLY);
 
             uint32_t freq_a = 440;
             uint32_t freq_b = 660;

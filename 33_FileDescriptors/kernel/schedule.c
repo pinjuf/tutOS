@@ -4,6 +4,7 @@
 #include "main.h"
 #include "signal.h"
 #include "isr.h"
+#include "fd.h"
 
 ll_head * processes;
 process_t * current_process = NULL;
@@ -84,6 +85,8 @@ void schedule(void * regframe_ptr) {
         child->parent = current_process->pid;
 
         child->sigactions = ll_copy(current_process->sigactions);
+
+        child->fds        = ll_copy(current_process->fds);
 
         child->pagemaps = kmalloc(child->pagemaps_n * sizeof(pagemap_t));
         for (size_t i = 0; i < child->pagemaps_n; i++) {
@@ -218,6 +221,8 @@ process_t * add_process() {
     out->pid = pid_counter++;
     out->sigactions = create_ll(sizeof(struct sigaction));
     sigemptyset(&out->sigmask);
+
+    out->fds = create_ll(sizeof(fd_t));
 
     return out;
 }
