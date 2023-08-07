@@ -40,3 +40,7 @@ typedef uint16_t pid_t;
 #define WNOHANG    1
 #define WUNTRACED  2
 #define WCONTINUED 4
+
+#define stdin  0
+#define stdout 1
+#define stderr 2

@@ -1,16 +1,8 @@
 #include "libtut.h"
 #include "unistd.h"
 
-int stdout, stdin;
-
 void _start(int argc, char * argv[]) {
-    stdout = open("/dev/tty", O_WRONLY);
-    stdin = open("/dev/tty", O_RDONLY);
-
     int status = main(argc, argv);
-
-    close(stdout);
-    close(stdin);
 
     exit(status);
 }

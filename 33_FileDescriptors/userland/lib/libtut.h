@@ -4,8 +4,6 @@
 
 #define PIT0_FREQ 2000
 
-extern int stdout, stdin;
-
 void _entry();
 int main(int argc, char * argv[]);
 

@@ -15,6 +15,7 @@ enum FD_TYPE {
 typedef struct fd_t {
     int n;
     enum FD_TYPE type;
+    bool open;
     void * handle;
 } fd_t;
 

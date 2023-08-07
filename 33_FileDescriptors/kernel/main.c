@@ -16,6 +16,7 @@
 #include "isr.h"
 #include "ll.h"
 #include "sb16.h"
+#include "fd.h"
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
@@ -81,6 +82,8 @@ void _kmain() {
         kwarn(__FILE__,__func__,"no init executable found");
     }
 
+    // Init process initialization
+    // Process loading
     char * buf = kmalloc(init_fh->size);
     kread(init_fh, buf, init_fh->size);
     kclose(init_fh);
@@ -90,6 +93,29 @@ void _kmain() {
     init_proc->state = PROCESS_RUNNING;
     proc_set_args(init_proc, 0, NULL);
     kfree(buf);
+
+    // IO setup
+    filehandle_t * i_stdin  = kopen("/dev/tty", O_RDONLY);
+    filehandle_t * i_stdout = kopen("/dev/tty", O_WRONLY);
+    filehandle_t * i_stderr = kopen("/dev/tty", O_WRONLY);
+
+    fd_t * fd_stdin  = add_fd(init_proc); fd_stdin->n  = stdin;
+    fd_t * fd_stdout = add_fd(init_proc); fd_stdout->n = stdout;
+    fd_t * fd_stderr = add_fd(init_proc); fd_stderr->n = stderr;
+
+    fd_stdin->type  = FD_VFS;
+    fd_stdout->type = FD_VFS;
+    fd_stderr->type = FD_VFS;
+
+    fd_stdin->handle  = i_stdin;
+    fd_stdout->handle = i_stdout;
+    fd_stderr->handle = i_stderr;
+
+    i_stdin->fd_refs++;
+    i_stdout->fd_refs++;
+    i_stderr->fd_refs++;
+
+    init_proc->fd_n = MAX(MAX(stdin, stdout), stderr) + 1;
 
     do_scheduling = true;
     sti;

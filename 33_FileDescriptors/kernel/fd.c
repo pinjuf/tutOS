@@ -1,11 +1,13 @@
 #include "fd.h"
 #include "vfs.h"
+#include "util.h"
 
 fd_t * get_proc_fd(process_t * p, int fd) {
     fd_t * out = NULL;
 
     for (size_t i = 0; i < ll_len(p->fds); i++) {
-        if (((fd_t *)ll_get(p->fds, i))->n == fd) {
+        fd_t * fd_struct = (fd_t *) ll_get(p->fds, i);
+        if (fd_struct->n == fd && fd_struct->open) {
             out = (fd_t *)ll_get(p->fds, i);
             break;
         }
@@ -17,6 +19,7 @@ fd_t * get_proc_fd(process_t * p, int fd) {
 fd_t * add_fd(process_t * p) {
     fd_t * out = ll_push(p->fds);
     out->n = p->fd_n++;
+    out->open = true;
     return out;
 }
 
@@ -27,6 +30,10 @@ int fd_close(process_t * p, int fd) {
         return -1;
     }
 
+    // fd already closed?
+    if (!fd_struct->open)
+        return 0;
+
     switch (fd_struct->type) {
         case FD_VFS: {
             filehandle_t * fh = fd_struct->handle;
@@ -35,7 +42,8 @@ int fd_close(process_t * p, int fd) {
             if (!fh->fd_refs)
                 kclose(fh);
 
-            ll_delp(p->fds, fd_struct);
+            // Closed FDs stay in the list!
+            fd_struct->open = false;
 
             return 0;
         }

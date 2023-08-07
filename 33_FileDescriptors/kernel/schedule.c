@@ -306,7 +306,11 @@ void kill_process(process_t * proc, uint8_t return_code) {
 
     // Close all FDs
     for (size_t i = 0; i < ll_len(proc->fds); i++) {
-        fd_close(proc, i);
+        fd_t * f = ll_get(proc->fds, i);
+        fd_close(proc, f->n);
+    }
+    for (size_t i = 0; i < ll_len(proc->fds); i++) {
+        ll_del(proc->fds, i);
     }
 }
 
