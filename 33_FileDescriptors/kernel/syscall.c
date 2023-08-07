@@ -51,6 +51,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             fd_t * new_fd = add_fd(current_process);
             new_fd->type = FD_VFS;
             new_fd->handle = fh;
+            fh->fd_refs++;
 
             return new_fd->n;
         }
@@ -213,8 +214,6 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             pagemap_t * original_p  = current_process->pagemaps;
             size_t original_pn      = current_process->pagemaps_n;
 
-            ll_head * original_fds  = current_process->fds;
-
             void * elf_buf = kmalloc(elf_handle->size);
             kread(elf_handle, elf_buf, elf_handle->size);
             kclose(elf_handle);
@@ -236,7 +235,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             current_process->sigqueue_sz = 0;
             current_process->sighandling = false;
 
-            current_process->fds         = ll_copy(original_fds);
+            current_process->fds         = copy_fds(current_process);
 
             memset(&current_process->altstack, 0, sizeof(stack_t));
 

@@ -106,6 +106,7 @@ filehandle_t * kopen(char * p, mode_t mode) {
     if (out) {
         out->mountpoint = mountpoint;
         out->mode = mode;
+        out->fd_refs = 0;
     }
 
     kfree(path);

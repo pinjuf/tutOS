@@ -16,6 +16,7 @@ typedef struct filehandle_t {
     void * internal_file;
     size_t size;
     size_t curr;       // Current offset
+    size_t fd_refs;    // Number of file descriptors connected to this
 } filehandle_t;
 
 // Generic structure describing an FS driver

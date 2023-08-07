@@ -86,7 +86,7 @@ void schedule(void * regframe_ptr) {
 
         child->sigactions = ll_copy(current_process->sigactions);
 
-        child->fds        = ll_copy(current_process->fds);
+        child->fds        = copy_fds(current_process);
 
         child->pagemaps = kmalloc(child->pagemaps_n * sizeof(pagemap_t));
         for (size_t i = 0; i < child->pagemaps_n; i++) {
@@ -302,6 +302,11 @@ void kill_process(process_t * proc, uint8_t return_code) {
         struct sigaction * sa_sigchld = get_proc_sigaction(parent, SIGCHLD);
         if (sa_sigchld->sa_flags & SA_NOCLDWAIT)
             proc->state = PROCESS_NONE;
+    }
+
+    // Close all FDs
+    for (size_t i = 0; i < ll_len(proc->fds); i++) {
+        fd_close(proc, i);
     }
 }
 

@@ -29,11 +29,11 @@ int fd_close(process_t * p, int fd) {
 
     switch (fd_struct->type) {
         case FD_VFS: {
-            // TODO: This would close it globally!
+            filehandle_t * fh = fd_struct->handle;
 
-            //filehandle_t * fh = fd_struct->handle;
-
-            //kclose(fh);
+            fh->fd_refs--;    // No other file descriptors are connected to this
+            if (!fh->fd_refs)
+                kclose(fh);
 
             ll_delp(p->fds, fd_struct);
 
@@ -98,4 +98,26 @@ int fd_stat(process_t * p, int fd, stat * out) {
         default:
             return -1;
     }
+}
+
+ll_head * copy_fds(process_t * p) {
+    ll_head * out = ll_copy(p->fds);
+
+    for (size_t i = 0; i < ll_len(out); i++) {
+        fd_t * fd = (fd_t *) ll_get(out, i);
+
+        switch (fd->type) {
+            case FD_VFS: {
+                filehandle_t * fh = fd->handle;
+
+                fh->fd_refs++;
+                break;
+            }
+
+            default:
+                return NULL;
+        }
+    }
+
+    return out;
 }

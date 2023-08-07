@@ -27,3 +27,5 @@ size_t fd_read(process_t * p, int fd, void * buf, size_t count);
 size_t fd_write(process_t * p, int fd, void * buf, size_t count);
 
 int fd_stat(process_t * p, int fd, stat * out);
+
+ll_head * copy_fds(process_t * p);
