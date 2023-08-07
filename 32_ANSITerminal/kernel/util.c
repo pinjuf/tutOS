@@ -130,9 +130,7 @@ void kwarn(const char * source, const char * func, const char * msg) {
 void hexdump(void * ptr, size_t n) {
     for (size_t i = 0; i < n; i++) {
         if (!(i % 16)) {
-            kputs("0x");
-            kputhex((uint64_t)ptr+i);
-            kputs(" | ");
+            kprintf("0x%X | ", (uint64_t)ptr + i);
         }
 
         uint8_t val = ((uint8_t*)ptr)[i];
