@@ -151,6 +151,40 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             sti;
             while (1);
         }
+        case 32: { // dup
+            int fd = arg0;
+
+            fd_t * old_fd_s = get_proc_fd(current_process, fd);
+            if (!old_fd_s)
+                return -1;
+
+            fd_t * new_fd_s = add_fd(current_process);
+            int new_fd = new_fd_s->n;
+
+            memcpy(new_fd_s, old_fd_s, sizeof(fd_t));
+            new_fd_s->n = new_fd; // got overwritten by memcpy
+
+            return new_fd;
+        }
+        case 33: { // dup2
+            int oldfd = arg0;
+            int newfd = arg1;
+
+            fd_t * old_fd_s = get_proc_fd(current_process, oldfd);
+            if (!old_fd_s)
+                return -1;
+
+            fd_t * new_fd_s = get_proc_fd(current_process, newfd);
+            if (new_fd_s) { // Close it if it already exists
+                fd_close(current_process, newfd);
+            }
+            new_fd_s = add_fd(current_process); // Inc's p->fd_n, but that shouldn't matter
+
+            memcpy(new_fd_s, old_fd_s, sizeof(fd_t));
+            new_fd_s->n = newfd;
+
+            return newfd;
+        }
         case 34: { // pause
             sti;
 

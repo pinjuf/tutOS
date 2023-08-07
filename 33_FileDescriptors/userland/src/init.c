@@ -11,6 +11,12 @@ int main(int argc, char * argv[]) {
     char * cmdbuf = malloc(256);
     char c;
 
+    int my_tty = open("/dev/qemudbg", O_WRONLY);
+    dup2(my_tty, stdout);
+
+    int my_shfile = open("/test.sh", O_RDONLY);
+    dup2(my_shfile, stdin);
+
     signal(SIGCHLD, sigchld);
 
     puts("< tutOS sh >\n");
@@ -24,7 +30,8 @@ int main(int argc, char * argv[]) {
         puts("$> ");
 
         while (1) {
-            read(stdin, &c, 1);
+            if (!read(stdin, &c, 1)) // EOF or whatever
+                exit(0);
 
             if (c == '\n') {
                 break;

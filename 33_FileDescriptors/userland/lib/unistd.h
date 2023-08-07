@@ -28,3 +28,5 @@ int sigaltstack(stack_t * ss);
 int pause();
 uint64_t alarm(uint64_t seconds);
 int sigprocmask(enum SIG_MASKHOW how, sigset_t * mask);
+int dup(int oldfd);
+int dup2(int oldfd, int newfd);

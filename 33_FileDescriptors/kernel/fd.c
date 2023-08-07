@@ -39,8 +39,9 @@ int fd_close(process_t * p, int fd) {
             filehandle_t * fh = fd_struct->handle;
 
             fh->fd_refs--;    // No other file descriptors are connected to this
-            if (!fh->fd_refs)
+            if (!fh->fd_refs) {
                 kclose(fh);
+            }
 
             // Closed FDs stay in the list!
             fd_struct->open = false;

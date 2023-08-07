@@ -114,3 +114,11 @@ uint64_t alarm(uint64_t seconds) {
 int sigprocmask(enum SIG_MASKHOW how, sigset_t * mask) {
     return syscall(14, how, (size_t)mask, 0, 0, 0, 0);
 }
+
+int dup(int oldfd) {
+    return syscall(32, oldfd, 0, 0, 0, 0, 0);
+}
+
+int dup2(int oldfd, int newfd) {
+    return syscall(33, oldfd, newfd, 0, 0, 0, 0);
+}
