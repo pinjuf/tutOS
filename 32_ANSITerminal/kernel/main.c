@@ -28,53 +28,53 @@ void _kmain() {
             "); 
 
     // I really like cool sounding logs
-    kputs("KRN OK\n");
+    kprintf("KRN OK\n");
 
     init_kgdt();
-    kputs("GDT OK\n");
+    kprintf("GDT OK\n");
 
     init_idt();
-    kputs("IDT OK\n");
+    kprintf("IDT OK\n");
 
     init_paging();
-    kputs("PGN OK\n");
+    kprintf("PGN OK\n");
 
     init_mm();
-    kputs("MM  OK\n");
+    kprintf("MM  OK\n");
 
     init_pic();
-    kputs("PIC OK\n");
+    kprintf("PIC OK\n");
 
     init_pit0(PIT0_FREQ);
-    kputs("PIT OK\n");
+    kprintf("PIT OK\n");
 
     init_8042ps2();
-    kputs("PS2 OK\n");
+    kprintf("PS2 OK\n");
 
     pic_setmask(pic_getmask() | (3<<14)); // Disable Both ATA interrupts
     for (uint8_t i = 0; i < 8; i++) {
         ata_resetdrive(i);
     }
     ata_checkdrives();
-    kputs("ATA OK\n");
+    kprintf("ATA OK\n");
 
     init_syscalls();
-    kputs("SCL OK\n");
+    kprintf("SCL OK\n");
 
     init_scheduling();
-    kputs("SCD OK\n");
+    kprintf("SCD OK\n");
 
     init_vfs();
-    kputs("VFS OK\n");
+    kprintf("VFS OK\n");
 
     init_vesa();
     vesa_clear(vfont_bg);
-    kputs("VBE OK\n");
+    kprintf("VBE OK\n");
 
     init_sb16();
-    kputs("SB16 OK\n");
+    kprintf("SB16 OK\n");
 
-    kputs("KRN MN\n");
+    kprintf("KRN MN\n");
 
     filehandle_t * init_fh = kopen(INIT_PATH, O_RDONLY);
     if (!init_fh) {

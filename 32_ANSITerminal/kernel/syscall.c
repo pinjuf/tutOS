@@ -343,21 +343,11 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
         default: {
             sti;
-            kputs("SYSCALL n=0x");
-            kputhex(n);
-            kputs(" arg0=0x");
-            kputhex(arg0);
-            kputs(" arg1=0x");
-            kputhex(arg1);
-            kputs(" arg2=0x");
-            kputhex(arg2);
-            kputs(" arg3=0x");
-            kputhex(arg3);
-            kputs(" arg4=0x");
-            kputhex(arg4);
-            kputs(" arg5=0x");
-            kputhex(arg5);
-            kputc('\n');
+
+            kprintf(" < SYSCALL UNKN n=%d "
+                  " arg0=0x%x arg1=0x%x arg2=0x%x arg3=0x%x arg4=0x%x arg5=0x%x >\n",
+                  n, arg0, arg1, arg2, arg3, arg4, arg5);
+
             cli;
         }
     }
