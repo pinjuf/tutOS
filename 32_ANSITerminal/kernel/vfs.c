@@ -7,6 +7,7 @@ mountpoint_t * mountpoints;
 void init_vfs() {
     mountpoints = (mountpoint_t *) kcalloc(sizeof(mountpoint_t) * MOUNTPOINTS_N);
 
+    // Order matters by dependency
     mount(NULL, "/dev/", "devfs");
     mount("/dev/hdb1", "/", "ext2");
 }

@@ -81,6 +81,14 @@ void _kmain() {
         kwarn(__FILE__,__func__,"no init executable found");
     }
 
+    kprintf("%d\n" \
+            "%hd\n" \
+            "%hhd\n" \
+            "%qd\n",-0x0123456789ABCDEF,
+                   -0x0123456789ABCDEF,
+                   -0x0123456789ABCDEF,
+                   -0x0123456789ABCDEF);
+
     char * buf = kmalloc(init_fh->size);
     kread(init_fh, buf, init_fh->size);
     kclose(init_fh);

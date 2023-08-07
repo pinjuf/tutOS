@@ -418,45 +418,98 @@ size_t atoi(char * s, uint8_t base) {
 
 void kprintf(char * fmt, ...) {
     // Small and basic NON STANDARD printf implementation
-    // Only conversion specs are supported
-    // All integers must be 64 bit!
 
     va_list args;
     va_start(args, fmt);
 
     bool engaged = false;
+    uint8_t dsize = sizeof(int);
 
     for (size_t i = 0; i < strlen(fmt); i++) {
         char c = fmt[i];
 
         if (engaged) {
-            engaged = false;
-
             switch (c) {
-                case 'd': // Signed integer
-                case 'i': {
-                    int64_t val = va_arg(args, int64_t);
+                case 'h': {
+                    if (dsize == sizeof(short)) {
+                        dsize = sizeof(char); // double h means 8 bits
+                    } else {
+                        dsize = sizeof(short);
+                    }
+                    break;
+                }
+                case 'l': {
+                    if (dsize == sizeof(long))
+                        dsize = sizeof(long long);
+                    else
+                        dsize = sizeof(long);
+                    break;
+                }
+                case 'q': {
+                    dsize = sizeof(long long);
+                    break;
+                }
+                case 'j': {
+                    dsize = sizeof(intmax_t);
+                    break;
+                }
+                case 'Z':
+                case 'z': {
+                    dsize = sizeof(size_t);
+                    break;
+                }
+                case 't': {
+                    dsize = sizeof(ptrdiff_t);
+                    break;
+                }
+                case 'd':
+                case 'i': { // Signed decimal integer
+                    engaged = false;
+                    int64_t val;
+                    switch (dsize) {
+                        case sizeof(int8_t):  // Google promotion
+                            val = (int8_t) va_arg(args, int);
+                            break;
+                        case sizeof(int16_t): // Holy variadic
+                            val = (int16_t) va_arg(args, int);
+                            break;
+                        case sizeof(int32_t): // New standard just dropped
+                            val = (int32_t) va_arg(args, int32_t);
+                            break;
+                        case sizeof(int64_t): // Actual zombie process
+                            val = (uint64_t) va_arg(args, int64_t);
+                            break;
+                        default:              // Call the XOR-xist!
+                            val = (int) va_arg(args, int);
+                            break;
+                    }
                     char buf[24];
                     sitoa(val, buf, 10);
                     kputs(buf);
                     break;
                 }
                 case 'u': { // Unsigned integer
+                    engaged = false;
                     uint64_t val = va_arg(args, uint64_t);
+                    val &= SIZE_MAX >> (sizeof(size_t) * (sizeof(size_t) - dsize)); // Drop high bits
                     char buf[24];
                     itoa(val, buf, 10);
                     kputs(buf);
                     break;
                 }
                 case 'x': { // Hexadecimal normal
+                    engaged = false;
                     uint64_t val = va_arg(args, uint64_t);
+                    val &= SIZE_MAX >> (sizeof(size_t) * (sizeof(size_t) - dsize));
                     char buf[24];
                     itoa(val, buf, 16);
                     kputs(buf);
                     break;
                 }
                 case 'X': { // Hexadecimal padded to 64 bits
+                    engaged = false;
                     uint64_t val = va_arg(args, uint64_t);
+                    val &= SIZE_MAX >> (sizeof(size_t) * (sizeof(size_t) - dsize));
                     char buf[24];
                     itoa(val, buf, 16);
                     kputleadingzeroes_hex(val, 16);
@@ -464,7 +517,9 @@ void kprintf(char * fmt, ...) {
                     break;
                 }
                 case 'p': { // Pointer
+                    engaged = false;
                     uint64_t val = va_arg(args, uint64_t);
+                    engaged = false;
                     char buf[24];
                     itoa(val, buf, 16);
                     kputs("0x");
@@ -473,24 +528,30 @@ void kprintf(char * fmt, ...) {
                     break;
                 }
                 case 's': { // String
+                    engaged = false;
                     char * val = va_arg(args, char*);
                     kputs(val);
                     break;
                 }
                 case 'c': { // Character
+                    engaged = false;
                     char val = va_arg(args, int);
                     kputc(val);
                     break;
                 }
-                case '%':
+                case '%': {
+                    engaged = false;
                     kputc('%');
                     break;
+                }
                 default: // Unknown/unsupported
+                    engaged = false;
                     break;
             }
 
         } else if (c == '%') {
             engaged = true;
+            dsize = sizeof(int); // default data size
         } else {
             kputc(c);
         }
