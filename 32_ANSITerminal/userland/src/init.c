@@ -30,16 +30,16 @@ int main(int argc, char * argv[]) {
                 break;
             } else if (c == '\b' && (curr > cmdbuf)) {
                 curr--;
-                putc(c);
+                putchar(c);
             } else {
                 *curr++ = c;
-                putc(c);
+                putchar(c);
             }
         }
 
         *curr = '\0';
 
-        putc('\n');
+        putchar('\n');
 
         if (curr == cmdbuf)
             continue;
@@ -104,8 +104,8 @@ int main(int argc, char * argv[]) {
 
         if (fg) {
             waitpid(p, &status, 0);
-            putc(status + '0');
-            putc(' ');
+            putchar(status + '0');
+            putchar(' ');
         } else {
             char buf[8];
             itoa(p, buf, 10);

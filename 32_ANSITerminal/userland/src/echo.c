@@ -3,9 +3,9 @@
 int main(int argc, char * argv[]) {
     for (int i = 1; i < argc; i++) {
         puts(argv[i]);
-        putc(' ');
+        putchar(' ');
     }
-    putc('\n');
+    putchar('\n');
 
     return 0;
 }

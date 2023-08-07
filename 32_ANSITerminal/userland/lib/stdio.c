@@ -5,7 +5,7 @@ int puts(char * s) {
     return write(stdout, s, strlen(s));
 }
 
-int putc(char c) {
+int putchar(char c) {
     return write(stdout, &c, 1);
 }
 

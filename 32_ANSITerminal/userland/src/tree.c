@@ -18,11 +18,11 @@ void tree_dir(FILE * dir, char * current_path, size_t depth) {
         }
 
         if (depth)
-            putc(' ');
+            putchar(' ');
 
         puts("|- ");
         puts(d->d_name);
-        putc('\n');
+        putchar('\n');
 
         if (d->d_type == FILE_DIR) {
             char buf[1024] = {0};

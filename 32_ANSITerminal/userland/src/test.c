@@ -18,7 +18,7 @@ void sighandle(int signum) {
         puts("Got signal #");
         itoa(signum, buf, 10);
         puts(buf);
-        putc('\n');
+        putchar('\n');
     }
 
     sigreturn();

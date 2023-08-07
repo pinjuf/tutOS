@@ -28,10 +28,10 @@ int main(int argc, char * argv[]) {
         dirent * d = readdir(fd);
         if (!d) break;
         puts(d->d_name);
-        putc(' ');
+        putchar(' ');
         free(d);
     }
-    putc('\n');
+    putchar('\n');
 
     close(fd);
 }

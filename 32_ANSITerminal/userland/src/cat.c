@@ -42,7 +42,7 @@ int main(int argc, char * argv[]) {
             case FILE_DEV: {
                 char c;
                 while (read(file, &c, 1))
-                    putc(c);
+                    putchar(c);
                 break;
             }
             default:
