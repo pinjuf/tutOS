@@ -1,7 +1,7 @@
 #include "libtut.h"
 #include "unistd.h"
 
-int stdout, * stdin;
+int stdout, stdin;
 
 void _start(int argc, char * argv[]) {
     stdout = open("/dev/tty", O_WRONLY);

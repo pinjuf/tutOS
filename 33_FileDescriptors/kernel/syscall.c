@@ -7,6 +7,7 @@
 #include "signal.h"
 #include "isr.h"
 #include "main.h"
+#include "fd.h"
 
 extern void syscall_stub(void);
 
@@ -28,32 +29,35 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
     switch (n) {
         case 0: { // read
-            filehandle_t * fh = (void*)arg0;
+            int fd            = arg0;
             void * buf        = (void*)arg1;
             size_t count      = arg2;
 
             sti; // For keyboard read etc.
-            return kread(fh, buf, count);
+            return fd_read(current_process, fd, buf, count);
         }
         case 1: { // write
-            filehandle_t * fh = (void*)arg0;
+            int fd            = arg0;
             void * buf        = (void*)arg1;
             size_t count      = arg2;
 
-            return kwrite(fh, buf, count);
+            return fd_write(current_process, fd, buf, count);
         }
         case 2: { // open
             char * path = (void*)arg0;
             mode_t mode = arg1;
 
-            return (size_t)kopen(path, mode);
+            filehandle_t * fh = kopen(path, mode);
+            fd_t * new_fd = add_fd(current_process);
+            new_fd->type = FD_VFS;
+            new_fd->handle = fh;
+
+            return new_fd->n;
         }
         case 3: { // close
-            filehandle_t * fh = (void*)arg0;
+            int fd = arg0;
 
-            kclose(fh);
-
-            return 0;
+            return fd_close(current_process, fd);
         }
         case 4: { // stat
             char * filename = (void*)arg0;
@@ -71,10 +75,10 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             return 0;
         }
         case 5: { // fstat
-            filehandle_t * handle = (void*)arg0;
-            stat * out            = (void*)arg1;
+            int fd     = arg0;
+            stat * out = (void*)arg1;
 
-            fh_to_stat(handle, out);
+            fd_stat(current_process, fd, out);
 
             return 0;
         }
@@ -308,9 +312,18 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             return 0;
         }
         case 78: { // getdents (technically getdents64)
-            filehandle_t * dir = (void*)arg0;
-            dirent * out       = (void*)arg1;
-            size_t count       = arg2;
+            int fd       = arg0;
+            dirent * out = (void*)arg1;
+            size_t count = arg2;
+
+            fd_t * fd_struct = get_proc_fd(current_process, fd);
+            if (!fd_struct)
+                return -1;
+
+            if (fd_struct->type != FD_VFS)
+                return -1;
+
+            filehandle_t * dir = fd_struct->handle;
 
             size_t read = 0;
 

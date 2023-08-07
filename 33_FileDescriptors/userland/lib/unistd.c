@@ -5,7 +5,7 @@
 #include "signal.h"
 
 int open(char * path, mode_t mode) {
-    return (void*) syscall(2, (uint64_t)path, (size_t)mode, 0, 0, 0, 0);
+    return syscall(2, (uint64_t)path, (size_t)mode, 0, 0, 0, 0);
 }
 
 void close(int file) {
@@ -49,11 +49,11 @@ pid_t getppid() {
     return syscall(110, 0, 0, 0, 0, 0, 0);
 }
 
-size_t getdents(DIR * fd, dirent * dirp, size_t count) {
+size_t getdents(int fd, dirent * dirp, size_t count) {
     return syscall(78, (uint64_t)fd, (uint64_t)dirp, count, 0, 0, 0);
 }
 
-dirent * readdir(DIR * d) {
+dirent * readdir(int d) {
     dirent * out = malloc(sizeof(dirent));
 
     size_t read = getdents(d, out, 1);
