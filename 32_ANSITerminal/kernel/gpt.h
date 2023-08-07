@@ -55,8 +55,6 @@ typedef struct part_t {
 
 part_t * get_part(drive_t d, uint32_t n);
 
-void kputguid(guid_t guid);
-
 int part_read(part_t * p, uint64_t start, uint64_t count, void * buf);
 int part_write(part_t * p, uint64_t start, uint64_t count, void * buf);
 

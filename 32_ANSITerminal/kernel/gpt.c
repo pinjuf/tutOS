@@ -101,38 +101,6 @@ uint32_t get_part_count(drive_t d) {
     return out;
 }
 
-void kputguid(guid_t guid) {
-    // Forgive me, but we need the leading zeroes...
-    kputleadingzeroes_hex(guid.time_low, sizeof(guid.time_low)*2);
-    kputhex(guid.time_low);
-
-    kputc('-');
-
-    kputleadingzeroes_hex(guid.time_mid, sizeof(guid.time_mid)*2);
-    kputhex(guid.time_mid);
-
-    kputc('-');
-
-    kputleadingzeroes_hex(guid.time_hi_version, sizeof(guid.time_hi_version)*2);
-    kputhex(guid.time_hi_version);
-
-    kputc('-');
-
-    kputleadingzeroes_hex(guid.clock_seq_hi_variant, sizeof(guid.clock_seq_hi_variant)*2);
-    kputhex(guid.clock_seq_hi_variant);
-    kputleadingzeroes_hex(guid.clock_seq_lo, sizeof(guid.clock_seq_lo)*2);
-    kputhex(guid.clock_seq_lo);
-
-    kputc('-');
-
-    for (uint8_t i = 0; i < sizeof(guid.node); i++) {
-        uint8_t c = guid.node[i];
-        if (c < 16)
-            kputc('0');
-        kputhex(c);
-    }
-}
-
 int part_read(part_t * p, uint64_t start, uint64_t count, void * buf) {
     if (start >= (p->size * SECTOR_SIZE)) {
         kwarn(__FILE__,__func__,"read out of bounds");

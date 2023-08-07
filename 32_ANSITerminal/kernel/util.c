@@ -124,13 +124,7 @@ void init_pit2(uint32_t freq) {
 }
 
 void kwarn(const char * source, const char * func, const char * msg) {
-    kputs("[KWRN] ");
-    kputs((char*)source);
-    kputc(':');
-    kputs((char*)func);
-    kputs("() | ");
-    kputs((char*)msg);
-    kputc('\n');
+    kprintf(" < KWARN %s:%s() | %s >\n", source, func, msg);
 }
 
 void hexdump(void * ptr, size_t n) {
