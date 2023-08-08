@@ -164,11 +164,24 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             memcpy(new_fd_s, old_fd_s, sizeof(fd_t));
             new_fd_s->n = new_fd; // got overwritten by memcpy
 
+            switch (new_fd_s->type) {
+                case FD_VFS: {
+                    filehandle_t * fh = new_fd_s->handle;
+                    fh->fd_refs++;
+                    break;
+                }
+                default:
+                    return -1;
+            }
+
             return new_fd;
         }
         case 33: { // dup2
             int oldfd = arg0;
             int newfd = arg1;
+
+            if (oldfd == newfd)
+                return -1;
 
             fd_t * old_fd_s = get_proc_fd(current_process, oldfd);
             if (!old_fd_s)
@@ -182,6 +195,16 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             memcpy(new_fd_s, old_fd_s, sizeof(fd_t));
             new_fd_s->n = newfd;
+
+            switch (new_fd_s->type) {
+                case FD_VFS: {
+                    filehandle_t * fh = new_fd_s->handle;
+                    fh->fd_refs++;
+                    break;
+                }
+                default:
+                    return -1;
+            }
 
             return newfd;
         }
