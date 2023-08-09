@@ -17,6 +17,7 @@
 #include "ll.h"
 #include "sb16.h"
 #include "fd.h"
+#include "pipe.h"
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
@@ -115,7 +116,7 @@ void _kmain() {
     i_stdout->fd_refs++;
     i_stderr->fd_refs++;
 
-    init_proc->fd_n = MAX(MAX(stdin, stdout), stderr) + 1;
+    init_proc->fd_n = 3;
 
     do_scheduling = true;
     sti;
