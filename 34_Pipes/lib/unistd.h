@@ -8,6 +8,7 @@ enum FILETYPE {
     FILE_DIR,
     FILE_BLK,
     FILE_DEV,
+    FILE_PIPE, // Technically not a file, as it is anonymous
 };
 
 typedef uint16_t mode_t;

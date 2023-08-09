@@ -9,7 +9,8 @@
 enum FD_TYPE {
     FD_UNKN,
     FD_VFS,
-    // TODO: Add pipes
+    FD_PIPE_I,
+    FD_PIPE_O,
 };
 
 typedef struct fd_t {
