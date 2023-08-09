@@ -122,3 +122,7 @@ int dup(int oldfd) {
 int dup2(int oldfd, int newfd) {
     return syscall(33, oldfd, newfd, 0, 0, 0, 0);
 }
+
+int pipe(int fd[2]) {
+    return syscall(22, (uint64_t)fd, 0, 0, 0, 0, 0);
+}

@@ -18,8 +18,8 @@ pipe_t * mkpipe(size_t bufsize) {
 }
 
 void rmpipe(pipe_t * pipe) {
+    // The structure itself is not free'd!
     kfree(pipe->buf);
-    kfree(pipe);
 }
 
 size_t pipe_write(pipe_t * pipe, void * buf, size_t count) {

@@ -37,7 +37,7 @@ userland.img: .FORCE userland
 	dd if=/dev/zero of=$@ bs=1048576 count=32
 	mkfs.ext2 -d userland $@
 
-userland: userland/ lib/libtut_common.a
+userland: userland/ lib/libtut_common.a userland/*/
 	$(MAKE) -C userland
 
 lib/libtut_common.a: lib/

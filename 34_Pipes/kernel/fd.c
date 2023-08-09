@@ -3,6 +3,7 @@
 #include "util.h"
 #include "pipe.h"
 #include "signal.h"
+#include "mm.h"
 
 fd_t * get_proc_fd(process_t * p, int fd) {
     fd_t * out = NULL;
@@ -54,6 +55,11 @@ int fd_close(process_t * p, int fd) {
             pipe_t * pipe = fd_struct->handle;
 
             pipe->head_fds--;
+            if (!pipe->tail_fds && !pipe->head_fds) {
+                kputs("Closing pipe (I side)\n");
+                rmpipe(pipe);
+                kfree(pipe);
+            }
 
             fd_struct->open = false;
 
@@ -64,7 +70,12 @@ int fd_close(process_t * p, int fd) {
 
             pipe->tail_fds--;
             if (!pipe->tail_fds) {
+                kputs("Closing pipe (O side)\n");
                 rmpipe(pipe);
+
+                // Pipe completely abandoned?
+                if (!pipe->head_fds)
+                    kfree(pipe);
             }
 
             fd_struct->open = false;
@@ -92,7 +103,7 @@ size_t fd_read(process_t * p, int fd, void * buf, size_t count) {
         case FD_PIPE_O: {
             pipe_t * pipe = fd_struct->handle;
 
-            // No one to read?
+            // No one to read? (also means the pipe buffer has been free'd)
             if (!pipe->tail_fds) {
                 push_proc_sig(p, SIGPIPE);
                 return 0;

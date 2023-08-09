@@ -172,8 +172,8 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             fd_t * out = add_fd(current_process);
             pipe->tail_fds++;
-            in->type = FD_PIPE_O;
-            in->handle = pipe;
+            out->type = FD_PIPE_O;
+            out->handle = pipe;
 
             fds[0] = in->n;
             fds[1] = out->n;
