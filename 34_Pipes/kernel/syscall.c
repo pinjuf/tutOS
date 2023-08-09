@@ -84,9 +84,17 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             return 0;
         }
         case 8: { // seek
-            filehandle_t * fh   = (void*)arg0;
-            int64_t offset      = arg1;
-            enum SEEKMODE mode  = arg2;
+            int fd             = arg0;
+            int64_t offset     = arg1;
+            enum SEEKMODE mode = arg2;
+
+            fd_t * fd_s = get_proc_fd(current_process, fd);
+
+            // Only files can be seek'd
+            if (fd_s->type != FD_VFS)
+                return -1;
+
+            filehandle_t * fh = fd_s->handle;
 
             switch (mode) {
                 case SEEK_SET:
