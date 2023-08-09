@@ -8,6 +8,7 @@
 #include "isr.h"
 #include "main.h"
 #include "fd.h"
+#include "pipe.h"
 
 extern void syscall_stub(void);
 
@@ -159,6 +160,26 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             sti;
             while (1);
         }
+        case 22: { // pipe
+            int * fds = (int*)arg0;
+
+            pipe_t * pipe = mkpipe(SYS_PIPESZ);
+
+            fd_t * in  = add_fd(current_process);
+            pipe->head_fds++;
+            in->type = FD_PIPE_I;
+            in->handle = pipe;
+
+            fd_t * out = add_fd(current_process);
+            pipe->tail_fds++;
+            in->type = FD_PIPE_O;
+            in->handle = pipe;
+
+            fds[0] = in->n;
+            fds[1] = out->n;
+
+            return 0;
+        }
         case 32: { // dup
             int fd = arg0;
 
@@ -176,6 +197,16 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                 case FD_VFS: {
                     filehandle_t * fh = new_fd_s->handle;
                     fh->fd_refs++;
+                    break;
+                }
+                case FD_PIPE_I: {
+                    pipe_t * pipe = new_fd_s->handle;
+                    pipe->head_fds++;
+                    break;
+                }
+                case FD_PIPE_O: {
+                    pipe_t * pipe = new_fd_s->handle;
+                    pipe->tail_fds++;
                     break;
                 }
                 default:
@@ -208,6 +239,16 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                 case FD_VFS: {
                     filehandle_t * fh = new_fd_s->handle;
                     fh->fd_refs++;
+                    break;
+                }
+                case FD_PIPE_I: {
+                    pipe_t * pipe = new_fd_s->handle;
+                    pipe->head_fds++;
+                    break;
+                }
+                case FD_PIPE_O: {
+                    pipe_t * pipe = new_fd_s->handle;
+                    pipe->tail_fds++;
                     break;
                 }
                 default:

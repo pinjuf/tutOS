@@ -2,6 +2,7 @@
 #include "vfs.h"
 #include "util.h"
 #include "pipe.h"
+#include "signal.h"
 
 fd_t * get_proc_fd(process_t * p, int fd) {
     fd_t * out = NULL;
@@ -90,6 +91,12 @@ size_t fd_read(process_t * p, int fd, void * buf, size_t count) {
         }
         case FD_PIPE_O: {
             pipe_t * pipe = fd_struct->handle;
+
+            // No one to read?
+            if (!pipe->tail_fds) {
+                push_proc_sig(p, SIGPIPE);
+                return 0;
+            }
 
             return pipe_read(pipe, buf, count);
         }
