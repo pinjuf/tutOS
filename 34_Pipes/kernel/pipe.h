@@ -19,3 +19,4 @@ size_t pipe_write(pipe_t * pipe, void * buf, size_t count);
 size_t pipe_read(pipe_t * pipe, void * buf, size_t count);
 
 void pipe_adj(pipe_t * pipe);
+void pipe_resz(pipe_t * pipe, size_t newsize);

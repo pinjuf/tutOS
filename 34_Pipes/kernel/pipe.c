@@ -55,3 +55,10 @@ void pipe_adj(pipe_t * pipe) {
     pipe->head -= pipe->tail;
     pipe->tail  = 0;
 }
+
+void pipe_resz(pipe_t * pipe, size_t newsize) {
+    // Resize a pipe (preferably increasing the size)
+
+    pipe->buf = krealloc(pipe->buf, newsize);
+    pipe->bufsize = newsize;
+}
