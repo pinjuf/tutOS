@@ -549,3 +549,17 @@ void kprintf(char * fmt, ...) {
         }
     }
 }
+
+char * strcpy(char * dst, char * src) {
+    size_t len = strlen(src);
+    memcpy(dst, src, strlen(src));
+    dst[len] = '\0';
+    return dst;
+}
+
+char * stpcpy(char * dst, char * src) {
+    size_t len = strlen(src);
+    memcpy(dst, src, strlen(src));
+    dst[len] = '\0';
+    return &dst[len];
+}

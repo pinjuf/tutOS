@@ -211,8 +211,29 @@ void schedule(void * regframe_ptr) {
 }
 
 void proc_set_args(process_t * proc, int argc, char * argv[]) {
-    proc->regs.rdi = proc->argc = argc;
-    proc->regs.rsi = (uint64_t) (proc->argv = argv);
+    // Copy the arguments
+    if (argc && argv) {
+        size_t len = 0;
+        for (int i = 0; i < argc; i++) {
+            len += strlen(argv[i]) + 1;
+        }
+
+        char ** new_argv = kmalloc(argc * sizeof(char*));
+        char * new_buf = kmalloc(len);
+        char * c = new_buf;
+
+        for (int i = 0; i < argc; i++) {
+            new_argv[i] = c;
+            c = stpcpy(c, argv[i]) + 1;
+        }
+
+        proc->regs.rdi = proc->argc = argc;
+        proc->regs.rsi = (uint64_t) (proc->argv = new_argv);
+
+    } else {
+        proc->regs.rdi = proc->argc = 0;
+        proc->regs.rsi = (uint64_t) (proc->argv = NULL);
+    }
 }
 
 process_t * add_process() {
