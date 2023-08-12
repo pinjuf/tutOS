@@ -159,7 +159,7 @@ void isr_irq1(void) {
 
             push_proc_sig(proc, SIGKILL);
 
-            kprintf(" < SENT SIGKILL TO #%u", proc->pid);
+            kprintf(" < SENT SIGKILL TO #%u > ", proc->pid);
         }
 
         kbd_last_scancode = 0;
@@ -174,7 +174,7 @@ void isr_irq1(void) {
 
             push_proc_sig(proc, SIGTERM);
 
-            kprintf(" < SENT SIGTEMR TO #%u", proc->pid);
+            kprintf(" < SENT SIGTERM TO #%u > ", proc->pid);
         }
 
         kbd_last_scancode = 0;
