@@ -52,7 +52,6 @@ int fd_close(process_t * p, int fd) {
             pipe_t * pipe = fd_struct->handle;
 
             pipe->head_fds--;
-            kprintf("Closed pipe I (head) side, pid %d, fd %d, other head %d, tails %d\n", p->pid, fd, pipe->head_fds, pipe->tail_fds);
             if (!pipe->tail_fds && !pipe->head_fds) {
                 rmpipe(pipe);
                 kfree(pipe);
@@ -66,7 +65,6 @@ int fd_close(process_t * p, int fd) {
             pipe_t * pipe = fd_struct->handle;
 
             pipe->tail_fds--;
-            kprintf("Closed pipe O (tail) side, pid %d, fd %d, other tails %d, heads %d\n", p->pid, fd, pipe->tail_fds, pipe->head_fds);
             if (!pipe->tail_fds) {
                 rmpipe(pipe);
 
@@ -101,8 +99,8 @@ size_t fd_read(process_t * p, int fd, void * buf, size_t count) {
         case FD_PIPE_O: {
             pipe_t * pipe = fd_struct->handle;
 
-            // No one to write? (EOF)
-            if (!pipe->head_fds) {
+            // No one to writ and pipe empty? (EOF)
+            if (!pipe->head_fds && (pipe->head == pipe->tail)) {
                 return 0;
             }
 
