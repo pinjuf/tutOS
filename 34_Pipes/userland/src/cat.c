@@ -4,13 +4,18 @@
 #include "types.h"
 
 int main(int argc, char * argv[]) {
-
     stat * st = malloc(sizeof(stat));
 
-    for (size_t i = 1; i < (size_t)argc; i++) {
-        int file = open(argv[i], O_RDONLY);
+    int adjusted_argc = (argc - 1) ? argc : 2; // cat without args reads from stdin
 
-        if (!file) {
+    for (size_t i = 1; i < (size_t)adjusted_argc; i++) {
+        int file;
+        if (argc > 1)
+            file = open(argv[i], O_RDONLY);
+        else
+            file = stdin;
+
+        if (file < 0) {
             puts("file not found\n");
             return 1;
         }

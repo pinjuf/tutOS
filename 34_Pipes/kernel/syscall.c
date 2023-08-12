@@ -49,6 +49,10 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             mode_t mode = arg1;
 
             filehandle_t * fh = kopen(path, mode);
+
+            if (!fh)
+                return -1;
+
             fd_t * new_fd = add_fd(current_process);
             new_fd->type = FD_VFS;
             new_fd->handle = fh;

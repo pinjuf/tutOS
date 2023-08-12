@@ -11,7 +11,7 @@ int main(int argc, char * argv[]) {
     }
 
     int audio_f = open(argv[1], O_RDONLY);
-    if (!audio_f) {
+    if (audio_f < 0) {
         puts("Could not open file\n");
         return 1;
     }
