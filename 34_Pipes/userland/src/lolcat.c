@@ -6,7 +6,10 @@
 int main(int argc, char * argv[]) {
     stat * st = malloc(sizeof(stat));
 
-    int adjusted_argc = (argc - 1) ? argc : 2; // cat without args reads from stdin
+    char colstring[] = "\033[9#m";
+    uint8_t counter = 0;
+
+    int adjusted_argc = (argc - 1) ? argc : 2;
 
     for (size_t i = 1; i < (size_t)adjusted_argc; i++) {
         int file;
@@ -27,31 +30,24 @@ int main(int argc, char * argv[]) {
         fstat(file, st);
 
         switch(st->st_mode) {
-            case FILE_REG: {
-                char * buf = malloc(st->st_size);
-                read(file, buf, st->st_size);
-                write(stdout, buf, st->st_size);
-                free(buf);
-                break;
-            }
             case FILE_DIR:
                 puts("cat: ");
                 puts(argv[i]);
                 puts(": Is a directory\n");
                 break;
+            case FILE_REG:
+            case FILE_DEV:
             case FILE_BLK: {
-                char c[512]; // Reading in sectors is faster
-                while (1) {
-                    int r = read(file, c, 512);
-                    if (r == 0) break;
-                    write(stdout, c, r);
-                }
-                break;
-            }
-            case FILE_DEV: {
                 char c;
-                while (read(file, &c, 1))
-                    putchar(c);
+                while (read(file, &c, 1)) {
+                    counter += 1;
+                    counter %= 8;
+
+                    colstring[3] = '0' + counter;
+
+                    write(stdout, colstring, 5);
+                    write(stdout, &c, 1);
+                }
                 break;
             }
             default:
@@ -65,6 +61,8 @@ int main(int argc, char * argv[]) {
     }
 
     free(st);
+
+    puts("\033[0m");
 
     return 0;
 }
