@@ -58,6 +58,9 @@ void * calloc_pages(size_t n) {
 }
 
 void free_pages(void * ptr, size_t n) {
+    if (!ptr)
+        return;
+
     size_t i = ((uint64_t)ptr - HEAP_VIRT) / PAGE_SIZE;
 
     for (size_t j = 0; j < n; j++) {
@@ -84,7 +87,6 @@ size_t mm_first_free_chunk(void) {
 }
 
 void * kmalloc(size_t n) {
-
     if (n == 0)
         return NULL;
 
@@ -137,6 +139,9 @@ void * kcalloc(size_t n) {
 }
 
 void kfree(void * ptr) {
+    if (!ptr)
+        return;
+
     ptr = (void*) ((uint64_t)ptr - sizeof(size_t));
     size_t n = *(uint64_t*)ptr;
     ptr = (void*) ((uint64_t)ptr - sizeof(uint32_t));

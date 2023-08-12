@@ -3,6 +3,8 @@
 #include "stdio.h"
 #include "string.h"
 
+#define CMDBUF_SZ 0x200
+
 void sigchld(int signum) {
     sigreturn();
 }
@@ -17,7 +19,7 @@ int main(int argc, char * argv[]) {
 
     while (true) {
         char * curr = cmdbuf;
-        memset(cmdbuf, 0, 256);
+        memset(cmdbuf, 0, CMDBUF_SZ);
 
         int status = 0;
 
@@ -53,35 +55,15 @@ int main(int argc, char * argv[]) {
             continue;
         }
 
-        if (!strcmp(cmdbuf, "spktst")) {
-            int pcspk = open("/dev/pcspk", O_WRONLY);
-
-            uint32_t freq_a = 440;
-            uint32_t freq_b = 660;
-            uint32_t silent = 0;
-
-            for (size_t i = 0; i < 4; i++) {
-                write(pcspk, &freq_a, 4);
-                pit_msleep(500);
-                write(pcspk, &freq_b, 4);
-                pit_msleep(500);
-            }
-
-            write(pcspk, &silent, 4);
-
-            continue;
-        }
-
         bool fg = true;
-
         // Let process run in background
         if (*(curr-1) == '&') {
             *(curr-1)  = '\0';
             fg = false;
         }
 
-        char * cmdbuf2 = malloc(256);
-        memcpy(cmdbuf2, cmdbuf, 256);
+        char * cmdbuf2 = malloc(CMDBUF_SZ);
+        memcpy(cmdbuf2, cmdbuf, CMDBUF_SZ);
 
         // We need to transform cmdbuf into a char*argv[]
         char ** argv = malloc(sizeof(char*) * 16);
