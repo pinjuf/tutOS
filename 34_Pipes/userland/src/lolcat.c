@@ -9,16 +9,15 @@ int main(int argc, char * argv[]) {
     char colstring[] = "\033[9#m";
     uint8_t counter = 0;
 
-    int adjusted_argc = (argc - 1) ? argc : 2;
+    if (argc == 1) {
+        argc = 2;
+        argv[1] = "-"; // Last argv is always NULL, so we can afford this
+    }
 
-    for (size_t i = 1; i < (size_t)adjusted_argc; i++) {
+    for (size_t i = 1; i < (size_t)argc; i++) {
         int file;
-        if (argc > 1) {
-            if (strcmp("-", argv[i]))
-                file = open(argv[i], O_RDONLY);
-            else
-                file = stdin;
-        }
+        if (strcmp("-", argv[i]))
+            file = open(argv[i], O_RDONLY);
         else
             file = stdin;
 
@@ -31,15 +30,19 @@ int main(int argc, char * argv[]) {
 
         switch(st->st_mode) {
             case FILE_DIR:
-                puts("cat: ");
-                puts(argv[i]);
+                puts("lolcat: ");
+                if (file != stdin)
+                    puts(argv[i]);
+                else
+                    puts("-");
                 puts(": Is a directory\n");
                 break;
+            case FILE_PIPE:
             case FILE_REG:
             case FILE_DEV:
             case FILE_BLK: {
                 char c;
-                while (read(file, &c, 1)) {
+                while (read(file, &c, 1) == 1) {
                     counter += 1;
                     counter %= 8;
 
@@ -51,13 +54,17 @@ int main(int argc, char * argv[]) {
                 break;
             }
             default:
-                puts("cat: ");
-                puts(argv[i]);
+                puts("lolcat: ");
+                if (file != stdin)
+                    puts(argv[i]);
+                else
+                    puts("-");
                 puts(": Is not a file\n");
                 break;
         }
 
-        close(file);
+        if (file != stdin)
+            close(file);
     }
 
     free(st);

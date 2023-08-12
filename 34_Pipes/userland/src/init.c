@@ -80,7 +80,25 @@ int main(int argc, char * argv[]) {
 
         pid_t p = fork();
         if (p == 0) {
+            int lolcat_fds[2];
+            pipe(lolcat_fds);
+
+            pid_t lolcat_p = fork();
+            if (lolcat_p == 0) {
+                close(lolcat_fds[0]);
+                dup2(lolcat_fds[1], stdin);
+                close(lolcat_fds[1]);
+
+                char * lolcat_argv[] = {"/bin/lolcat", NULL};
+
+                exec(lolcat_argv[0], lolcat_argv);
+            }
+
+            close(lolcat_fds[1]);
+            dup2(lolcat_fds[0], stdout);
+            close(lolcat_fds[0]);
             exec(cmdbuf2, argv);
+
             puts("could not exec command\n");
             exit(1);
         }

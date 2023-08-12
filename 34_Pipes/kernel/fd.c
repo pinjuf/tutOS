@@ -29,13 +29,10 @@ fd_t * add_fd(process_t * p) {
 int fd_close(process_t * p, int fd) {
     fd_t * fd_struct = get_proc_fd(p, fd);
 
+    // Invalid fd? Already closed?
     if (fd_struct == NULL) {
         return -1;
     }
-
-    // fd already closed?
-    if (!fd_struct->open)
-        return 0;
 
     switch (fd_struct->type) {
         case FD_VFS: {
@@ -55,8 +52,8 @@ int fd_close(process_t * p, int fd) {
             pipe_t * pipe = fd_struct->handle;
 
             pipe->head_fds--;
+            kprintf("Closed pipe I (head) side, pid %d, fd %d, other head %d, tails %d\n", p->pid, fd, pipe->head_fds, pipe->tail_fds);
             if (!pipe->tail_fds && !pipe->head_fds) {
-                kputs("Closing pipe (I side)\n");
                 rmpipe(pipe);
                 kfree(pipe);
             }
@@ -69,13 +66,14 @@ int fd_close(process_t * p, int fd) {
             pipe_t * pipe = fd_struct->handle;
 
             pipe->tail_fds--;
+            kprintf("Closed pipe O (tail) side, pid %d, fd %d, other tails %d, heads %d\n", p->pid, fd, pipe->tail_fds, pipe->head_fds);
             if (!pipe->tail_fds) {
-                kputs("Closing pipe (O side)\n");
                 rmpipe(pipe);
 
                 // Pipe completely abandoned?
-                if (!pipe->head_fds)
+                if (!pipe->head_fds) {
                     kfree(pipe);
+                }
             }
 
             fd_struct->open = false;
@@ -103,9 +101,8 @@ size_t fd_read(process_t * p, int fd, void * buf, size_t count) {
         case FD_PIPE_O: {
             pipe_t * pipe = fd_struct->handle;
 
-            // No one to read? (also means the pipe buffer has been free'd)
-            if (!pipe->tail_fds) {
-                push_proc_sig(p, SIGPIPE);
+            // No one to write? (EOF)
+            if (!pipe->head_fds) {
                 return 0;
             }
 
@@ -131,6 +128,12 @@ size_t fd_write(process_t * p, int fd, void * buf, size_t count) {
         }
         case FD_PIPE_I: {
             pipe_t * pipe = fd_struct->handle;
+
+            // No one to read? (also means the pipe buffer has been free'd)
+            if (!pipe->tail_fds) {
+                push_proc_sig(p, SIGPIPE);
+                return 0;
+            }
 
             return pipe_write(pipe, buf, count);
         }

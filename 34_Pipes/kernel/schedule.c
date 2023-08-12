@@ -317,22 +317,25 @@ void kill_process(process_t * proc, uint8_t return_code) {
     if (proc->parent && get_proc_by_pid(proc->parent)) {
         process_t * parent = get_proc_by_pid(proc->parent);
 
-        push_proc_sig(parent, SIGCHLD);
+        if (IS_ALIVE(parent)) {
+            push_proc_sig(parent, SIGCHLD);
 
-        // Check for SA_NOCLDWAIT (no zombie)
-        struct sigaction * sa_sigchld = get_proc_sigaction(parent, SIGCHLD);
-        if (sa_sigchld->sa_flags & SA_NOCLDWAIT)
-            proc->state = PROCESS_NONE;
+            // Check for SA_NOCLDWAIT (no zombie)
+            struct sigaction * sa_sigchld = get_proc_sigaction(parent, SIGCHLD);
+            if (sa_sigchld->sa_flags & SA_NOCLDWAIT)
+                proc->state = PROCESS_NONE;
+        }
     }
 
     // Close all FDs
     for (size_t i = 0; i < ll_len(proc->fds); i++) {
         fd_t * f = ll_get(proc->fds, i);
+        if (!f->open)
+            continue;
         fd_close(proc, f->n);
     }
-    for (size_t i = 0; i < ll_len(proc->fds); i++) {
-        ll_del(proc->fds, i);
-    }
+
+    destroy_ll(proc->fds);
 }
 
 size_t proc_has_sig(process_t * proc, int signum) {

@@ -36,7 +36,10 @@ int main(int argc, char * argv[]) {
             }
             case FILE_DIR:
                 puts("cat: ");
-                puts(argv[i]);
+                if (file != stdin)
+                    puts(argv[i]);
+                else
+                    puts("-");
                 puts(": Is a directory\n");
                 break;
             case FILE_BLK: {
@@ -48,6 +51,7 @@ int main(int argc, char * argv[]) {
                 }
                 break;
             }
+            case FILE_PIPE:
             case FILE_DEV: {
                 char c;
                 while (read(file, &c, 1))
@@ -56,7 +60,10 @@ int main(int argc, char * argv[]) {
             }
             default:
                 puts("cat: ");
-                puts(argv[i]);
+                if (file != stdin)
+                    puts(argv[i]);
+                else
+                    puts("-");
                 puts(": Is not a file\n");
                 break;
         }
