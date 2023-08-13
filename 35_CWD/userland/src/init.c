@@ -13,6 +13,8 @@ int main(int argc, char * argv[]) {
     char * cmdbuf = malloc(256);
     char c;
 
+    char cwdbuf[256];
+
     signal(SIGCHLD, sigchld);
 
     puts("< tutOS sh >\n");
@@ -23,6 +25,9 @@ int main(int argc, char * argv[]) {
 
         int status = 0;
 
+        getcwd(cwdbuf, sizeof(cwdbuf));
+
+        puts(cwdbuf);
         puts("$> ");
 
         while (1) {
@@ -55,6 +60,18 @@ int main(int argc, char * argv[]) {
             continue;
         }
 
+        if (!strcmp(cmdbuf, "cd")) {
+            chdir("/");
+            continue;
+        }
+
+        if (!strncmp(cmdbuf, "cd ", 3) && strlen(cmdbuf) > 3) {
+            int s = chdir(cmdbuf + 3);
+            if (s < 0)
+                puts("cd: no such directory\n");
+            continue;
+        }
+
         bool fg = true;
         // Let process run in background
         if (*(curr-1) == '&') {
@@ -80,25 +97,7 @@ int main(int argc, char * argv[]) {
 
         pid_t p = fork();
         if (p == 0) {
-            int lolcat_fds[2];
-            pipe(lolcat_fds);
-
-            pid_t lolcat_p = fork();
-            if (lolcat_p == 0) {
-                close(lolcat_fds[0]);
-                dup2(lolcat_fds[1], stdin);
-                close(lolcat_fds[1]);
-
-                char * lolcat_argv[] = {"/bin/lolcat", NULL};
-
-                exec(lolcat_argv[0], lolcat_argv);
-            }
-
-            close(lolcat_fds[1]);
-            dup2(lolcat_fds[0], stdout);
-            close(lolcat_fds[0]);
             exec(cmdbuf2, argv);
-
             puts("could not exec command\n");
             exit(1);
         }

@@ -184,7 +184,7 @@ void * krealloc(void * ptr, size_t n) {
     }
 
     void * new = kmalloc(n);
-    memcpy(new, ptr, old_n);
+    memcpy(new, ptr, old_n * MM_CHUNKSIZE);
     kfree(ptr);
     return new;
 }

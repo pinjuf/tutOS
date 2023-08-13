@@ -101,3 +101,5 @@ size_t kwrite(filehandle_t * f, void * buf, size_t count);
 size_t kwriteat(filehandle_t * f, size_t off, void * buf, size_t count);
 dirent * kreaddir(filehandle_t * f);
 void fh_to_stat(filehandle_t * in, stat * out);
+
+int remove_pathddots(char * path);

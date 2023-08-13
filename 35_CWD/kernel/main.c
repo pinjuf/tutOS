@@ -118,6 +118,8 @@ void _kmain() {
 
     init_proc->fd_n = 3;
 
+    proc_set_cwd(init_proc, "/");
+
     do_scheduling = true;
     sti;
 

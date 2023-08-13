@@ -119,6 +119,8 @@ typedef struct process_t {
 
     int fd_n; // File descriptors opened
     ll_head * fds;
+
+    char * cwd;
 } process_t;
 
 #define MAX_PROCESSES 256
@@ -145,3 +147,7 @@ void free_pagemaps(pagemap_t * maps, size_t n);
 void kill_process(process_t * proc, uint8_t return_code);
 
 size_t proc_has_sig(process_t * proc, int signum);
+
+int proc_set_cwd(process_t * proc, char * cwd);
+char * proc_get_cwd(process_t * proc);
+char * proc_to_abspath(process_t * proc, char * path);

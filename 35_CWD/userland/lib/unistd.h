@@ -31,3 +31,5 @@ int sigprocmask(enum SIG_MASKHOW how, sigset_t * mask);
 int dup(int oldfd);
 int dup2(int oldfd, int newfd);
 int pipe(int fd[2]);
+int getcwd(char * buf, size_t size);
+int chdir(char * path);

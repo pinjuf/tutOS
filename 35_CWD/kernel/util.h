@@ -63,5 +63,9 @@ void wrmsr(uint32_t msr, uint64_t val);
 
 void kprintf(char * fmt, ...);
 
+int memcmp(void * s1, void * s2, size_t n);
+
+char * strstr(char * haystack, char * needle);
+
 #define PS2_ACK 0xFA
 #define PS2_RESEND 0xFE

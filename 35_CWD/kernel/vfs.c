@@ -58,14 +58,18 @@ int mount(char * filepath, char * mountpoint, char * type) {
 }
 
 filehandle_t * kopen(char * p, mode_t mode) {
-
-    // Get the string with the longest starting match
-    // TODO: Shorten "x/y/../z" to "x/z"
+    // Takes an ABSOLUTE path
 
     // We might do "unsanitary" stuff to the string
     char * path = kmalloc(strlen(p)+1);
     memcpy(path, p, strlen(p)+1);
 
+    if (remove_pathddots(path) < 0) { // We don't check for valid paths! (TODO?)
+        kfree(path);
+        return NULL;
+    }
+
+    // Get the string with the longest starting match
     size_t mountpoint = -1;
     size_t length = 0;
     for (size_t m = 0; m < MOUNTPOINTS_N; m++) {
@@ -183,4 +187,30 @@ void fh_to_stat(filehandle_t * in, stat * out) {
     out->st_dev  = in->mountpoint;
     out->st_mode = in->type;
     out->st_size = in->size;
+}
+
+int remove_pathddots(char * path) {
+    // Remove all ".."s from an absolute path
+    // Does not check if the path is valid!
+
+    const char sep[] = "/..";
+
+    while (1) {
+        char * next = strstr(path, (char*)sep);
+        if (!next) {
+            break;
+        }
+
+        char * prev = next - 1;
+        while (prev >= path && *prev != '/') {
+            prev--;
+        }
+
+        if (prev < path)
+            return -1;
+
+        memcpy(prev + 1, next + sizeof(sep), strlen(next + sizeof(sep)) + 1);
+    }
+
+    return 0;
 }

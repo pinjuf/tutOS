@@ -5,6 +5,7 @@
 #include "signal.h"
 #include "isr.h"
 #include "fd.h"
+#include "vfs.h"
 
 ll_head * processes;
 process_t * current_process = NULL;
@@ -100,6 +101,8 @@ void schedule(void * regframe_ptr) {
 
             memcpy(buf, current_process->pagemaps[i].virt, current_process->pagemaps[i].n * PAGE_SIZE);
         }
+
+        proc_set_cwd(child, current_process->cwd);
 
         child->sigqueue_sz = 0; // Pending signals are not inherited
     }
@@ -350,4 +353,59 @@ size_t proc_has_sig(process_t * proc, int signum) {
     }
 
     return out;
+}
+
+int proc_set_cwd(process_t * proc, char * cwd) {
+    // cwd should be absolute
+    if (proc->cwd)
+        kfree(proc->cwd);
+
+    // Make sure the directory exists
+    filehandle_t * fh = kopen(cwd, O_RDONLY);
+    if (!fh || fh->type != FILE_DIR)
+        return -1;
+    kclose(fh);
+
+    size_t l = strlen(cwd);
+    proc->cwd = kmalloc(l + 1); // Null byte
+    memcpy(proc->cwd, cwd, l + 1);
+
+    if (cwd[l - 1] != DIRSEP) { // Make sure a "/" is at the end
+        proc->cwd = krealloc(proc->cwd, l + 2);
+        proc->cwd[l] = DIRSEP;
+        proc->cwd[l + 1] = 0;
+    }
+
+    if (remove_pathddots(proc->cwd) < 0)
+        return -1;
+
+    return 0;
+}
+
+char * proc_get_cwd(process_t * proc) {
+    if (proc->cwd)
+        return proc->cwd;
+    else
+        return "/";
+}
+
+char * proc_to_abspath(process_t * proc, char * path) {
+    // Essentially concatenation
+
+    if (path[0] == DIRSEP) { // Already absolute? We need to copy it anyways
+        size_t path_len = strlen(path);
+        char * out = kmalloc(path_len + 1); // Null byte
+        memcpy(out, path, path_len + 1);
+        return out;
+    }
+
+    char * cwd = proc_get_cwd(proc);
+    size_t cwd_len = strlen(cwd);
+    size_t path_len = strlen(path);
+
+    char * out = kmalloc(cwd_len + path_len + 1); // Null byte
+    memcpy(out, cwd, cwd_len);
+    memcpy(out + cwd_len, path, path_len + 1);
+
+    return out; // Should be freed by the caller
 }

@@ -48,7 +48,11 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             char * path = (void*)arg0;
             mode_t mode = arg1;
 
+            path = proc_to_abspath(current_process, path);
+
             filehandle_t * fh = kopen(path, mode);
+
+            kfree(path); // Needs to be done after abspath()
 
             if (!fh)
                 return -1;
@@ -66,13 +70,18 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             return fd_close(current_process, fd);
         }
         case 4: { // stat
-            char * filename = (void*)arg0;
-            stat * out      = (void*)arg1;
+            char * path = (void*)arg0;
+            stat * out  = (void*)arg1;
+
+            path = proc_to_abspath(current_process, path);
 
             // Please don't judge me
-            filehandle_t * fh = kopen(filename, O_RDONLY);
+            filehandle_t * fh = kopen(path, O_RDONLY);
+
+            kfree(path);
+
             if (!fh)
-                fh = kopen(filename, O_WRONLY);
+                fh = kopen(path, O_WRONLY);
             if (!fh)
                 return 1;
 
@@ -314,7 +323,12 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                 for (size_t i = 0; argv[i]; i++)
                     argc++;
 
+            file = proc_to_abspath(current_process, file);
+
             filehandle_t * elf_handle = kopen(file, O_RDONLY);
+
+            kfree(file);
+
             if (!elf_handle) {
                 kwarn(__FILE__,__func__,"exec file not found");
                 return 1;
@@ -446,6 +460,29 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return read;
         }
+        case 79: { // getcwd
+            char * buf = (void*)arg0;
+            size_t size = arg1;
+
+            if (size < strlen(current_process->cwd) + 1)
+                return -1;
+
+            char * cwd = proc_get_cwd(current_process);
+            strcpy(buf, cwd);
+
+            return 0;
+        }
+        case 80: { // chdir
+            char * path = (void*)arg0;
+
+            path = proc_to_abspath(current_process, path);
+
+            int status = proc_set_cwd(current_process, path);
+
+            kfree(path);
+
+            return status;
+        }
         case 110: { // getppid
             return current_process->parent;
         }
@@ -468,6 +505,8 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
         default: {
             sti;
+
+            push_proc_sig(current_process, SIGSEGV);
 
             kprintf(" < SYSCALL UNKN n=%d "
                   " arg0=0x%x arg1=0x%x arg2=0x%x arg3=0x%x arg4=0x%x arg5=0x%x >\n",

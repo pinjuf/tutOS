@@ -563,3 +563,30 @@ char * stpcpy(char * dst, char * src) {
     dst[len] = '\0';
     return &dst[len];
 }
+
+int memcmp(void * s1, void * s2, size_t n) {
+    uint8_t * a = (uint8_t*) s1;
+    uint8_t * b = (uint8_t*) s2;
+
+    for (size_t i = 0; i < n; i++) {
+        if (a[i] != b[i])
+            return a[i] - b[i];
+    }
+
+    return 0;
+}
+
+char * strstr(char * haystack, char * needle) {
+    size_t needle_len = strlen(needle);
+    size_t haystack_len = strlen(haystack);
+
+    if (needle_len > haystack_len)
+        return NULL;
+
+    for (size_t i = 0; i < haystack_len - needle_len + 1; i++) {
+        if (memcmp(&haystack[i], needle, needle_len) == 0)
+            return &haystack[i];
+    }
+
+    return NULL; 
+}

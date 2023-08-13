@@ -126,3 +126,11 @@ int dup2(int oldfd, int newfd) {
 int pipe(int fd[2]) {
     return syscall(22, (uint64_t)fd, 0, 0, 0, 0, 0);
 }
+
+int getcwd(char * buf, size_t size) {
+    return syscall(79, (uint64_t)buf, size, 0, 0, 0, 0);
+}
+
+int chdir(char * path) {
+    return syscall(80, (uint64_t)path, 0, 0, 0, 0, 0);
+}
