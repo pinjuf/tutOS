@@ -64,7 +64,7 @@ filehandle_t * kopen(char * p, mode_t mode) {
     char * path = kmalloc(strlen(p)+1);
     memcpy(path, p, strlen(p)+1);
 
-    if (remove_pathddots(path) < 0) { // We don't check for valid paths! (TODO?)
+    if (remove_pathddots(path) < 0) {
         kfree(path);
         return NULL;
     }
@@ -190,8 +190,7 @@ void fh_to_stat(filehandle_t * in, stat * out) {
 }
 
 int remove_pathddots(char * path) {
-    // Remove all ".."s from an absolute path
-    // Does not check if the path is valid!
+    // Removes all ".."s from an absolute path
 
     const char sep[] = "/..";
 
@@ -202,12 +201,31 @@ int remove_pathddots(char * path) {
         }
 
         char * prev = next - 1;
-        while (prev >= path && *prev != '/') {
+        while (prev >= path && *prev != DIRSEP) {
             prev--;
         }
 
         if (prev < path)
             return -1;
+
+        // Check that the path exists
+        char * altprev = prev + 1;
+        while (*altprev && *altprev != DIRSEP) {
+            altprev++;
+        }
+
+        if (*altprev) {
+            *altprev = '\0';
+            filehandle_t * fh = kopen(path, O_RDONLY);
+            if (!fh)
+                return -1;
+            if (fh->type != FILE_DIR) {
+                kclose(fh);
+                return -1;
+            }
+            kclose(fh);
+            *altprev = DIRSEP;
+        }
 
         memcpy(prev + 1, next + sizeof(sep), strlen(next + sizeof(sep)) + 1);
     }
