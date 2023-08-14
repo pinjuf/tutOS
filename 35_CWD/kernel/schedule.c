@@ -381,7 +381,7 @@ int proc_set_cwd(process_t * proc, char * cwd) {
         proc->cwd[l + 1] = 0;
     }
 
-    if (remove_pathddots(proc->cwd) < 0)
+    if (clean_path(proc->cwd) < 0)
         return -1;
 
     return 0;

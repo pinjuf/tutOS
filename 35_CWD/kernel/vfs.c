@@ -64,7 +64,7 @@ filehandle_t * kopen(char * p, mode_t mode) {
     char * path = kmalloc(strlen(p)+1);
     memcpy(path, p, strlen(p)+1);
 
-    if (remove_pathddots(path) < 0) {
+    if (clean_path(path) < 0) {
         kfree(path);
         return NULL;
     }
@@ -229,6 +229,36 @@ int remove_pathddots(char * path) {
 
         memcpy(prev + 1, next + sizeof(sep), strlen(next + sizeof(sep)) + 1);
     }
+
+    return 0;
+}
+
+int remove_pathdseps(char * path) {
+    // Remove double directory separators in paths (//bin////test -> /bin/test)
+
+    char * curr = path;
+
+    while (*curr) {
+        if (curr[0] == DIRSEP && curr[1] == DIRSEP) {
+            memcpy(curr + 1, curr + 2, strlen(curr + 2) + 1);
+        } else {
+            curr++;
+        }
+    }
+
+    return 0;
+}
+
+int clean_path(char * path) {
+    // Performs multiple "clean-ups" on an absolute path
+
+    int status = remove_pathdseps(path);
+    if (status < 0)
+        return status;
+
+    status = remove_pathddots(path);
+    if (status < 0)
+        return status;
 
     return 0;
 }

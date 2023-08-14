@@ -103,3 +103,5 @@ dirent * kreaddir(filehandle_t * f);
 void fh_to_stat(filehandle_t * in, stat * out);
 
 int remove_pathddots(char * path);
+int remove_pathdseps(char * path);
+int clean_path(char * path);
