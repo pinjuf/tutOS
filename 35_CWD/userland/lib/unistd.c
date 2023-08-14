@@ -134,3 +134,7 @@ int getcwd(char * buf, size_t size) {
 int chdir(char * path) {
     return syscall(80, (uint64_t)path, 0, 0, 0, 0, 0);
 }
+
+int mount(char * source, char * target, char * filesystemtype, unsigned long mountflags, void * data) {
+    return syscall(165, (uint64_t)source, (uint64_t)target, (uint64_t)filesystemtype, mountflags, (uint64_t)data, 0);
+}

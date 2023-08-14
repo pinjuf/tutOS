@@ -493,6 +493,27 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return 0;
         }
+        case 165: { // mount
+            char * source = (void*)arg0;
+            char * target = (void*)arg1;
+            char * type   = (void*)arg2;
+            uint64_t flags = arg3;
+            void * data   = (void*)arg4;
+
+            (void)flags; // TODO, implement when necessary
+            (void)data;
+
+            if (source)
+                source = proc_to_abspath(current_process, source);
+            target = proc_to_abspath(current_process, target);
+
+            int status = mount(source, target, type);
+
+            kfree(source);
+            kfree(target);
+
+            return status;
+        }
         case 336: { // malloc
             size_t n = arg0;
             return (uint64_t)kmalloc(n);
