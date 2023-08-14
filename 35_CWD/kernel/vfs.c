@@ -312,6 +312,43 @@ int remove_pathddots(char * path) {
 
     const char sep[] = "/../";
 
+    while (1) {
+        char * next = strstr(path, (char*)sep);
+        if (!next)
+            break;
+
+        // If the /../ is at the beginning, the string is invalid
+        if (next == path) {
+            return -1;
+        }
+
+        // Find the previous DIRSEP
+        char * prev = next - 1;
+        while (*prev != DIRSEP) {
+            prev--;
+        }
+
+        // Now we have something like this:
+        //       v <-- v
+        // /path/to/../file/
+        //  prev^  ^next
+        memmove(prev + 1, next + strlen((char*)sep), strlen(next + strlen((char*)sep)) + 1);
+    }
+
+    // Remove trailing "/.."
+
+    char * curr = path + strlen(path) - 1;
+
+    if (*curr == '.' && *(curr - 1) == '.' && *(curr - 2) == DIRSEP) {
+        char * prev = curr - 3;
+
+        while (*prev != DIRSEP) {
+            prev--;
+        }
+
+        *prev = '\0';
+    }
+
     return 0;
 }
 
@@ -335,21 +372,13 @@ int remove_pathdots(char * path) {
     // Not to be confused with remove_pathddots, this removes all "."s from a path
 
     // Translate all "/./"s to "/"s
+    strreplace(path, "/./", "/");
 
-    const char sep[] = "/./";
+    // Remove trailing "/."
+    char * curr = path + strlen(path) - 1;
 
-    while (1) {
-        char * next = strstr(path, (char*)sep);
-
-        if (!next) {
-            break;
-        }
-
-        // Is there something AFTER the "/./"? Copy only if so
-        if (next[sizeof(sep)])
-            memcpy(next + 1, next + sizeof(sep) - 1, strlen(next + sizeof(sep)) + 1);
-        else
-            next[0] = '\0';
+    if (*curr == '.' && *(curr - 1) == DIRSEP) {
+        *curr = '\0';
     }
 
     return 0;

@@ -625,8 +625,6 @@ size_t strreplace(char * str, char * find, char * replace) {
         memcpy(found, replace, replace_len);
 
         replacements++;
-
-        str = found + replace_len;
     }
 
     return replacements;
