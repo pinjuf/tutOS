@@ -354,6 +354,10 @@ int remove_pathddots(char * path) {
 
     if (*curr == '.' && *(curr - 1) == '.' && *(curr - 2) == DIRSEP) {
 
+        if (curr - 2 == path) {
+            return -1;
+        }
+
         // Check that the jumped directory exists
         curr[-2] = '\0';
         filehandle_t * fh = kopen(path, 0);
