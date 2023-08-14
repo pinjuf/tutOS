@@ -334,6 +334,11 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
                 return 1;
             }
 
+            if (elf_handle->type != FILE_REG) {
+                kwarn(__FILE__,__func__,"exec file not regular file");
+                return 1;
+            }
+
             // We cannot be sure elf_load will succeed, but if it does, it will overwrite the pagemaps
             ll_head * original_sa   = current_process->sigactions;
             pagemap_t * original_p  = current_process->pagemaps;

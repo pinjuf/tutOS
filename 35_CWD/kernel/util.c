@@ -590,3 +590,44 @@ char * strstr(char * haystack, char * needle) {
 
     return NULL; 
 }
+
+void memmove(void * dest, void * src, size_t len) {
+    uint8_t * d = (uint8_t*) dest;
+    uint8_t * s = (uint8_t*) src;
+
+    if (d < s) {
+        for (size_t i = 0; i < len; i++) {
+            d[i] = s[i];
+        }
+    } else {
+        for (size_t i = len; i > 0; i--) {
+            d[i-1] = s[i-1];
+        }
+    }
+}
+
+size_t strreplace(char * str, char * find, char * replace) {
+    // Returns the number of replacements made
+    // We assume replace is shorter than find
+
+    size_t find_len = strlen(find);
+    size_t replace_len = strlen(replace);
+
+    size_t replacements = 0;
+
+    while (1) {
+        char * found = strstr(str, find);
+        if (!found)
+            break;
+
+        memmove(found + replace_len, found + find_len, strlen(found + find_len) + 1);
+
+        memcpy(found, replace, replace_len);
+
+        replacements++;
+
+        str = found + replace_len;
+    }
+
+    return replacements;
+}

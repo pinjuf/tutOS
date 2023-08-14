@@ -120,6 +120,11 @@ void _kmain() {
 
     proc_set_cwd(init_proc, "/");
 
+    char my_path[] = "/bin/./root/./";
+    //clean_path(my_path);
+    strreplace(my_path, "/./", "/");
+    kprintf("path: %s\n", my_path);
+
     do_scheduling = true;
     sti;
 

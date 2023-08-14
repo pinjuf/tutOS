@@ -22,6 +22,8 @@ void qemu_puts(char * s);
 void memset(void * dest, uint8_t val, size_t len);
 void memcpy(void * dest, void * src, size_t len);
 
+void memmove(void * dest, void * src, size_t len);
+
 size_t strlen(char * str);
 int strcmp(char * s1, char * s2);
 int strncmp(char * s1, char * s2, size_t n);
@@ -66,6 +68,8 @@ void kprintf(char * fmt, ...);
 int memcmp(void * s1, void * s2, size_t n);
 
 char * strstr(char * haystack, char * needle);
+
+size_t strreplace(char * str, char * find, char * replace);
 
 #define PS2_ACK 0xFA
 #define PS2_RESEND 0xFE

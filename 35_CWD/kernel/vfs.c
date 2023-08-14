@@ -310,47 +310,7 @@ void fh_to_stat(filehandle_t * in, stat * out) {
 int remove_pathddots(char * path) {
     // Removes all ".."s from an absolute path
 
-    const char sep[] = "/..";
-
-    while (1) {
-        char * next = strstr(path, (char*)sep);
-        if (!next) {
-            break;
-        }
-
-        char * prev = next - 1;
-        while (prev >= path && *prev != DIRSEP) {
-            prev--;
-        }
-
-        if (prev < path)
-            return -1;
-
-        // Check that the path exists
-        char * altprev = prev + 1;
-        while (*altprev && *altprev != DIRSEP) {
-            altprev++;
-        }
-
-        if (*altprev) {
-            *altprev = '\0';
-            filehandle_t * fh = kopen(path, 0);
-            if (!fh)
-                return -1;
-            if (fh->type != FILE_DIR) {
-                kclose(fh);
-                return -1;
-            }
-            kclose(fh);
-            *altprev = DIRSEP;
-        }
-
-        // Is there something AFTER the "/.."? Copy only if so
-        if (next[sizeof(sep)])
-            memcpy(&prev[1], next + sizeof(sep), strlen(next + sizeof(sep)) + 1);
-        else
-            prev[1] = '\0';
-    }
+    const char sep[] = "/../";
 
     return 0;
 }
@@ -371,6 +331,30 @@ int remove_pathdseps(char * path) {
     return 0;
 }
 
+int remove_pathdots(char * path) {
+    // Not to be confused with remove_pathddots, this removes all "."s from a path
+
+    // Translate all "/./"s to "/"s
+
+    const char sep[] = "/./";
+
+    while (1) {
+        char * next = strstr(path, (char*)sep);
+
+        if (!next) {
+            break;
+        }
+
+        // Is there something AFTER the "/./"? Copy only if so
+        if (next[sizeof(sep)])
+            memcpy(next + 1, next + sizeof(sep) - 1, strlen(next + sizeof(sep)) + 1);
+        else
+            next[0] = '\0';
+    }
+
+    return 0;
+}
+
 int clean_path(char * path) {
     // Performs multiple "clean-ups" on an absolute path
 
@@ -379,6 +363,10 @@ int clean_path(char * path) {
         return status;
 
     status = remove_pathddots(path);
+    if (status < 0)
+        return status;
+
+    status = remove_pathdots(path);
     if (status < 0)
         return status;
 
