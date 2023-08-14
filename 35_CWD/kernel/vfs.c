@@ -227,7 +227,11 @@ int remove_pathddots(char * path) {
             *altprev = DIRSEP;
         }
 
-        memcpy(prev + 1, next + sizeof(sep), strlen(next + sizeof(sep)) + 1);
+        // Is there something AFTER the "/.."? Copy only if so
+        if (next[sizeof(sep)])
+            memcpy(&prev[1], next + sizeof(sep), strlen(next + sizeof(sep)) + 1);
+        else
+            prev[1] = '\0';
     }
 
     return 0;
