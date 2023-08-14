@@ -357,14 +357,15 @@ size_t proc_has_sig(process_t * proc, int signum) {
 
 int proc_set_cwd(process_t * proc, char * cwd) {
     // cwd should be absolute
-    if (proc->cwd)
-        kfree(proc->cwd);
 
     // Make sure the directory exists
     filehandle_t * fh = kopen(cwd, O_RDONLY);
     if (!fh || fh->type != FILE_DIR)
         return -1;
     kclose(fh);
+
+    if (proc->cwd)
+        kfree(proc->cwd);
 
     size_t l = strlen(cwd);
     proc->cwd = kmalloc(l + 1); // Null byte
