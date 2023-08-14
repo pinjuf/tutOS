@@ -310,7 +310,7 @@ void fh_to_stat(filehandle_t * in, stat * out) {
 int remove_pathddots(char * path) {
     // Removes all ".."s from an absolute path
 
-    const char sep[] = "/../";
+    const char sep[] = {DIRSEP, '.', '.', DIRSEP, '\0'}; // "/../"
 
     while (1) {
         char * next = strstr(path, (char*)sep);
@@ -328,6 +328,19 @@ int remove_pathddots(char * path) {
             prev--;
         }
 
+        // Check that the jumped directory exists
+        *next = '\0';
+        filehandle_t * fh = kopen(path, 0);
+        if (!fh) {
+            return -1;
+        }
+        if (fh->type != FILE_DIR) {
+            kclose(fh);
+            return -1;
+        }
+        kclose(fh);
+        *next = DIRSEP;
+
         // Now we have something like this:
         //       v <-- v
         // /path/to/../file/
@@ -340,6 +353,20 @@ int remove_pathddots(char * path) {
     char * curr = path + strlen(path) - 1;
 
     if (*curr == '.' && *(curr - 1) == '.' && *(curr - 2) == DIRSEP) {
+
+        // Check that the jumped directory exists
+        curr[-2] = '\0';
+        filehandle_t * fh = kopen(path, 0);
+        if (!fh) {
+            return -1;
+        }
+        if (fh->type != FILE_DIR) {
+            kclose(fh);
+            return -1;
+        }
+        kclose(fh);
+        curr[-2] = DIRSEP;
+
         char * prev = curr - 3;
 
         while (*prev != DIRSEP) {
