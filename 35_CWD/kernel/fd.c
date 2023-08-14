@@ -87,7 +87,11 @@ size_t fd_read(process_t * p, int fd, void * buf, size_t count) {
     fd_t * fd_struct = get_proc_fd(p, fd);
 
     if (fd_struct == NULL) {
-        return -1;
+        return 0;
+    }
+
+    if (!fd_struct->open) {
+        return 0;
     }
 
     switch (fd_struct->type) {
@@ -107,7 +111,7 @@ size_t fd_read(process_t * p, int fd, void * buf, size_t count) {
             return pipe_read(pipe, buf, count);
         }
         default:
-            return -1;
+            return 0;
     }
 }
 
@@ -115,7 +119,11 @@ size_t fd_write(process_t * p, int fd, void * buf, size_t count) {
     fd_t * fd_struct = get_proc_fd(p, fd);
 
     if (fd_struct == NULL) {
-        return -1;
+        return 0;
+    }
+
+    if (!fd_struct->open) {
+        return 0;
     }
 
     switch (fd_struct->type) {
@@ -136,7 +144,7 @@ size_t fd_write(process_t * p, int fd, void * buf, size_t count) {
             return pipe_write(pipe, buf, count);
         }
         default:
-            return -1;
+            return 0;
     }
 }
 

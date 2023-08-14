@@ -15,6 +15,42 @@ void init_vfs() {
 int _mount(char * filepath, char * mountpoint, enum FILESYSTEM type) {
     // Returns the mountpoint number if successful, else a negative error
 
+    // No FS type autodetection!
+    if (type == FS_UNKN)
+        return -1;
+
+    char * filepath_clean = NULL;
+    if (filepath) {
+        filepath_clean = kmalloc(strlen(filepath)+1);
+        memcpy(filepath_clean, filepath, strlen(filepath)+1);
+    }
+
+    if (filepath_clean && clean_path(filepath_clean) < 0) {
+        kfree(filepath_clean);
+        return -1;
+    }
+
+    char * mountpoint_clean = kmalloc(strlen(mountpoint)+2); // Null byte AND ending DIRSEP
+    memcpy(mountpoint_clean, mountpoint, strlen(mountpoint)+1);
+    mountpoint_clean[strlen(mountpoint)] = DIRSEP;
+    mountpoint_clean[strlen(mountpoint)+1] = '\0';
+
+    if (clean_path(mountpoint_clean) < 0) {
+        kfree(filepath_clean);
+        kfree(mountpoint_clean);
+        return -1;
+    }
+
+    // Check if mountpoint is already mounted
+    for (size_t i = 0; i < MOUNTPOINTS_N; i++) {
+        if (!strcmp(mountpoints[i].path, mountpoint_clean)) {
+            kwarn(__FILE__,__func__,"mountpoint already mounted");
+            kfree(filepath_clean);
+            kfree(mountpoint_clean);
+            return -1;
+        }
+    }
+
     mountpoint_t * mnt = NULL;
     for (size_t i = 0; i < MOUNTPOINTS_N; i++) {
         if (mountpoints[i].type == FS_UNKN) {
@@ -29,8 +65,8 @@ int _mount(char * filepath, char * mountpoint, enum FILESYSTEM type) {
     memset(mnt, 0, sizeof(mountpoint_t));
 
     mnt->type     = type;
-    mnt->path     = mountpoint;
-    mnt->filepath = filepath;
+    mnt->path     = mountpoint_clean;
+    mnt->filepath = filepath_clean;
 
     if (mnt->filepath) {
         mnt->file = kopen(mnt->filepath, FILESYSTEMS[type].default_rw);
