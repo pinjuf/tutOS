@@ -102,6 +102,7 @@ void schedule(void * regframe_ptr) {
             memcpy(buf, current_process->pagemaps[i].virt, current_process->pagemaps[i].n * PAGE_SIZE);
         }
 
+        child->cwd = NULL;
         proc_set_cwd(child, current_process->cwd);
 
         child->sigqueue_sz = 0; // Pending signals are not inherited
@@ -368,21 +369,23 @@ int proc_set_cwd(process_t * proc, char * cwd) {
     }
     kclose(fh);
 
+    size_t l = strlen(cwd);
+    char * new_cwd = kmalloc(l + 1); // Null byte
+    memcpy(new_cwd, cwd, l + 1);
+
+    if (new_cwd[l - 1] != DIRSEP) { // Make sure a "/" is at the end
+        new_cwd = krealloc(new_cwd, l + 2);
+        new_cwd[l] = DIRSEP;
+        new_cwd[l + 1] = 0;
+    }
+
+    if (clean_path(new_cwd) < 0)
+        return -1;
+
     if (proc->cwd)
         kfree(proc->cwd);
 
-    size_t l = strlen(cwd);
-    proc->cwd = kmalloc(l + 1); // Null byte
-    memcpy(proc->cwd, cwd, l + 1);
-
-    if (cwd[l - 1] != DIRSEP) { // Make sure a "/" is at the end
-        proc->cwd = krealloc(proc->cwd, l + 2);
-        proc->cwd[l] = DIRSEP;
-        proc->cwd[l + 1] = 0;
-    }
-
-    if (clean_path(proc->cwd) < 0)
-        return -1;
+    proc->cwd = new_cwd;
 
     return 0;
 }
