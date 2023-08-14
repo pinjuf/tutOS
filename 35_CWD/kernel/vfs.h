@@ -19,24 +19,6 @@ typedef struct filehandle_t {
     size_t fd_refs;    // Number of file descriptors connected to this
 } filehandle_t;
 
-// Generic structure describing an FS driver
-typedef struct filesystem_t {
-    char name[8];
-
-    uint16_t default_rw; // How the mountfile should be opened
-
-    void * (* get_fs)(filehandle_t * f);
-    int    (* del_fs)(void * mountpoint);
-
-    filehandle_t * (* get_filehandle)(void * mountpoint, char * path, mode_t mode);
-    void (* close_filehandle)(filehandle_t * f);
-
-    size_t (* read_file)(filehandle_t * f, void * buf, size_t count);
-    size_t (* write_file)(filehandle_t * f, void * buf, size_t count);
-
-    dirent * (* read_dir)(filehandle_t * f);
-} filesystem_t;
-
 enum FILESYSTEM {
     FS_UNKN,
     FS_EXT2,
@@ -52,6 +34,24 @@ typedef struct mountpoint_t {
     char * path;         // Must end with "/"
 } mountpoint_t;
 
+// Generic structure describing an FS driver
+typedef struct filesystem_t {
+    char name[8];
+
+    uint16_t default_rw; // How the mountfile should be opened
+
+    void * (* get_fs)(filehandle_t * f);
+    int    (* del_fs)(mountpoint_t * mountpoint);
+
+    filehandle_t * (* get_filehandle)(void * mountpoint, char * path, mode_t mode);
+    void (* close_filehandle)(filehandle_t * f);
+
+    size_t (* read_file)(filehandle_t * f, void * buf, size_t count);
+    size_t (* write_file)(filehandle_t * f, void * buf, size_t count);
+
+    dirent * (* read_dir)(filehandle_t * f);
+} filesystem_t;
+
 // Needs to be in the same order as FILESYSTEM!
 static const filesystem_t FILESYSTEMS[] = {
     {"unkn", 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL}, // Unknown FS
@@ -59,7 +59,7 @@ static const filesystem_t FILESYSTEMS[] = {
     {"ext2",
         O_RDONLY,
         (void* (*) (filehandle_t * f)) get_ext2fs,
-        NULL,
+        (int (*) (mountpoint_t * m)) del_ext2fs,
         (filehandle_t * (*) (void * internal_fs, char * path, mode_t)) ext2_getfile,
         (void (*) (filehandle_t * f)) ext2_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) ext2_readfile,
@@ -81,7 +81,7 @@ static const filesystem_t FILESYSTEMS[] = {
     {"devfs",
         O_RDWR,
         (void* (*) (filehandle_t * fh)) get_devfs,
-        NULL,
+        (int (*) (mountpoint_t * m)) del_devfs,
         (filehandle_t * (*) (void * internal_fs, char * path, mode_t)) devfs_getfile,
         (void (*) (filehandle_t * f)) devfs_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_readfile,

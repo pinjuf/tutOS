@@ -31,6 +31,7 @@ typedef struct devfs_dev_t {
 } devfs_dev_t;
 
 devfs_t * get_devfs(void * p);
+int del_devfs(void * m);
 
 devfs_id_t devfs_register_dev(devfs_t * fs, devfs_dev_t * dev);
 void devfs_unregister_dev(devfs_t * fs, devfs_id_t dev);

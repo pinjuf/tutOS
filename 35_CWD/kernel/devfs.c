@@ -147,6 +147,16 @@ devfs_t * get_devfs(void * p) {
     return (void*)out;
 }
 
+int del_devfs(void * m) {
+    mountpoint_t * mnt = m;
+    devfs_t * fs = mnt->internal_fs;
+
+    destroy_ll(fs->devs);
+    kfree(fs);
+
+    return 0;
+}
+
 devfs_id_t devfs_register_dev(devfs_t * fs, devfs_dev_t * dev) {
     if (fs->id_counter == UINT32_MAX) {
         kwarn(__FILE__,__func__,"what the fuck"); // Oops, 4294967295 devices...

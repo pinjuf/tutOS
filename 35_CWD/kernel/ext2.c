@@ -30,6 +30,16 @@ ext2fs_t * get_ext2fs(void * f) {
     return out;
 }
 
+int del_ext2fs(void * m) {
+    mountpoint_t * mnt = m;
+    ext2fs_t * fs = mnt->internal_fs;
+
+    kfree(fs->grps);
+    kfree(fs);
+
+    return 0;
+}
+
 ext2_inode_t * ext2_get_inode(void * mn, uint32_t inode) {
     mountpoint_t * mnt = mn;
     ext2fs_t * fs = mnt->internal_fs;

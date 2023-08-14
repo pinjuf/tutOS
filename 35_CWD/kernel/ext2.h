@@ -166,3 +166,4 @@ void * ext2_getfile(void * mn, char * path, uint16_t);
 void ext2_closefile(void * f);
 size_t ext2_readfile(void * f, void * buf, size_t count);
 void * ext2_readdir(void * f);
+int del_ext2fs(void * m);
