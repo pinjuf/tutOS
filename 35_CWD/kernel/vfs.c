@@ -1,6 +1,8 @@
 #include "vfs.h"
 #include "mm.h"
 #include "util.h"
+#include "schedule.h"
+#include "fd.h"
 
 mountpoint_t * mountpoints;
 
@@ -51,6 +53,7 @@ int _mount(char * filepath, char * mountpoint, enum FILESYSTEM type) {
         }
     }
 
+    // Get a free mountpoint
     mountpoint_t * mnt = NULL;
     for (size_t i = 0; i < MOUNTPOINTS_N; i++) {
         if (mountpoints[i].type == FS_UNKN) {
@@ -90,7 +93,86 @@ int mount(char * filepath, char * mountpoint, char * type) {
         }
     }
 
+    if (etype == FS_UNKN)
+        return -1;
+
     return _mount(filepath, mountpoint, etype);
+}
+
+int unmount(char * mountpoint) {
+    // Clean the path
+    char * mountpoint_clean = kmalloc(strlen(mountpoint)+2); // Null byte AND ending DIRSEP
+    memcpy(mountpoint_clean, mountpoint, strlen(mountpoint)+1);
+    mountpoint_clean[strlen(mountpoint)] = DIRSEP;
+    mountpoint_clean[strlen(mountpoint)+1] = '\0';
+
+    if (clean_path(mountpoint_clean) < 0) {
+        kfree(mountpoint_clean);
+        return -1;
+    }
+
+    // Find the mountpoint
+    mountpoint_t * mnt = NULL;
+
+    for (size_t i = 0; i < MOUNTPOINTS_N; i++) {
+        if (!strcmp(mountpoints[i].path, mountpoint_clean)) {
+            mnt = &mountpoints[i];
+            break;
+        }
+    }
+
+    if (!mnt) {
+        kwarn(__FILE__,__func__,"mountpoint not found");
+        kfree(mountpoint_clean);
+        return -1;
+    }
+
+    kfree(mountpoint_clean);
+
+    // Make sure no files are using this mountpoint
+    for (size_t i = 0; i < ll_len(processes); i++) {
+        process_t * proc = ll_get(processes, i);
+
+        if (!IS_ALIVE(proc))
+            continue;
+
+        for (size_t j = 0; j < ll_len(proc->fds); j++) {
+            fd_t * fd = ll_get(proc->fds, j);
+
+            if (!fd->open)
+                continue;
+
+            if (fd->type != FD_VFS)
+                continue;
+
+            filehandle_t * fh = fd->handle;
+
+            if (&mountpoints[fh->mountpoint] == mnt) {
+                kwarn(__FILE__,__func__,"mountpoint busy");
+                return -1; // Device busy
+            }
+        }    
+    }
+
+    // Call the filesystem's unmount function
+    if (FILESYSTEMS[mnt->type].del_fs) {
+        int status = FILESYSTEMS[mnt->type].del_fs(mnt);
+        if (status < 0)
+            return status;
+    }
+
+    // Close the file
+    if (mnt->file) {
+        kclose(mnt->file);
+    }
+
+    // Free the mountpoint
+    kfree(mnt->path);
+    kfree(mnt->filepath);
+    memset(mnt, 0, sizeof(mountpoint_t));
+    mnt->type = FS_UNKN;
+
+    return 0;
 }
 
 filehandle_t * kopen(char * p, mode_t mode) {

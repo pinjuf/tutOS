@@ -26,6 +26,7 @@ typedef struct filesystem_t {
     uint16_t default_rw; // How the mountfile should be opened
 
     void * (* get_fs)(filehandle_t * f);
+    int    (* del_fs)(void * mountpoint);
 
     filehandle_t * (* get_filehandle)(void * mountpoint, char * path, mode_t mode);
     void (* close_filehandle)(filehandle_t * f);
@@ -53,11 +54,12 @@ typedef struct mountpoint_t {
 
 // Needs to be in the same order as FILESYSTEM!
 static const filesystem_t FILESYSTEMS[] = {
-    {"unkn", 0, NULL, NULL, NULL, NULL, NULL, NULL}, // Unknown FS
+    {"unkn", 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL}, // Unknown FS
 
     {"ext2",
         O_RDONLY,
         (void* (*) (filehandle_t * f)) get_ext2fs,
+        NULL,
         (filehandle_t * (*) (void * internal_fs, char * path, mode_t)) ext2_getfile,
         (void (*) (filehandle_t * f)) ext2_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) ext2_readfile,
@@ -73,11 +75,13 @@ static const filesystem_t FILESYSTEMS[] = {
         NULL,
         NULL,
         NULL,
+        NULL,
     },
 
     {"devfs",
         O_RDWR,
         (void* (*) (filehandle_t * fh)) get_devfs,
+        NULL,
         (filehandle_t * (*) (void * internal_fs, char * path, mode_t)) devfs_getfile,
         (void (*) (filehandle_t * f)) devfs_closefile,
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_readfile,
@@ -87,7 +91,7 @@ static const filesystem_t FILESYSTEMS[] = {
 };
 
 extern mountpoint_t * mountpoints;
-#define MOUNTPOINTS_N 4
+#define MOUNTPOINTS_N 16
 
 void init_vfs();
 int _mount(char * filepath, char * mountpoint, enum FILESYSTEM type);
@@ -105,3 +109,5 @@ void fh_to_stat(filehandle_t * in, stat * out);
 int remove_pathddots(char * path);
 int remove_pathdseps(char * path);
 int clean_path(char * path);
+
+int unmount(char * mountpoint);

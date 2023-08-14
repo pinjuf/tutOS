@@ -514,6 +514,17 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return status;
         }
+        case 166: { // umount
+            char * target = (void*)arg0;
+
+            target = proc_to_abspath(current_process, target);
+
+            int status = unmount(target);
+
+            kfree(target);
+
+            return status;
+        }
         case 336: { // malloc
             size_t n = arg0;
             return (uint64_t)kmalloc(n);

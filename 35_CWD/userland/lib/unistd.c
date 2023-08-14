@@ -138,3 +138,7 @@ int chdir(char * path) {
 int mount(char * source, char * target, char * filesystemtype, unsigned long mountflags, void * data) {
     return syscall(165, (uint64_t)source, (uint64_t)target, (uint64_t)filesystemtype, mountflags, (uint64_t)data, 0);
 }
+
+int umount(char * target) {
+    return syscall(166, (uint64_t)target, 0, 0, 0, 0, 0);
+}

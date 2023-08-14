@@ -34,3 +34,4 @@ int pipe(int fd[2]);
 int getcwd(char * buf, size_t size);
 int chdir(char * path);
 int mount(char * source, char * target, char * filesystemtype, unsigned long mountflags, void * data);
+int umount(char * target);
