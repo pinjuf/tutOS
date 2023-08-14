@@ -76,7 +76,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             path = proc_to_abspath(current_process, path);
 
             // Please don't judge me
-            filehandle_t * fh = kopen(path, O_RDONLY);
+            filehandle_t * fh = kopen(path, 0);
 
             kfree(path);
 

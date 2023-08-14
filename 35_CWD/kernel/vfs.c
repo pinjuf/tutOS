@@ -216,7 +216,7 @@ int remove_pathddots(char * path) {
 
         if (*altprev) {
             *altprev = '\0';
-            filehandle_t * fh = kopen(path, O_RDONLY);
+            filehandle_t * fh = kopen(path, 0);
             if (!fh)
                 return -1;
             if (fh->type != FILE_DIR) {

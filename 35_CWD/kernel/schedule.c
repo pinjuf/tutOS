@@ -360,7 +360,7 @@ int proc_set_cwd(process_t * proc, char * cwd) {
     // cwd should be absolute
 
     // Make sure the directory exists
-    filehandle_t * fh = kopen(cwd, O_RDONLY);
+    filehandle_t * fh = kopen(cwd, 0);
     if (!fh)
         return -1;
     if (fh->type != FILE_DIR) {
