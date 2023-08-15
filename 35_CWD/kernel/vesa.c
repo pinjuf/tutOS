@@ -146,45 +146,52 @@ void vesa_putc(char c) {
                 case 'A': { // Cursor up
                     uint16_t n = 1;
                     if (vesa_csi_params_n) n = vesa_csi_params[0];
-                    vesa_y -= n;
+                    if (vesa_y >= n)
+                        vesa_y -= n;
                     break;
                 }
                 case 'B': { // Cursor down
                     uint16_t n = 1;
                     if (vesa_csi_params_n) n = vesa_csi_params[0];
-                    vesa_y += n;
+                    if (vesa_y + n < vesa_rows)
+                        vesa_y += n;
                     break;
                 }
                 case 'C': { // Cursor right
                     uint16_t n = 1;
                     if (vesa_csi_params_n) n = vesa_csi_params[0];
-                    vesa_x += n;
+                    if (vesa_x + n < vesa_cols)
+                        vesa_x += n;
                     break;
                 }
                 case 'D': { // Cursor left
                     uint16_t n = 1;
                     if (vesa_csi_params_n) n = vesa_csi_params[0];
-                    vesa_x -= n;
+                    if (vesa_x >= n)
+                        vesa_x -= n;
                     break;
                 }
                 case 'E': { // Cursor next line
                     uint16_t n = 1;
                     if (vesa_csi_params_n) n = vesa_csi_params[0];
                     vesa_x = 0;
-                    vesa_y += n;
+                    if (vesa_y + n < vesa_rows)
+                        vesa_y += n;
                     break;
                 }
                 case 'F': { // Cursor previous line
                     uint16_t n = 1;
                     if (vesa_csi_params_n) n = vesa_csi_params[0];
                     vesa_x = 0;
-                    vesa_y -= n;
+                    if (vesa_y >= n)
+                        vesa_y -= n;
                     break;
                 }
                 case 'G': { // Cursor horizontal absolute
                     uint16_t n = 1;
                     if (vesa_csi_params_n) n = vesa_csi_params[0];
-                    vesa_x = n - 1;
+                    if (n <= vesa_cols)
+                        vesa_x = n - 1;
                     break;
                 }
                 case 'H': { // Cursor position
@@ -192,8 +199,10 @@ void vesa_putc(char c) {
                     uint16_t x = 1;
                     if (vesa_csi_params_n) y = vesa_csi_params[0];
                     if (vesa_csi_params_n > 1) x = vesa_csi_params[1];
-                    vesa_x = x - 1;
-                    vesa_y = y - 1;
+                    if (x <= vesa_cols && y <= vesa_rows) {
+                        vesa_x = x - 1;
+                        vesa_y = y - 1;
+                    }
                     break;
                 }
                 case 'J': { // Erase in display
