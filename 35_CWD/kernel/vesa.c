@@ -211,12 +211,12 @@ void vesa_putc(char c) {
                     switch (n) {
                         case 0:
                             // From cursor to bottom
-                            vesa_drawrect(0, vesa_y * vfont->height, vwidth, vheight - (vesa_x * vfont->height), vfont_bg);
+                            vesa_drawrect(0, vesa_y * vfont->height, vwidth, vheight - (vesa_y * vfont->height), vfont_bg);
 
                             break;
                         case 1:
                             // From top to cursor
-                            vesa_drawrect(0, 0, vwidth, vesa_x * vfont->height, vfont_bg);
+                            vesa_drawrect(0, 0, vwidth, vesa_y * vfont->height, vfont_bg);
 
                             break;
                         case 2:
