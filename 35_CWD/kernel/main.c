@@ -18,6 +18,7 @@
 #include "sb16.h"
 #include "fd.h"
 #include "pipe.h"
+#include "rnd.h"
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
@@ -78,6 +79,7 @@ void _kmain() {
 
     kprintf("KRN MN\n");
 
+    // Init process
     filehandle_t * init_fh = kopen(INIT_PATH, O_RDONLY);
     if (!init_fh) {
         kwarn(__FILE__,__func__,"no init executable found");
