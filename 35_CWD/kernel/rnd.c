@@ -14,5 +14,5 @@ uint64_t rand() {
     // m = 2^64 = RAND_MAX + 1
 
     rnd_seed = rnd_seed * a + c;
-    return rnd_seed;
+    return rnd_seed >> 32;
 }

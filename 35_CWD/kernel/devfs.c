@@ -7,6 +7,7 @@
 #include "kbd.h"
 #include "isr.h"
 #include "sb16.h"
+#include "rnd.h"
 
 devfs_t * get_devfs(void * p) {
     // All FS initializers must take a mountfile, but devfs doesn't NEED it
@@ -137,10 +138,21 @@ devfs_t * get_devfs(void * p) {
 
     // QEMU debug port
     memcpy(dev.name, "qemudbg", 8);
+    dev.type      = FILE_DEV;
     dev.size      = 0;
     dev.avl_modes = O_WRONLY;
     dev.read      = NULL;
     dev.write     = devfs_write_qemudbg;
+    dev.readdir   = NULL;
+    devfs_register_dev(out, &dev);
+
+    // Random number generator
+    memcpy(dev.name, "random", 7);
+    dev.type      = FILE_DEV;
+    dev.size      = 0;
+    dev.avl_modes = O_RDONLY;
+    dev.read      = devfs_read_rnd;
+    dev.write     = NULL;
     dev.readdir   = NULL;
     devfs_register_dev(out, &dev);
 
@@ -528,6 +540,23 @@ size_t devfs_write_qemudbg(void * f, void * buf, size_t count) {
     (void) f, (void) buf, (void) count;
     for (size_t i = 0; i < count; i++) {
         qemu_putc(((char*)buf)[i]);
+    }
+
+    return count;
+}
+
+size_t devfs_read_rnd(void * f, void * buf, size_t count) {
+    (void) f, (void) buf, (void) count;
+
+    size_t quads = count / sizeof(uint64_t);
+    size_t rem   = count % sizeof(uint64_t);
+
+    for (size_t i = 0; i < quads; i++) {
+        ((uint64_t*)buf)[i] = rand();
+    }
+
+    for (size_t i = 0; i < rem; i++) {
+        ((char*)buf)[quads*sizeof(uint64_t) + i] = rand();
     }
 
     return count;

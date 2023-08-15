@@ -56,3 +56,4 @@ size_t devfs_read_dsp(void * f, void * buf, size_t count);
 size_t devfs_write_dsp(void * f, void * buf, size_t count);
 size_t devfs_write_pcspk(void * f, void * buf, size_t count);
 size_t devfs_write_qemudbg(void * f, void * buf, size_t count);
+size_t devfs_read_rnd(void * f, void * buf, size_t count);
