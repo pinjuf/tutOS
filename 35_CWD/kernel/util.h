@@ -71,5 +71,7 @@ char * strstr(char * haystack, char * needle);
 
 size_t strreplace(char * str, char * find, char * replace);
 
+void cpuid(uint32_t code_a, uint32_t code_c, uint32_t * a, uint32_t * b, uint32_t * c, uint32_t * d);
+
 #define PS2_ACK 0xFA
 #define PS2_RESEND 0xFE
