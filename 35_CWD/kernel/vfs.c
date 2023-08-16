@@ -15,8 +15,6 @@ void init_vfs() {
 }
 
 int _mount(char * filepath, char * mountpoint, enum FILESYSTEM type) {
-    // Returns the mountpoint number if successful, else a negative error
-
     // No FS type autodetection!
     if (type == FS_UNKN)
         return -1;
