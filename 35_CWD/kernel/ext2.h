@@ -155,7 +155,8 @@ typedef struct ext2fs_t {
 
 typedef struct ext2fs_file_t {
     ext2_inode_t * inode;
-    void * cache; // TODO: Don't cache the whole file, only the current block
+    void * cache; // Caches a block of the file
+    uint32_t cache_index; // Index of the cached block
 } ext2fs_file_t;
 
 ext2fs_t * get_ext2fs(void * f);

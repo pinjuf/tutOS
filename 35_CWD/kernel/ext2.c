@@ -205,7 +205,7 @@ void ext2_read_inodeblock(void * mn, ext2_inode_t * inode, void * buf, size_t n)
 
     const size_t ptrs_per_block = fs->blocksize/sizeof(uint32_t);
 
-    if (n >= inode->i_size / fs->blocksize) {
+    if (n >= (inode->i_size + fs->blocksize - 1) / fs->blocksize) {
         kwarn(__FILE__,__func__,"block out of range");
         return;
     }
@@ -416,8 +416,10 @@ void ext2_closefile(void * f) {
 }
 
 size_t ext2_readfile(void * f, void * buf, size_t count) {
-    filehandle_t * fh = f;
+    filehandle_t * fh      = f;
     ext2fs_file_t * intern = fh->internal_file;
+    mountpoint_t * mnt     = &mountpoints[fh->mountpoint];
+    ext2fs_t * fs          = mnt->internal_fs;
 
     if (fh->type == FILE_DIR) {
         kwarn(__FILE__,__func__,"trying to file-read directory");
@@ -428,15 +430,53 @@ size_t ext2_readfile(void * f, void * buf, size_t count) {
         to_read = fh->size - fh->curr;
     }
 
-    if (!intern->cache) {
-        intern->cache = kmalloc(fh->size);
+    // The file is to be read block by block
+    size_t read = 0;
 
-        ext2_read_inode(&mountpoints[fh->mountpoint], intern->inode, intern->cache);
+    // Generic case:
+    //
+    //       Block 0           Block 1           Block 2           Block 3
+    // |-----------------|-----------------|-----------------|-----------------|
+    //         ^ start (fh->curr)                end (fh->curr + to_read) ^
+    //         |<----------------- to_read ----------------------------->|
+    //         |<------->||<-------------------------------->|<--------->|
+    //  start overlap                   main align               end overlap
+
+    // Special case:
+    //
+    //       Block 0           Block 1           Block 2           Block 3
+    // |-----------------|-----------------|-----------------|-----------------|
+    //         ^      ^
+    //         |<--->|
+
+    // Calculate the total number of blocks to read
+    uint32_t start_block = fh->curr / fs->blocksize;
+    uint32_t end_block   = (fh->curr + to_read) / fs->blocksize;
+    if ((fh->curr + to_read) % fs->blocksize)
+        end_block++;
+
+    if (!intern->cache) {
+        intern->cache = kmalloc(fs->blocksize);
+        intern->cache_index = UINT32_MAX;
     }
 
-    memcpy(buf, (void*)((size_t)intern->cache + fh->curr), to_read);
+    for (uint32_t i = 0; i < end_block - start_block; i++) {
+        if (intern->cache_index != start_block + i) {
+            ext2_read_inodeblock(mnt, intern->inode, intern->cache, start_block + i);
+            intern->cache_index = start_block + i;
+        }
 
-    fh->curr += to_read;
+        // From where to where are we transfering in this block?
+        size_t start = fh->curr % fs->blocksize;
+        size_t end   = MIN(start + to_read, fs->blocksize);
+        size_t sz    = end - start;
+
+        memcpy((void*)((uint64_t)buf + read), (void*)((uint64_t)intern->cache + start), sz);
+
+        read += sz;
+        to_read -= sz;
+        fh->curr += sz;
+    }
 
     return to_read;
 }
