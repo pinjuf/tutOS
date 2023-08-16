@@ -141,12 +141,14 @@ void hexdump(void * ptr, size_t n) {
         kputc(' ');
 
         if (i%16 == 15) {
+            kputc('|');
             for (size_t j = 0; j < 16; j++) {
                 uint8_t val = ((uint8_t*)ptr)[i - 15 + j];
                 if (val < 0x20 || val > 0x7E)
                     val = '.';
                 kputc(val);
             }
+            kputc('|');
 
             kputc('\n');
         } else if (i%16 == 7) {

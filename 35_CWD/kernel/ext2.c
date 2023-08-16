@@ -205,6 +205,11 @@ void ext2_read_inodeblock(void * mn, ext2_inode_t * inode, void * buf, size_t n)
 
     const size_t ptrs_per_block = fs->blocksize/sizeof(uint32_t);
 
+    if (n >= inode->i_size / fs->blocksize) {
+        kwarn(__FILE__,__func__,"block out of range");
+        return;
+    }
+
     if (n < 12) {
         if (!inode->i_block[n]) {
             memset(buf, 0, fs->blocksize);
@@ -212,21 +217,29 @@ void ext2_read_inodeblock(void * mn, ext2_inode_t * inode, void * buf, size_t n)
         }
 
         kreadat(mnt->file, inode->i_block[n] * fs->blocksize, buf, fs->blocksize);
-    } else if (n < (12 + ptrs_per_block)) {
+
+    } else if (n < (12 \
+                  + ptrs_per_block)) {
+
         uint32_t * indirect = (uint32_t *) kmalloc(fs->blocksize);
         kreadat(mnt->file, inode->i_block[12] * fs->blocksize, indirect, fs->blocksize);
 
-        if (!indirect[n - 12]) {
+        const uint32_t offset = n - 12;
+
+        if (!indirect[offset]) {
             memset(buf, 0, fs->blocksize);
             kfree(indirect);
             return;
         }
 
-
-        kreadat(mnt->file, indirect[n - 12] * fs->blocksize, buf, fs->blocksize);
+        kreadat(mnt->file, indirect[offset] * fs->blocksize, buf, fs->blocksize);
 
         kfree(indirect);
-    } else if (n < (12 + ptrs_per_block * ptrs_per_block)) {
+
+    } else if (n < (12 \
+                  + ptrs_per_block \
+                  + ptrs_per_block * ptrs_per_block)) {
+
         uint32_t * bi_indirect = (uint32_t *) kmalloc(fs->blocksize);
         kreadat(mnt->file, inode->i_block[13] * fs->blocksize, bi_indirect, fs->blocksize);
 
@@ -235,7 +248,7 @@ void ext2_read_inodeblock(void * mn, ext2_inode_t * inode, void * buf, size_t n)
         uint32_t * indirect = (uint32_t *) kmalloc(fs->blocksize);
         kreadat(mnt->file, bi_indirect[bi_offset] * fs->blocksize, indirect, fs->blocksize);
 
-        const uint32_t offset = n - (12 + ptrs_per_block + ptrs_per_block * bi_offset);
+        const uint32_t offset = (n - 12 - ptrs_per_block) % ptrs_per_block;
 
         if (!indirect[offset]) {
             memset(buf, 0, fs->blocksize);
@@ -248,7 +261,49 @@ void ext2_read_inodeblock(void * mn, ext2_inode_t * inode, void * buf, size_t n)
 
         kfree(indirect);
         kfree(bi_indirect);
-    } // TODO: Tri-indirect buffer?
+    } else if (n < (12 \
+                  + ptrs_per_block \
+                  + ptrs_per_block * ptrs_per_block \
+                  + ptrs_per_block * ptrs_per_block * ptrs_per_block)) {
+
+        uint32_t * tri_indirect = (uint32_t *) kmalloc(fs->blocksize);
+        kreadat(mnt->file, inode->i_block[14] * fs->blocksize, tri_indirect, fs->blocksize);
+
+        //const uint32_t tri_offset = (n - 12 - ptrs_per_block - ptrs_per_block * ptrs_per_block)/(ptrs_per_block * ptrs_per_block);
+
+        uint32_t tri_offset = n - 12 - ptrs_per_block - ptrs_per_block * ptrs_per_block;
+        tri_offset /= ptrs_per_block * ptrs_per_block;
+
+        uint32_t * bi_indirect = (uint32_t *) kmalloc(fs->blocksize);
+        kreadat(mnt->file, tri_indirect[tri_offset] * fs->blocksize, bi_indirect, fs->blocksize);
+
+        uint32_t bi_offset = n - 12 - ptrs_per_block - ptrs_per_block * ptrs_per_block;
+        bi_offset         -= tri_offset * ptrs_per_block * ptrs_per_block;
+        bi_offset         /= ptrs_per_block;
+
+        uint32_t * indirect = (uint32_t *) kmalloc(fs->blocksize);
+        kreadat(mnt->file, bi_indirect[bi_offset] * fs->blocksize, indirect, fs->blocksize);
+
+        uint32_t offset = n - 12 - ptrs_per_block - ptrs_per_block * ptrs_per_block;
+        offset         -= tri_offset * ptrs_per_block * ptrs_per_block;
+        offset         -= bi_offset * ptrs_per_block;
+
+        if (!indirect[offset]) {
+            memset(buf, 0, fs->blocksize);
+            kfree(indirect);
+            kfree(bi_indirect);
+            kfree(tri_indirect);
+            return;
+        }
+
+        kreadat(mnt->file, indirect[offset] * fs->blocksize, buf, fs->blocksize);
+
+        kfree(indirect);
+        kfree(bi_indirect);
+        kfree(tri_indirect);
+    } else {
+        kwarn(__FILE__,__func__,"block out of range");
+    }
 }
 
 uint32_t ext2_get_inode_by_name(void * mn, ext2_inode_t * inode, char * name) {
