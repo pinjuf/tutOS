@@ -7,7 +7,7 @@ void srand(uint64_t seed) {
     rnd_seed = seed;
 }
 
-uint64_t rand() {
+uint32_t rand() {
     // Linear congruential generator
     const uint64_t a = 6364136223846793005ULL;
     const uint64_t c = 1442695040888963407ULL;

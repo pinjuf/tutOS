@@ -548,15 +548,15 @@ size_t devfs_write_qemudbg(void * f, void * buf, size_t count) {
 size_t devfs_read_rnd(void * f, void * buf, size_t count) {
     (void) f, (void) buf, (void) count;
 
-    size_t quads = count / sizeof(uint64_t);
-    size_t rem   = count % sizeof(uint64_t);
+    size_t dwords = count / sizeof(uint32_t);
+    size_t rem    = count % sizeof(uint32_t);
 
-    for (size_t i = 0; i < quads; i++) {
+    for (size_t i = 0; i < dwords; i++) {
         ((uint64_t*)buf)[i] = rand();
     }
 
     for (size_t i = 0; i < rem; i++) {
-        ((char*)buf)[quads*sizeof(uint64_t) + i] = rand();
+        ((char*)buf)[dwords*sizeof(uint32_t) + i] = rand();
     }
 
     return count;

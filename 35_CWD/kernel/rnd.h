@@ -5,6 +5,6 @@
 extern uint64_t rnd_state;
 
 void srand(uint64_t seed);
-uint64_t rand();
+uint32_t rand();
 
-#define RAND_MAX UINT64_MAX
+#define RAND_MAX UINT32_MAX
