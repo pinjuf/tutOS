@@ -34,7 +34,7 @@ kernel/kernel.elf: kernel/ lib/libtut_common.a
 	$(MAKE) -C kernel kernel.elf
 
 userland.img: .FORCE userland
-	dd if=/dev/zero of=$@ bs=1048576 count=256
+	dd if=/dev/zero of=$@ bs=1048576 count=32
 	mkfs.ext2 -d userland $@
 
 userland: userland/ lib/libtut_common.a userland/src/ userland/lib/

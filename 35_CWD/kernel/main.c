@@ -79,22 +79,6 @@ void _kmain() {
 
     kprintf("KRN MN\n");
 
-    // Testing stuff
-    
-    filehandle_t * fh   = kopen("/test.dat", O_RDONLY);
-    if (!fh)
-        kwarn(__FILE__,__func__,"no test.dat found");
-    ext2fs_file_t * efh = (ext2fs_file_t *) fh->internal_file;
-    mountpoint_t * mnt  = &mountpoints[fh->mountpoint];
-    ext2fs_t * fs       = (ext2fs_t *) mnt->internal_fs;
-
-    kprintf("Blocks: %u\n", efh->inode->i_size / fs->blocksize);
-    kprintf("Pointers per block: %u\n", fs->blocksize / sizeof(uint32_t));
-
-    void * my_buf = kmalloc(fs->blocksize);
-    ext2_read_inodeblock(mnt, efh->inode, my_buf, 12 + 256 + 256 * 256 + 1);
-    hexdump(my_buf, 512);
-
     // Init process
     filehandle_t * init_fh = kopen(INIT_PATH, O_RDONLY);
     if (!init_fh) {
