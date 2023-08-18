@@ -37,8 +37,7 @@ void * tmpfs_getfile(void * mountpoint, char * path, uint16_t mode) {
     mountpoint_t * mnt = (mountpoint_t *) mountpoint;
     tmpfs_t * tmpfs = (tmpfs_t *) mnt->internal_fs;
 
-    tmpfs_file_t * file = tmpfs->root;
-    ll_head * curr = tmpfs->root->dir.files;
+    tmpfs_file_t * curr = tmpfs->root;
 
     char * p = path;
     while (*p) {
@@ -56,39 +55,34 @@ void * tmpfs_getfile(void * mountpoint, char * path, uint16_t mode) {
         memset(token, 0, 256);
         memcpy(token, tok, p - tok);
 
-        tmpfs_file_t * next = tmpfs_getfiledir(curr, token);
+        tmpfs_file_t * next = tmpfs_getfiledir(curr->dir.files, token);
 
         if (!next) {
             kwarn(__FILE__,__func__,"file not found");
             return NULL;
         }
 
-        if (!*p) {
-            file = next;
-            break;
-        }
-
-        if (next->type != FILE_DIR) {
+        if (next->type != FILE_DIR && *p != 0) {
             kwarn(__FILE__,__func__,"not a directory");
             return NULL;
         }
 
-        curr = next->dir.files;
+        curr = next;
     }
 
     filehandle_t * fh = kmalloc(sizeof(filehandle_t));
     tmpfs_filehandle_t * intern = fh->internal_file = kmalloc(sizeof(tmpfs_filehandle_t));
 
-    intern->file = file;
+    intern->file = curr;
     fh->curr = 0;
-    fh->type = file->type;
+    fh->type = curr->type;
 
-    switch (fh->type) {
+        switch (fh->type) {
         case FILE_REG:
-            fh->size = file->file.size;
+            fh->size = curr->file.size;
             break;
         case FILE_DIR:
-            fh->size = ll_len(file->dir.files);
+            fh->size = ll_len(curr->dir.files);
             break;
         default:
             kwarn(__FILE__,__func__,"unknown file type (corrupt fs?)");
@@ -161,18 +155,19 @@ int tmpfs_createfile(void * m, char * path) {
     tmpfs_t * tmpfs = mnt->internal_fs;
 
     char filename[256];
+    // Get the filename, and separate it from the path by nulling the last DIRSEP
     char * o = path + strlen(path) - 1;
-    while (*o == DIRSEP && o > path)
+    while (*o != DIRSEP && o > path)
         o--;
-    memcpy(filename, path, o - path + 1);
-    filename[o - path + 1] = 0;
-
+    memcpy(filename, o, strlen(o) + 1);
     *o = 0;
+    if (filename[0] == DIRSEP)
+        strcpy(filename, filename + 1);
 
     char token[256];
 
     // Get the dir we're creating the file in
-    ll_head * dir = tmpfs->root->dir.files;
+    tmpfs_file_t * dir = tmpfs->root;
 
     char * p = path;
     while (*p) {
@@ -186,13 +181,10 @@ int tmpfs_createfile(void * m, char * path) {
         if (tok == p)
             continue;
 
-        if (!*p)
-            break;
-
         memset(token, 0, 256);
         memcpy(token, tok, p - tok);
 
-        tmpfs_file_t * next = tmpfs_getfiledir(dir, token);
+        tmpfs_file_t * next = tmpfs_getfiledir(dir->dir.files, token);
 
         if (!next) {
             kwarn(__FILE__,__func__,"file not found");
@@ -204,20 +196,82 @@ int tmpfs_createfile(void * m, char * path) {
             return -1;
         }
 
-        dir = next->dir.files;
+        dir = next;
     }
 
-    if (tmpfs_getfiledir(dir, filename)) {
+    if (tmpfs_getfiledir(dir->dir.files, filename)) {
         kwarn(__FILE__,__func__,"file already exists");
         return -1;
     }
 
-    tmpfs_file_t * file = ll_push(dir);
+    tmpfs_file_t * file = ll_push(dir->dir.files);
 
     file->type = FILE_REG;
     strcpy(file->name, filename);
     file->file.size = 0;
     file->file.data = NULL;
+
+    return 0;
+}
+
+int tmpfs_createdir(void * m, char * path) {
+    mountpoint_t * mnt = m;
+    tmpfs_t * tmpfs = mnt->internal_fs;
+
+    char filename[256];
+    char * o = path + strlen(path) - 1;
+    while (*o != DIRSEP && o > path)
+        o--;
+    memcpy(filename, o, strlen(o) + 1);
+    *o = 0;
+    if (filename[0] == DIRSEP)
+        strcpy(filename, filename + 1);
+
+    char token[256];
+
+    // Get the dir we're creating the file in
+    tmpfs_file_t * dir = tmpfs->root;
+
+    char * p = path;
+    while (*p) {
+        while (*p == DIRSEP)
+            p++;
+
+        char * tok = p;
+        while (*p && *p != DIRSEP)
+            p++;
+
+        if (tok == p)
+            continue;
+
+        memset(token, 0, 256);
+        memcpy(token, tok, p - tok);
+
+        tmpfs_file_t * next = tmpfs_getfiledir(dir->dir.files, token);
+
+        if (!next) {
+            kwarn(__FILE__,__func__,"file not found");
+            return -1;
+        }
+
+        if (next->type != FILE_DIR) {
+            kwarn(__FILE__,__func__,"not a directory");
+            return -1;
+        }
+
+        dir = next;
+    }
+
+    if (tmpfs_getfiledir(dir->dir.files, filename)) {
+        kwarn(__FILE__,__func__,"directory already exists");
+        return -1;
+    }
+
+    tmpfs_file_t * file = ll_push(dir->dir.files);
+
+    file->type = FILE_DIR;
+    strcpy(file->name, filename);
+    file->dir.files = create_ll(sizeof(tmpfs_file_t));
 
     return 0;
 }
@@ -231,7 +285,7 @@ size_t tmpfs_readfile(void * f, void * buf, size_t size) {
     if (to_read > file->file.size - fh->curr)
         to_read = file->file.size - fh->curr;
 
-    memcpy(buf, file->file.data + fh->curr, to_read);
+    memcpy(buf, (void*)((size_t)file->file.data + fh->curr), to_read);
 
     fh->curr += to_read;
 
@@ -250,7 +304,7 @@ size_t tmpfs_writefile(void * f, void * buf, size_t size) {
         file->file.size = new_size;
     }
 
-    memcpy(file->file.data + fh->curr, buf, size);
+    memcpy((void*)((size_t)file->file.data + fh->curr), buf, size);
 
     return size;
 }

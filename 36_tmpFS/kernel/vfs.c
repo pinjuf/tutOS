@@ -13,6 +13,10 @@ void init_vfs() {
     mount(NULL, "/dev/", "devfs");
     mount("/dev/hdb1", "/", "ext2");
     mount(NULL, "/tmp/", "tmpfs");
+
+    kcreate("/tmp/test");
+    kmkdir("/tmp/testdir");
+    kcreate("/tmp/testdir/test2");
 }
 
 int _mount(char * filepath, char * mountpoint, enum FILESYSTEM type) {
@@ -307,6 +311,8 @@ dirent * kreaddir(filehandle_t * f) {
 }
 
 int kcreate(char * path) {
+    // Create a file
+    // NOT LIKE creat(2), does not actually open the file
 
     char * path_clean = kmalloc(strlen(path)+1);
     memcpy(path_clean, path, strlen(path)+1);
@@ -328,6 +334,35 @@ int kcreate(char * path) {
     }
 
     int status = FILESYSTEMS[mountpoints[mountpoint].type].create_file(&mountpoints[mountpoint], path + strmatchstart(mountpoints[mountpoint].path, path));
+
+    kfree(path_clean);
+
+    return status;
+}
+
+int kmkdir(char * path) {
+    // Create a directory
+
+    char * path_clean = kmalloc(strlen(path)+1);
+    memcpy(path_clean, path, strlen(path)+1);
+    if (clean_path(path_clean) < 0) {
+        kfree(path_clean);
+        return -1;
+    }
+
+    path = path_clean;
+
+    size_t mountpoint = get_mountpoint(path);
+    if (mountpoint == (size_t)-1) {
+        kwarn(__FILE__,__func__,"mountpoint not found");
+        return -1;
+    }
+
+    if (FILESYSTEMS[mountpoints[mountpoint].type].create_dir == NULL) {
+        kwarn(__FILE__,__func__,"no driver support");
+    }
+
+    int status = FILESYSTEMS[mountpoints[mountpoint].type].create_dir(&mountpoints[mountpoint], path + strmatchstart(mountpoints[mountpoint].path, path));
 
     kfree(path_clean);
 

@@ -33,6 +33,7 @@ void * tmpfs_getfile(void * mountpoint, char * path, uint16_t mode);
 void tmpfs_closefile(void * f);
 void * tmpfs_readdir(void * f);
 int tmpfs_createfile(void * m, char * path);
+int tmpfs_createdir(void * m, char * path);
 size_t tmpfs_readfile(void * f, void * buf, size_t size);
 size_t tmpfs_writefile(void * f, void * buf, size_t size);
 
