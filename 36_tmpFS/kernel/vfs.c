@@ -244,6 +244,7 @@ filehandle_t * kopen(char * p, mode_t mode) {
 void kclose(filehandle_t * f) {
     if (FILESYSTEMS[mountpoints[f->mountpoint].type].close_filehandle == NULL) {
         kwarn(__FILE__,__func__,"no driver support");
+        return;
     }
 
     FILESYSTEMS[mountpoints[f->mountpoint].type].close_filehandle(f);
@@ -252,6 +253,7 @@ void kclose(filehandle_t * f) {
 size_t kread(filehandle_t * f, void * buf, size_t count) {
     if (FILESYSTEMS[mountpoints[f->mountpoint].type].read_file == NULL) {
         kwarn(__FILE__,__func__,"no driver support");
+        return 0;
     }
 
     if (!(f->mode & O_RDONLY)) {
@@ -275,6 +277,7 @@ size_t kreadat(filehandle_t * f, size_t off, void * buf, size_t count) {
 size_t kwrite(filehandle_t * f, void * buf, size_t count) {
     if (FILESYSTEMS[mountpoints[f->mountpoint].type].read_file == NULL) {
         kwarn(__FILE__,__func__,"no driver support");
+        return 0;
     }
 
     if (!(f->mode & O_WRONLY)) {
@@ -296,6 +299,7 @@ size_t kwriteat(filehandle_t * f, size_t off, void * buf, size_t count) {
 dirent * kreaddir(filehandle_t * f) {
     if (FILESYSTEMS[mountpoints[f->mountpoint].type].read_dir == NULL) {
         kwarn(__FILE__,__func__,"no driver support");
+        return NULL;
     }
 
     if (f->type != FILE_DIR) {
@@ -327,6 +331,7 @@ int kcreate(char * path) {
 
     if (FILESYSTEMS[mountpoints[mountpoint].type].create_file == NULL) {
         kwarn(__FILE__,__func__,"no driver support");
+        return -1;
     }
 
     int status = FILESYSTEMS[mountpoints[mountpoint].type].create_file(&mountpoints[mountpoint], path + strmatchstart(mountpoints[mountpoint].path, path));
@@ -356,6 +361,7 @@ int kmkdir(char * path) {
 
     if (FILESYSTEMS[mountpoints[mountpoint].type].create_dir == NULL) {
         kwarn(__FILE__,__func__,"no driver support");
+        return -1;
     }
 
     int status = FILESYSTEMS[mountpoints[mountpoint].type].create_dir(&mountpoints[mountpoint], path + strmatchstart(mountpoints[mountpoint].path, path));
