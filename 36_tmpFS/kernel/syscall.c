@@ -488,6 +488,18 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return status;
         }
+        case 83: { // mkdir
+            char * path = (void*)arg0;
+            // mode not implemented
+
+            path = proc_to_abspath(current_process, path);
+
+            int status = kmkdir(path);
+
+            kfree(path);
+
+            return status;
+        }
         case 110: { // getppid
             return current_process->parent;
         }

@@ -5,7 +5,7 @@ CFLAGS = -T linker.ld -Wall -Wextra -Wpedantic -nostdlib -ffreestanding -fno-pie
 	     -l:libtut_common.a
 ASM = nasm
 
-TARGETS = init test ls echo cat wavplay kill tree clear lolcat pwd mount umount
+TARGETS = init test ls echo cat wavplay kill tree clear lolcat pwd mount umount mkdir
 
 all: $(TARGETS)
 

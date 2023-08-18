@@ -142,3 +142,7 @@ int mount(char * source, char * target, char * filesystemtype, unsigned long mou
 int umount(char * target) {
     return syscall(166, (uint64_t)target, 0, 0, 0, 0, 0);
 }
+
+int mkdir(char * path) {
+    return syscall(83, (uint64_t)path, 0, 0, 0, 0, 0);
+}

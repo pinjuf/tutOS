@@ -13,10 +13,6 @@ void init_vfs() {
     mount(NULL, "/dev/", "devfs");
     mount("/dev/hdb1", "/", "ext2");
     mount(NULL, "/tmp/", "tmpfs");
-
-    kcreate("/tmp/test");
-    kmkdir("/tmp/testdir");
-    kcreate("/tmp/testdir/test2");
 }
 
 int _mount(char * filepath, char * mountpoint, enum FILESYSTEM type) {
