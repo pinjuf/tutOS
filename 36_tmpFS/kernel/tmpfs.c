@@ -333,3 +333,60 @@ size_t tmpfs_writefile(void * f, void * buf, size_t size) {
 
     return size;
 }
+
+int tmpfs_unlinkfile(void * m, char * path) {
+    char token[256];
+
+    mountpoint_t * mnt = (mountpoint_t *) m;
+    tmpfs_t * tmpfs = (tmpfs_t *) mnt->internal_fs;
+
+    tmpfs_file_t * prevdir = NULL;
+    tmpfs_file_t * curr = tmpfs->root;
+
+    char * p = path;
+    while (*p) {
+
+        while (*p == DIRSEP)
+            p++;
+
+        char * tok = p;
+        while (*p && *p != DIRSEP)
+            p++;
+
+        if (tok == p)
+            continue;
+
+        memset(token, 0, 256);
+        memcpy(token, tok, p - tok);
+
+        tmpfs_file_t * next = tmpfs_getfiledir(curr->dir.files, token);
+
+        if (!next) {
+            kwarn(__FILE__,__func__,"file not found");
+            return -1;
+        }
+
+        if (next->type != FILE_DIR && *p != 0) {
+            kwarn(__FILE__,__func__,"not a directory");
+            return -1;
+        }
+
+        prevdir = curr;
+        curr = next;
+    }
+
+    if (curr->type != FILE_REG) {
+        kwarn(__FILE__,__func__,"cannot unlink a non-file");
+        return -1;
+    }
+
+    if (prevdir == NULL) {
+        kwarn(__FILE__,__func__,"cannot unlink root directory");
+        return -1;
+    }
+
+    kfree(curr->file.data);
+    ll_delp(prevdir->dir.files, curr);
+
+    return 0;
+}

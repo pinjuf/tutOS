@@ -150,3 +150,7 @@ int mkdir(char * path) {
 int creat(char * path) {
     return syscall(85, (uint64_t)path, 0, 0, 0, 0, 0);
 }
+
+int unlink(char * path) {
+    return syscall(87, (uint64_t)path, 0, 0, 0, 0, 0);
+}

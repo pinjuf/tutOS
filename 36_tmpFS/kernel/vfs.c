@@ -496,3 +496,38 @@ int clean_path(char * path) {
 
     return 0;
 }
+
+int kunlink(char * p) {
+    char * path = kmalloc(strlen(p)+1);
+    memcpy(path, p, strlen(p)+1);
+
+    if (clean_path(path) < 0) {
+        kfree(path);
+        return -1;
+    }
+
+    // Get the correct mountpoint
+    size_t mountpoint = get_mountpoint(path);
+
+    if (mountpoint == (size_t)-1) {
+        kwarn(__FILE__,__func__,"mountpoint not found");
+
+        kfree(path);
+
+        return -1;
+    }
+
+    if (FILESYSTEMS[mountpoints[mountpoint].type].unlink_file == NULL) {
+        kwarn(__FILE__,__func__,"no driver support");
+
+        kfree(path);
+
+        return -1;
+    }
+
+    int status = FILESYSTEMS[mountpoints[mountpoint].type].unlink_file(&mountpoints[mountpoint], path + strmatchstart(mountpoints[mountpoint].path, path));
+
+    kfree(path);
+
+    return status;
+}

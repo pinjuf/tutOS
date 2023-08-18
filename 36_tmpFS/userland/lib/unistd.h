@@ -37,3 +37,4 @@ int mount(char * source, char * target, char * filesystemtype, unsigned long mou
 int umount(char * target);
 int mkdir(char * path);
 int creat(char * path);
+int unlink(char * path);

@@ -53,12 +53,14 @@ typedef struct filesystem_t {
     int (* create_file)(void * mountpoint, char * path);
     int (* create_dir)(void * mountpoint, char * path);
 
+    int (* unlink_file)(void * mountpoint, char * path);
+
     dirent * (* read_dir)(filehandle_t * f);
 } filesystem_t;
 
 // Needs to be in the same order as FILESYSTEM!
 static const filesystem_t FILESYSTEMS[] = {
-    {"unkn", 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}, // Unknown FS
+    {"unkn", 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}, // Unknown FS
 
     {"ext2",
         O_RDONLY,
@@ -70,12 +72,14 @@ static const filesystem_t FILESYSTEMS[] = {
         NULL,
         NULL,
         NULL,
+        NULL,
         (dirent * (*) (filehandle_t * f)) ext2_readdir,
     },
 
     {"fat32",
         0,
         NULL, // TODO: Implement perhaps
+        NULL,
         NULL,
         NULL,
         NULL,
@@ -96,6 +100,7 @@ static const filesystem_t FILESYSTEMS[] = {
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_writefile,
         NULL,
         NULL,
+        NULL,
         (dirent * (*) (filehandle_t * f)) devfs_readdir,
     },
 
@@ -109,6 +114,7 @@ static const filesystem_t FILESYSTEMS[] = {
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) tmpfs_writefile,
         (int (*) (void * mountpoint, char * path)) tmpfs_createfile,
         (int (*) (void * mountpoint, char * path)) tmpfs_createdir,
+        (int (*) (void * mountpoint, char * path)) tmpfs_unlinkfile,
         (dirent * (*) (filehandle_t * f)) tmpfs_readdir,
     }
 };
@@ -129,6 +135,7 @@ size_t kwriteat(filehandle_t * f, size_t off, void * buf, size_t count);
 dirent * kreaddir(filehandle_t * f);
 int kcreate(char * path);
 int kmkdir(char * path);
+int kunlink(char * path);
 
 void fh_to_stat(filehandle_t * in, stat * out);
 

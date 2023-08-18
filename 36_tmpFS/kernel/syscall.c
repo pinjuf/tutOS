@@ -491,6 +491,17 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return sys_open(path, O_CREAT | O_WRONLY);
         }
+        case 87: { // unlink
+            char * path = (void*)arg0;
+
+            path = proc_to_abspath(current_process, path);
+
+            int status = kunlink(path);
+
+            kfree(path);
+
+            return status;
+        }
         case 110: { // getppid
             return current_process->parent;
         }
