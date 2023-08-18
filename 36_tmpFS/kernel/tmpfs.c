@@ -13,6 +13,12 @@ tmpfs_t * get_tmpfs(void * p) {
     strcpy(root->name, "");
     root->dir.files = create_ll(sizeof(tmpfs_file_t));
 
+    // Create the . file (no .. in root directory)
+    tmpfs_file_t * dot = ll_push(root->dir.files);
+    dot->type = FILE_DIR;
+    strcpy(dot->name, ".");
+    dot->dir.files = root->dir.files;
+
     out->root = root;
 
     return out;
@@ -272,6 +278,15 @@ int tmpfs_createdir(void * m, char * path) {
     file->type = FILE_DIR;
     strcpy(file->name, filename);
     file->dir.files = create_ll(sizeof(tmpfs_file_t));
+
+    // Create the . and .. files
+    tmpfs_file_t * dot = ll_push(file->dir.files);
+    tmpfs_file_t * dotdot = ll_push(file->dir.files);
+    dot->type = dotdot->type = FILE_DIR;
+    strcpy(dot->name, ".");
+    strcpy(dotdot->name, "..");
+    dot->dir.files = file->dir.files;
+    dotdot->dir.files = dir->dir.files;
 
     return 0;
 }
