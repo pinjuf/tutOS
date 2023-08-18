@@ -79,11 +79,21 @@ void * tmpfs_getfile(void * mountpoint, char * path, uint16_t mode) {
     filehandle_t * fh = kmalloc(sizeof(filehandle_t));
     tmpfs_filehandle_t * intern = fh->internal_file = kmalloc(sizeof(tmpfs_filehandle_t));
 
+    if (mode & O_TRUNC) {
+        if (curr->type != FILE_REG) {
+            kwarn(__FILE__,__func__,"cannot truncate a non-file");
+            return NULL;
+        }
+
+        curr->file.size = 0;
+        curr->file.data = krealloc(curr->file.data, 0);
+    }
+
     intern->file = curr;
     fh->curr = 0;
     fh->type = curr->type;
 
-        switch (fh->type) {
+    switch (fh->type) {
         case FILE_REG:
             fh->size = curr->file.size;
             break;

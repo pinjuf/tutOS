@@ -16,6 +16,8 @@ typedef uint16_t mode_t;
 #define O_WRONLY 2
 #define O_RDWR   (O_RDONLY | O_WRONLY)
 #define O_CREAT  4
+#define O_TRUNC  8
+#define O_APPEND 16
 
 enum SEEKMODE {
     SEEK_SET = 0,

@@ -130,6 +130,10 @@ size_t fd_write(process_t * p, int fd, void * buf, size_t count) {
         case FD_VFS: {
             filehandle_t * fh = fd_struct->handle;
 
+            if (fh->mode & O_APPEND) {
+                fh->curr = fh->size;
+            }
+
             return kwrite(fh, buf, count);
         }
         case FD_PIPE_I: {
