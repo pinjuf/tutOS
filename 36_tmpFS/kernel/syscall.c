@@ -48,21 +48,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             char * path = (void*)arg0;
             mode_t mode = arg1;
 
-            path = proc_to_abspath(current_process, path);
-
-            filehandle_t * fh = kopen(path, mode);
-
-            kfree(path); // Needs to be done after abspath()
-
-            if (!fh)
-                return -1;
-
-            fd_t * new_fd = add_fd(current_process);
-            new_fd->type = FD_VFS;
-            new_fd->handle = fh;
-            fh->fd_refs++;
-
-            return new_fd->n;
+            return sys_open(path, mode);
         }
         case 3: { // close
             int fd = arg0;
@@ -500,6 +486,11 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return status;
         }
+        case 85: { // creat
+            char * path = (void*)arg0;
+
+            return sys_open(path, O_CREAT | O_WRONLY);
+        }
         case 110: { // getppid
             return current_process->parent;
         }
@@ -566,4 +557,34 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
     }
 
     return -1; // The one true meaning of life, the universe, and everything (and also 66 in decimal)
+}
+
+int sys_open(char * path, mode_t mode) {
+    path = proc_to_abspath(current_process, path);
+
+    if (mode & O_CREAT) {
+        filehandle_t * fh_c = kopen(path, 0);
+        if (!fh_c) {
+            int status = kcreate(path);
+            if (status < 0) {
+                return status;
+            }
+        } else {
+            kclose(fh_c);
+        }
+    }
+
+    filehandle_t * fh = kopen(path, mode);
+
+    kfree(path); // Needs to be done after abspath()
+
+    if (!fh)
+        return -1;
+
+    fd_t * new_fd = add_fd(current_process);
+    new_fd->type = FD_VFS;
+    new_fd->handle = fh;
+    fh->fd_refs++;
+
+    return new_fd->n;
 }

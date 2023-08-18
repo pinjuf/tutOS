@@ -146,3 +146,7 @@ int umount(char * target) {
 int mkdir(char * path) {
     return syscall(83, (uint64_t)path, 0, 0, 0, 0, 0);
 }
+
+int creat(char * path) {
+    return syscall(85, (uint64_t)path, 0, 0, 0, 0, 0);
+}

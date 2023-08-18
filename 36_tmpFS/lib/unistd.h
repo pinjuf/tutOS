@@ -14,7 +14,8 @@ enum FILETYPE {
 typedef uint16_t mode_t;
 #define O_RDONLY 1
 #define O_WRONLY 2
-#define O_RDWR   3
+#define O_RDWR   (O_RDONLY | O_WRONLY)
+#define O_CREAT  4
 
 enum SEEKMODE {
     SEEK_SET = 0,

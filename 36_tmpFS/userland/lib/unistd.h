@@ -36,3 +36,4 @@ int chdir(char * path);
 int mount(char * source, char * target, char * filesystemtype, unsigned long mountflags, void * data);
 int umount(char * target);
 int mkdir(char * path);
+int creat(char * path);
