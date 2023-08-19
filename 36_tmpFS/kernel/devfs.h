@@ -41,6 +41,7 @@ void devfs_closefile(void * f);
 size_t devfs_readfile(void * f, void * buf, size_t count);
 size_t devfs_writefile(void * f, void * buf, size_t count);
 void * devfs_readdir(void * f);
+int devfs_exists(void * m, char * path);
 
 void * devfs_readdir_rootdir(void * f);
 size_t devfs_read_tty(void * f, void * buf, size_t count);

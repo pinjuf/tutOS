@@ -561,3 +561,16 @@ size_t devfs_read_rnd(void * f, void * buf, size_t count) {
 
     return count;
 }
+
+int devfs_exists(void * m, char * path) {
+    mountpoint_t * mnt = m;
+    devfs_t * fs = mnt->internal_fs;
+
+    for (size_t i = 0; i < ll_len(fs->devs); i++) {
+        if (!strcmp(((devfs_dev_t*)ll_get(fs->devs, i))->name, path)) {
+            return ((devfs_dev_t*)ll_get(fs->devs, i))->type;
+        }
+    }
+
+    return -1;
+}

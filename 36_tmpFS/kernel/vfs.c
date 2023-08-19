@@ -537,3 +537,41 @@ int kunlink(char * p) {
 
     return status;
 }
+
+int kexists(char * p) {
+    // Returns a negative number if the file does not exist,
+    // or a (positive) FILETYPE
+
+    char * path = kmalloc(strlen(p)+1);
+    memcpy(path, p, strlen(p)+1);
+
+    if (clean_path(path) < 0) {
+        kfree(path);
+        return -1;
+    }
+
+    // Get the correct mountpoint
+    size_t mountpoint = get_mountpoint(path);
+
+    if (mountpoint == (size_t)-1) {
+        kwarn(__FILE__,__func__,"mountpoint not found");
+
+        kfree(path);
+
+        return -1;
+    }
+
+    if (FILESYSTEMS[mountpoints[mountpoint].type].exists == NULL) {
+        kwarn(__FILE__,__func__,"no driver support");
+
+        kfree(path);
+
+        return -1;
+    }
+
+    int status = FILESYSTEMS[mountpoints[mountpoint].type].exists(&mountpoints[mountpoint], path + strmatchstart(mountpoints[mountpoint].path, path));
+
+    kfree(path);
+
+    return status;
+}

@@ -375,6 +375,11 @@ void * ext2_getfile(void * mn, char * path, uint16_t m) {
         }
 
         curr = ext2_get_inode(mnt, next);
+
+        if (!(curr->i_mode & EXT2_S_IFDIR) && *p) {
+            kwarn(__FILE__,__func__,"not a directory");
+            return NULL;
+        }
     }
 
     filehandle_t * out = kmalloc(sizeof(filehandle_t));
