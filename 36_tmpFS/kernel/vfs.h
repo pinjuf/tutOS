@@ -54,6 +54,8 @@ typedef struct filesystem_t {
     int (* create_dir)(void * mountpoint, char * path);
 
     int (* unlink_file)(void * mountpoint, char * path);
+    int (* unlink_dir)(void * mountpoint, char * path);
+    int (* unlink_dir_recursive)(void * mountpoint, char * path);
 
     dirent * (* read_dir)(filehandle_t * f);
 
@@ -62,7 +64,7 @@ typedef struct filesystem_t {
 
 // Needs to be in the same order as FILESYSTEM!
 static const filesystem_t FILESYSTEMS[] = {
-    {"unkn", 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}, // Unknown FS
+    {"unkn", 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}, // Unknown FS
 
     {"ext2",
         O_RDONLY,
@@ -75,6 +77,8 @@ static const filesystem_t FILESYSTEMS[] = {
         NULL,
         NULL,
         NULL,
+        NULL,
+        NULL,
         (dirent * (*) (filehandle_t * f)) ext2_readdir,
         (int (*) (void * mountpoint, char * path)) ext2_exists,
     },
@@ -82,6 +86,8 @@ static const filesystem_t FILESYSTEMS[] = {
     {"fat32",
         0,
         NULL, // TODO: Implement perhaps
+        NULL,
+        NULL,
         NULL,
         NULL,
         NULL,
@@ -105,6 +111,8 @@ static const filesystem_t FILESYSTEMS[] = {
         NULL,
         NULL,
         NULL,
+        NULL,
+        NULL,
         (dirent * (*) (filehandle_t * f)) devfs_readdir,
         (int (*) (void * mountpoint, char * path)) devfs_exists,
     },
@@ -120,6 +128,8 @@ static const filesystem_t FILESYSTEMS[] = {
         (int (*) (void * mountpoint, char * path)) tmpfs_createfile,
         (int (*) (void * mountpoint, char * path)) tmpfs_createdir,
         (int (*) (void * mountpoint, char * path)) tmpfs_unlinkfile,
+        NULL,
+        NULL,
         (dirent * (*) (filehandle_t * f)) tmpfs_readdir,
         (int (*) (void * mountpoint, char * path)) tmpfs_exists,
     }
@@ -143,6 +153,8 @@ int kcreate(char * path);
 int kmkdir(char * path);
 int kunlink(char * path);
 int kexists(char * path);
+int krmdir(char * path);
+int krmdir_recursive(char * path);
 
 void fh_to_stat(filehandle_t * in, stat * out);
 

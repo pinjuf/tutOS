@@ -537,6 +537,7 @@ void * ext2_readdir(void * f) {
 int ext2_exists(void * m, char * path) {
     mountpoint_t * mnt = m;
     ext2fs_t * fs      = mnt->internal_fs;
+    (void) fs;
 
     char token[256];
 
