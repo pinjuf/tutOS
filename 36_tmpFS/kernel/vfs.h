@@ -128,7 +128,7 @@ static const filesystem_t FILESYSTEMS[] = {
         (int (*) (void * mountpoint, char * path)) tmpfs_createfile,
         (int (*) (void * mountpoint, char * path)) tmpfs_createdir,
         (int (*) (void * mountpoint, char * path)) tmpfs_unlinkfile,
-        NULL,
+        (int (*) (void * mountpoint, char * path)) tmpfs_unlinkdir,
         NULL,
         (dirent * (*) (filehandle_t * f)) tmpfs_readdir,
         (int (*) (void * mountpoint, char * path)) tmpfs_exists,

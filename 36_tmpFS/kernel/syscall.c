@@ -486,6 +486,17 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 
             return status;
         }
+        case 84: { // rmdir
+            char * path = (void*)arg0;
+
+            path = proc_to_abspath(current_process, path);
+
+            int status = krmdir(path);
+
+            kfree(path);
+
+            return status;
+        }
         case 85: { // creat
             char * path = (void*)arg0;
 
@@ -573,7 +584,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 int sys_open(char * path, mode_t mode) {
     path = proc_to_abspath(current_process, path);
 
-    if ((mode & O_CREAT) && !kexists(path)) {
+    if ((mode & O_CREAT) && kexists(path) < 0) {
         int status = kcreate(path);
         if (status < 0) {
             return status;

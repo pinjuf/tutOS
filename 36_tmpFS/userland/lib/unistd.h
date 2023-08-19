@@ -38,3 +38,4 @@ int umount(char * target);
 int mkdir(char * path);
 int creat(char * path);
 int unlink(char * path);
+int rmdir(char * path);

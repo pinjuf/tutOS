@@ -387,7 +387,7 @@ int remove_pathddots(char * path) {
         if (!next)
             break;
 
-        // If the /../ is at the beginning, the string is invalid
+        // If the /../ is at the beginning, the string is invalid (TODO: Ignore perhaps? /../ => /, like POSIX does)
         if (next == path) {
             return -1;
         }

@@ -38,5 +38,6 @@ size_t tmpfs_readfile(void * f, void * buf, size_t size);
 size_t tmpfs_writefile(void * f, void * buf, size_t size);
 int tmpfs_unlinkfile(void * m, char * path);
 int tmpfs_exists(void * m, char * path);
+int tmpfs_unlinkdir(void * m, char * path);
 
 tmpfs_file_t * tmpfs_getfiledir(ll_head * dir, char * path);

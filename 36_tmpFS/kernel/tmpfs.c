@@ -430,3 +430,66 @@ int tmpfs_exists(void * m, char * path) {
 
     return curr->type;
 }
+
+int tmpfs_unlinkdir(void * m, char * path) {
+    mountpoint_t * mnt = (mountpoint_t *) m;
+    tmpfs_t * tmpfs = (tmpfs_t *) mnt->internal_fs;
+
+    char token[256];
+
+    tmpfs_file_t * prevdir = NULL;
+    tmpfs_file_t * curr = tmpfs->root;
+
+    char * p = path;
+    while (*p) {
+
+        while (*p == DIRSEP)
+            p++;
+
+        char * tok = p;
+        while (*p && *p != DIRSEP)
+            p++;
+
+        if (tok == p)
+            continue;
+
+        memset(token, 0, 256);
+        memcpy(token, tok, p - tok);
+
+        tmpfs_file_t * next = tmpfs_getfiledir(curr->dir.files, token);
+
+        if (!next) {
+            kwarn(__FILE__,__func__,"dir not found");
+            return -1;
+        }
+
+        if (next->type != FILE_DIR && *p != 0) {
+            kwarn(__FILE__,__func__,"not a directory");
+            return -1;
+        }
+
+        prevdir = curr;
+        curr = next;
+    }
+
+    if (curr->type != FILE_DIR) {
+        kwarn(__FILE__,__func__,"cannot rmdir a non-directory");
+        return -1;
+    }
+
+    if (prevdir == NULL) {
+        kwarn(__FILE__,__func__,"cannot unlink root directory");
+        return -1;
+    }
+
+    if (ll_len(curr->dir.files) > 2) { // . and .. are always in a directory
+        kwarn(__FILE__,__func__,"directory not empty");
+        return -1;
+    }
+
+    destroy_ll(curr->dir.files);
+    ll_delp(prevdir->dir.files, curr);
+
+    return 0;
+
+}

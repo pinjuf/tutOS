@@ -154,3 +154,7 @@ int creat(char * path) {
 int unlink(char * path) {
     return syscall(87, (uint64_t)path, 0, 0, 0, 0, 0);
 }
+
+int rmdir(char * path) {
+    return syscall(84, (uint64_t)path, 0, 0, 0, 0, 0);
+}
