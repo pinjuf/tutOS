@@ -489,7 +489,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
         case 85: { // creat
             char * path = (void*)arg0;
 
-            return sys_open(path, O_CREAT | O_WRONLY);
+            return sys_open(path, O_CREAT | O_WRONLY | O_TRUNC);
         }
         case 87: { // unlink
             char * path = (void*)arg0;
