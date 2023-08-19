@@ -360,14 +360,8 @@ int proc_set_cwd(process_t * proc, char * cwd) {
     // cwd should be absolute
 
     // Make sure the directory exists
-    filehandle_t * fh = kopen(cwd, 0);
-    if (!fh)
+    if (kexists(cwd) != FILE_DIR)
         return -1;
-    if (fh->type != FILE_DIR) {
-        kclose(fh);
-        return -1;
-    }
-    kclose(fh);
 
     size_t l = strlen(cwd);
     char * new_cwd = kmalloc(l + 1); // Null byte

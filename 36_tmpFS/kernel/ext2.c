@@ -533,3 +533,61 @@ void * ext2_readdir(void * f) {
 
     return out;
 }
+
+int ext2_exists(void * m, char * path) {
+    mountpoint_t * mnt = m;
+    ext2fs_t * fs      = mnt->internal_fs;
+
+    char token[256];
+
+    ext2_inode_t * curr = ext2_get_inode(mnt, EXT2_ROOT_INO);
+
+    char * p = path;
+    while (*p) {
+
+        while (*p == DIRSEP)
+            p++;
+
+        char * tok = p;
+        while (*p && *p != DIRSEP) {
+            p++;
+        }
+
+        if (tok == p)
+            continue;
+
+        memset(token, 0, 256);
+        memcpy(token, tok, p-tok);
+
+        uint32_t next = ext2_get_inode_by_name(mnt, curr, token);
+        kfree(curr);
+
+        if (!next) {
+            return -1;
+        }
+
+        curr = ext2_get_inode(mnt, next);
+
+        if (!(curr->i_mode & EXT2_S_IFDIR) && *p) {
+            return -1;
+        }
+    }
+
+    int out;
+
+    switch (curr->i_mode & EXT2_S_IFMSK) {
+        case EXT2_S_IFREG:
+            out = FILE_REG;
+            break;
+        case EXT2_S_IFDIR:
+            out = FILE_DIR;
+            break;
+        default:
+            out = FILE_UNKN;
+            break;
+    }
+
+    kfree(curr);
+
+    return out;
+}

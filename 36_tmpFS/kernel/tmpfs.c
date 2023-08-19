@@ -390,3 +390,43 @@ int tmpfs_unlinkfile(void * m, char * path) {
 
     return 0;
 }
+
+int tmpfs_exists(void * m, char * path) {
+    mountpoint_t * mnt = m;
+    tmpfs_t * tmpfs    = mnt->internal_fs;
+
+    char token[256];
+
+    tmpfs_file_t * curr = tmpfs->root;
+
+    char * p = path;
+    while (*p) {
+
+        while (*p == DIRSEP)
+            p++;
+
+        char * tok = p;
+        while (*p && *p != DIRSEP)
+            p++;
+
+        if (tok == p)
+            continue;
+
+        memset(token, 0, 256);
+        memcpy(token, tok, p - tok);
+
+        tmpfs_file_t * next = tmpfs_getfiledir(curr->dir.files, token);
+
+        if (!next) { // FNF
+            return -1;
+        }
+
+        if (next->type != FILE_DIR && *p != 0) { // Not a directory
+            return -1;
+        }
+
+        curr = next;
+    }
+
+    return curr->type;
+}

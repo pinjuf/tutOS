@@ -573,15 +573,10 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
 int sys_open(char * path, mode_t mode) {
     path = proc_to_abspath(current_process, path);
 
-    if (mode & O_CREAT) {
-        filehandle_t * fh_c = kopen(path, 0);
-        if (!fh_c) {
-            int status = kcreate(path);
-            if (status < 0) {
-                return status;
-            }
-        } else {
-            kclose(fh_c);
+    if ((mode & O_CREAT) && !kexists(path)) {
+        int status = kcreate(path);
+        if (status < 0) {
+            return status;
         }
     }
 

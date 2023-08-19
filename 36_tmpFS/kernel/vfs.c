@@ -400,15 +400,9 @@ int remove_pathddots(char * path) {
 
         // Check that the jumped directory exists
         *next = '\0';
-        filehandle_t * fh = kopen(path, 0);
-        if (!fh) {
+        if (kexists(path) != FILE_DIR) {
             return -1;
         }
-        if (fh->type != FILE_DIR) {
-            kclose(fh);
-            return -1;
-        }
-        kclose(fh);
         *next = DIRSEP;
 
         // Now we have something like this:
@@ -430,15 +424,9 @@ int remove_pathddots(char * path) {
 
         // Check that the jumped directory exists
         curr[-2] = '\0';
-        filehandle_t * fh = kopen(path, 0);
-        if (!fh) {
+        if (kexists(path) != FILE_DIR) {
             return -1;
         }
-        if (fh->type != FILE_DIR) {
-            kclose(fh);
-            return -1;
-        }
-        kclose(fh);
         curr[-2] = DIRSEP;
 
         char * prev = curr - 3;

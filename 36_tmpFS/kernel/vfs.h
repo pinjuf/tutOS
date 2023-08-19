@@ -76,7 +76,7 @@ static const filesystem_t FILESYSTEMS[] = {
         NULL,
         NULL,
         (dirent * (*) (filehandle_t * f)) ext2_readdir,
-        NULL,
+        (int (*) (void * mountpoint, char * path)) ext2_exists,
     },
 
     {"fat32",
@@ -106,7 +106,6 @@ static const filesystem_t FILESYSTEMS[] = {
         NULL,
         NULL,
         (dirent * (*) (filehandle_t * f)) devfs_readdir,
-        NULL,
         (int (*) (void * mountpoint, char * path)) devfs_exists,
     },
 
@@ -122,7 +121,7 @@ static const filesystem_t FILESYSTEMS[] = {
         (int (*) (void * mountpoint, char * path)) tmpfs_createdir,
         (int (*) (void * mountpoint, char * path)) tmpfs_unlinkfile,
         (dirent * (*) (filehandle_t * f)) tmpfs_readdir,
-        NULL,
+        (int (*) (void * mountpoint, char * path)) tmpfs_exists,
     }
 };
 
