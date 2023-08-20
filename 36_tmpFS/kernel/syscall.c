@@ -42,6 +42,7 @@ uint64_t handle_syscall(uint64_t n, uint64_t arg0, uint64_t arg1, uint64_t arg2,
             void * buf        = (void*)arg1;
             size_t count      = arg2;
 
+            sti; // Wait for pipe space etc.
             return fd_write(current_process, fd, buf, count);
         }
         case 2: { // open

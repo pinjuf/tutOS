@@ -90,3 +90,52 @@ int atoi(char * s, uint8_t base) {
 
     return sign * n;
 }
+
+void memmove(void * dest, void * src, size_t len) {
+    uint8_t * d = (uint8_t *)dest;
+    uint8_t * s = (uint8_t *)src;
+
+    if (d < s) {
+        for (; len != 0; len--) *d++ = *s++;
+    } else {
+        d += len;
+        s += len;
+        for (; len != 0; len--) *--d = *--s;
+    }
+}
+
+int memcmp(void * s1, void * s2, size_t n) {
+    uint8_t * a = (uint8_t*) s1;
+    uint8_t * b = (uint8_t*) s2;
+
+    for (size_t i = 0; i < n; i++) {
+        if (a[i] != b[i])
+            return a[i] - b[i];
+    }
+
+    return 0;
+}
+
+char * strstr(char * haystack, char * needle) {
+    size_t needle_len = strlen(needle);
+    size_t haystack_len = strlen(haystack);
+
+    if (needle_len > haystack_len)
+        return NULL;
+
+    for (size_t i = 0; i < haystack_len - needle_len + 1; i++) {
+        if (memcmp(&haystack[i], needle, needle_len) == 0)
+            return &haystack[i];
+    }
+
+    return NULL; 
+}
+
+char * strchr(char * s, char c) {
+    for (; *s != '\0'; s++) {
+        if (*s == c)
+            return s;
+    }
+
+    return NULL;
+}

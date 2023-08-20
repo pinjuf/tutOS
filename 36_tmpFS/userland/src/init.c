@@ -3,119 +3,138 @@
 #include "stdio.h"
 #include "string.h"
 
-#define CMDBUF_SZ 0x200
+#define CMDBUF_SZ 0x400
 
 void sigchld(int signum) {
     sigreturn();
 }
 
 int main(int argc, char * argv[]) {
-    char * cmdbuf = malloc(256);
-    char c;
-
-    char cwdbuf[256];
-
     signal(SIGCHLD, sigchld);
 
-    puts("< tutOS sh >\n");
+    const char * o_cmd = malloc(CMDBUF_SZ);
 
-    while (true) {
-        char * curr = cmdbuf;
-        memset(cmdbuf, 0, CMDBUF_SZ);
+    char cwd[0x100];
 
-        int status = 0;
+    // Shell capable of PIPES and REDIRECTS
+    puts("< tutOS init shell >\n");
 
-        getcwd(cwdbuf, sizeof(cwdbuf));
+    while (1) {
+        char * cmd = (char*)o_cmd;
+        char * cur = cmd;
+        memset(cmd, 0, CMDBUF_SZ);
 
-        puts(cwdbuf);
+        getcwd(cwd, 0x100);
+
+        // TODO: printf for userland
+        puts(cwd);
         puts("$> ");
 
         while (1) {
-            if (!read(stdin, &c, 1)) // EOF or whatever
+            char c;
+            if (read(0, &c, 1) != 1) {
                 exit(0);
+            }
 
             if (c == '\n') {
                 break;
-            } else if (c == '\b' && (curr > cmdbuf)) {
-                curr--;
-                putchar(c);
+            } else if (c == '\b') {
+                if (cur != cmd) {
+                    cur--;
+                    putchar('\b');
+                }
             } else {
-                *curr++ = c;
+                *cur++ = c;
                 putchar(c);
             }
         }
 
-        *curr = '\0';
-
         putchar('\n');
 
-        if (curr == cmdbuf)
-            continue;
-
-        if (!strcmp(cmdbuf, "exit"))
-            exit(0);
-
-        if (!strcmp(cmdbuf, "debug")) {
-            asm volatile ("int $0x81");
+        if (cur == cmd) {
             continue;
         }
 
-        if (!strcmp(cmdbuf, "cd")) {
-            chdir("/");
-            continue;
+        // 1) How many commands? Divide by pipes and NULL terminate
+        int ncmds = 1;
+        for (char * c = cmd; *c != 0; c++) {
+            if (*c == '|') {
+                *c = 0;
+                ncmds++;
+            }
         }
 
-        if (!strncmp(cmdbuf, "cd ", 3) && strlen(cmdbuf) > 3) {
-            int s = chdir(cmdbuf + 3);
-            if (s < 0)
-                puts("cd: no such directory\n");
-            continue;
+        // 2) Create the pipes
+        int pipes[ncmds - 1][2];
+        for (int i = 0; i < ncmds - 1; i++) {
+            pipe(pipes[i]);
         }
 
-        bool fg = true;
-        // Let process run in background
-        if (*(curr-1) == '&') {
-            *(curr-1)  = '\0';
-            fg = false;
+        pid_t child = 0; // Wait for the last child
+        for (int i = 0; i < ncmds; i++) {
+            // Strip leading and trailing spaces
+            while (*cmd == ' ') cmd++;
+            char * end = cmd + strlen(cmd) - 1;
+            while (*end == ' ') *end-- = 0;
+
+            char * args = malloc(strlen(cmd) + 1);
+            strcpy(args, cmd);
+
+            // How many arguments?
+            int argc = 1;
+            for (char * c = args; *c != 0; c++) {
+                if (*c == ' ') {
+                    *c = 0;
+                    argc++;
+                }
+            }
+
+            // Set up argv
+            char ** argv = malloc((argc + 1) * sizeof(char*));
+            char * arg = args;
+            for (int i = 0; i < argc; i++) {
+                argv[i] = arg;
+                arg += strlen(arg) + 1;
+            }
+            argv[argc] = NULL;
+
+            // Fork!
+            child = fork();
+            if (!child) { // Child process
+
+                // Redirect through pipes
+                if (i != 0) {
+                    dup2(pipes[i - 1][1], stdin);
+                }
+
+                if (i != ncmds - 1) {
+                    dup2(pipes[i][0], stdout);
+                }
+
+                // Close all pipes
+                for (int j = 0; j < ncmds - 1; j++) {
+                    close(pipes[j][0]);
+                    close(pipes[j][1]);
+                }
+
+                // Execute
+                exec(argv[0], argv);
+            }
+
+            // Move to the next command
+            cmd += strlen(cmd) + 1;
+            while (*cmd == '\0') cmd++;
         }
 
-        char * cmdbuf2 = malloc(CMDBUF_SZ);
-        memcpy(cmdbuf2, cmdbuf, CMDBUF_SZ);
-
-        // We need to transform cmdbuf into a char*argv[]
-        char ** argv = malloc(sizeof(char*) * 16);
-        int argc = 0;
-        char * acurr = cmdbuf2;
-        while (*acurr) {
-            argv[argc++] = acurr;
-            while (*acurr && *acurr != ' ')
-                acurr++;
-            if (*acurr)
-                *acurr++ = '\0';
-        }
-        argv[argc] = NULL;
-
-        pid_t p = fork();
-        if (p == 0) {
-            exec(cmdbuf2, argv);
-            puts("could not exec command\n");
-            exit(1);
+        // Close all pipes
+        for (int j = 0; j < ncmds - 1; j++) {
+            close(pipes[j][0]);
+            close(pipes[j][1]);
         }
 
-        if (fg) {
-            waitpid(p, &status, 0);
-            putchar(status + '0');
-            putchar(' ');
-        } else {
-            char buf[8];
-            itoa(p, buf, 10);
-            puts("bg: [");
-            puts(buf);
-            puts("]\n");
-        }
+        // Wait for the last child
+        waitpid(child, NULL, 0);
     }
-
-    free(cmdbuf);
 
     return 0;
 }

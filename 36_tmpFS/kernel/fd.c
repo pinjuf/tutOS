@@ -103,7 +103,7 @@ size_t fd_read(process_t * p, int fd, void * buf, size_t count) {
         case FD_PIPE_O: {
             pipe_t * pipe = fd_struct->handle;
 
-            // No one to writ and pipe empty? (EOF)
+            // No one to write and pipe empty? (EOF)
             if (!pipe->head_fds && (pipe->head == pipe->tail)) {
                 return 0;
             }
