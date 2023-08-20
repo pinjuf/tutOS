@@ -331,6 +331,8 @@ size_t tmpfs_writefile(void * f, void * buf, size_t size) {
 
     memcpy((void*)((size_t)file->file.data + fh->curr), buf, size);
 
+    fh->curr += size;
+
     return size;
 }
 

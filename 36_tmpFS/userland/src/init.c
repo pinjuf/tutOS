@@ -80,6 +80,17 @@ int main(int argc, char * argv[]) {
             char * args = malloc(strlen(cmd) + 1);
             strcpy(args, cmd);
 
+            // If this the last command, check for redirects
+            char * redir = NULL;
+            if (i == ncmds - 1) {
+                redir = strchr(args, '>');
+                if (redir) {
+                    *redir = 0;
+                    redir++;
+                    while (*redir == ' ') redir++;
+                }
+            }
+
             // How many arguments?
             int argc = 1;
             for (char * c = args; *c != 0; c++) {
@@ -101,6 +112,13 @@ int main(int argc, char * argv[]) {
             // Fork!
             child = fork();
             if (!child) { // Child process
+
+                // Redirect into file?
+                if (redir) {
+                    int fd = creat(redir);
+                    dup2(fd, stdout);
+                    close(fd);
+                }
 
                 // Redirect through pipes
                 if (i != 0) {
