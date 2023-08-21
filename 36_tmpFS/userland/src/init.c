@@ -55,6 +55,20 @@ int main(int argc, char * argv[]) {
             continue;
         }
 
+        // Pre-strip lead/trail-ing spaces
+        while (*cmd == ' ') cmd++;
+        char * end = cmd + strlen(cmd) - 1;
+        while (*end == ' ') *end-- = 0;
+
+        // Shell built-ins
+        if (!strcmp(cmd, "exit")) {
+            exit(0);
+        } else if (!strncmp(cmd, "cd ", 3)) {
+            if (chdir(cmd + 3) < 0)
+                puts("cd: no such file or directory\n");
+            continue;
+        }
+
         // 1) How many commands? Divide by pipes and NULL terminate
         int ncmds = 1;
         for (char * c = cmd; *c != 0; c++) {
@@ -151,7 +165,10 @@ int main(int argc, char * argv[]) {
         }
 
         // Wait for the last child
-        waitpid(child, NULL, 0);
+        int status;
+        waitpid(child, &status, 0);
+        putchar('0' + status);
+        putchar(' ');
     }
 
     return 0;

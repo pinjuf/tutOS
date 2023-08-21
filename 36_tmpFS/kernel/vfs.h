@@ -110,7 +110,7 @@ static const filesystem_t FILESYSTEMS[] = {
         (size_t (*) (filehandle_t * f, void * buf, size_t count)) devfs_writefile,
         NULL,
         NULL,
-        NULL,
+        (int (*) (void * mountpoint, char * path)) devfs_unlink_dev,
         NULL,
         NULL,
         (dirent * (*) (filehandle_t * f)) devfs_readdir,

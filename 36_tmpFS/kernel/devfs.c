@@ -207,6 +207,36 @@ void devfs_unregister_dev(devfs_t * fs, devfs_id_t dev) {
     }
 }
 
+int devfs_unlink_dev(void * mn, char * path) {
+    // Unregisters a device by path
+
+    mountpoint_t * mnt = mn;
+    devfs_t * fs       = mnt->internal_fs;
+
+    devfs_dev_t * dev = NULL;
+
+    for (size_t i = 0; i < ll_len(fs->devs); i++) {
+        if (!strcmp(((devfs_dev_t*)ll_get(fs->devs, i))->name, path)) {
+            dev = ll_get(fs->devs, i);
+            break;
+        }
+    }
+
+    if (dev == NULL) {
+        kwarn(__FILE__,__func__,"file not found");
+        return -1;
+    }
+
+    if (dev->type == FILE_DIR) {
+        kwarn(__FILE__,__func__,"cannot unlink directory");
+        return -1;
+    }
+
+    devfs_unregister_dev(fs, dev->id);
+
+    return 0;
+}
+
 void * devfs_getfile(void * mn, char * path, uint16_t m) {
     mountpoint_t * mnt    = mn;
     devfs_t * fs          = mnt->internal_fs;
