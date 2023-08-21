@@ -29,6 +29,16 @@ devfs_t * get_devfs(void * p) {
     dev.readdir   = devfs_readdir_rootdir;
     devfs_register_dev(out, &dev);
 
+    // Fake ".." entry, VFS will handle this
+    memcpy(dev.name, "..", 3);
+    dev.type      = FILE_DIR;
+    dev.size      = 0;
+    dev.avl_modes = O_RDONLY;
+    dev.read      = NULL;
+    dev.write     = NULL;
+    dev.readdir   = NULL;
+    devfs_register_dev(out, &dev);
+
     // stdin, stdout etc.
     memcpy(dev.name, "tty", 4);
     dev.type      = FILE_DEV;

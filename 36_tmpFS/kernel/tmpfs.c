@@ -13,11 +13,17 @@ tmpfs_t * get_tmpfs(void * p) {
     strcpy(root->name, "");
     root->dir.files = create_ll(sizeof(tmpfs_file_t));
 
-    // Create the . file (no .. in root directory)
+    // Create the . file
     tmpfs_file_t * dot = ll_push(root->dir.files);
     dot->type = FILE_DIR;
     strcpy(dot->name, ".");
     dot->dir.files = root->dir.files;
+
+    // Create a dummy .. file
+    tmpfs_file_t * dotdot = ll_push(root->dir.files);
+    dotdot->type = FILE_DIR;
+    strcpy(dotdot->name, "..");
+    dotdot->dir.files = root->dir.files; // VFS resolves ..
 
     out->root = root;
 
