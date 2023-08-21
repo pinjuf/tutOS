@@ -31,6 +31,9 @@ char vesa_csi_parambuf[8]   = {0};
 uint32_t vesa_sco_x = 0;
 uint32_t vesa_sco_y = 0;
 
+uint8_t vesa_utf8_expected = 0;   // How many bytes are expected to follow in the UTF-8 sequence
+uint32_t vesa_utf8_codepoint = 0; // The codepoint being assembled
+
 void init_vesa() {
     // Map the framebuffer based on the physical address in the BPOB
     size_t fb_size = bpob->vbe_mode_info.height * bpob->vbe_mode_info.pitch;
@@ -366,8 +369,48 @@ void vesa_putc(char c) {
                 }
                 /* fall through */
             default:
-                psf2_putvesa(vfont, c, vesa_x * vfont->width, vesa_y * vfont->height);
-                vesa_x++;
+
+                if (c & 0x80) { // UTF-8 character
+                    if (!vesa_utf8_expected) { // Start of a character
+                        // 0b110xxxxx : 1 following byte
+                        // 0b1110xxxx : 2 following bytes
+                        // 0b11110xxx : 3 following bytes
+
+                        if ((c & 0xE0) == 0xC0) {
+                            vesa_utf8_expected = 1;
+                            vesa_utf8_codepoint = c & 0x1F;
+                        } else if ((c & 0xF0) == 0xE0) {
+                            vesa_utf8_expected = 2;
+                            vesa_utf8_codepoint = c & 0x0F;
+                        } else if ((c & 0xF8) == 0xF0) {
+                            vesa_utf8_expected = 3;
+                            vesa_utf8_codepoint = c & 0x07;
+                        } else {
+                            // Invalid UTF-8 sequence
+                            vesa_utf8_expected = 0;
+                            vesa_utf8_codepoint = 0;
+                        }
+
+                    } else if ((c & 0xC0) == 0x80) { // Continuation byte
+                        // Continuation byte
+                        vesa_utf8_codepoint = (vesa_utf8_codepoint << 6) | (c & 0x3F);
+                        vesa_utf8_expected--;
+
+                        if (!vesa_utf8_expected) {
+                            psf2_putvesa(vfont, vesa_utf8_codepoint, vesa_x * vfont->width, vesa_y * vfont->height);
+                            vesa_x++;
+                        }
+
+                    } else { // Invalid UTF-8 sequence
+                        vesa_utf8_expected = 0;
+                        vesa_utf8_codepoint = 0;
+                    }
+
+                } else { // Normal ASCII character
+                    psf2_putvesa(vfont, c, vesa_x * vfont->width, vesa_y * vfont->height);
+                    vesa_x++;
+                }
+
                 break;
         }
     }

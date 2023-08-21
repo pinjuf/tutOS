@@ -3,8 +3,8 @@
 #include "util.h"
 #include "main.h"
 
-void psf2_putvesa(psf2_header_t * font, uint8_t c, uint32_t x, uint32_t y) {
-    if (c < ' ' || c > 127) // Refuse to print garbage
+void psf2_putvesa(psf2_header_t * font, uint32_t c, uint32_t x, uint32_t y) {
+    if (c >= font->length)
         return;
 
     char * bitmap = (char*) ((size_t)font + font->header_size + font->char_size * c);

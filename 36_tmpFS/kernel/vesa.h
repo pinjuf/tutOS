@@ -79,6 +79,8 @@ extern rgb32_t vfont_fg, vfont_bg;
 extern bool vesa_ready;
 extern uint32_t vesa_x, vesa_y;
 extern bool vesa_bold, vesa_italic, vesa_underline;
+extern uint8_t vesa_utf8_expected;
+extern uint32_t vesa_utf8_codepoint;
 
 void vesa_putc(char c);
 void vesa_puts(char * s);

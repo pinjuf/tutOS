@@ -17,4 +17,4 @@ typedef struct psf2_header_t {
 
 #define VFONT "/etc/vfont.psf2"
 
-void psf2_putvesa(psf2_header_t * font, uint8_t c, uint32_t x, uint32_t y);
+void psf2_putvesa(psf2_header_t * font, uint32_t c, uint32_t x, uint32_t y);
