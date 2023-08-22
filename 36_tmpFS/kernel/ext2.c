@@ -483,7 +483,7 @@ size_t ext2_readfile(void * f, void * buf, size_t count) {
         fh->curr += sz;
     }
 
-    return to_read;
+    return read;
 }
 
 void * ext2_readdir(void * f) {
