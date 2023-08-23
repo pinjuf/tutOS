@@ -41,9 +41,13 @@ void tree_dir(int dir, char * current_path, size_t depth) {
 }
 
 int main(int argc, char * argv[]) {
-    if (argc != 2) {
+    if (argc > 2) {
         puts("Usage: tree <path>\n");
         return 1;
+    }
+
+    if (argc == 1) {
+        argv[1] = "."; // argv[last] is NULL, we can afford it
     }
 
     int fd = open(argv[1], O_RDONLY);
