@@ -122,6 +122,16 @@ void _kmain() {
 
     proc_set_cwd(init_proc, "/");
 
+    int i, j, n;
+    for (i = 0; i < 11; i++) {
+        for (j = 0; j < 10; j++) {
+            n = 10 * i + j;
+            if (n > 108) break;
+            kprintf("\033[%dm %d\033[m", n, n);
+        }
+        kprintf("\n");
+    }
+
     do_scheduling = true;
     sti;
 

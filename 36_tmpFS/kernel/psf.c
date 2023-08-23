@@ -34,4 +34,7 @@ void psf2_putvesa(psf2_header_t * font, uint32_t c, uint32_t x, uint32_t y) {
 
     if (vesa_underline)
         vesa_drawrect(x, y + font->height - 1, font->width, 1, vfont_fg);
+
+    if (vesa_strike)
+        vesa_drawrect(x, y + font->height / 2, font->width, 1, vfont_fg);
 }

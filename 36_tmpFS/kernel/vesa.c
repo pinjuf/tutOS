@@ -13,12 +13,15 @@ psf2_header_t * vfont;
 rgb32_t vfont_fg = RGB32(255, 255, 255);
 rgb32_t vfont_bg = RGB32(0, 0, 0);
 
+bool vesa_reversed = false; // Reverse fg/bg
+
 uint32_t vesa_x = 0;
 uint32_t vesa_y = 0;
 
 bool vesa_bold      = false;
 bool vesa_italic    = false;
 bool vesa_underline = false;
+bool vesa_strike    = false;
 
 bool vesa_esc       = false;
 bool vesa_csi       = false;
@@ -268,9 +271,10 @@ void vesa_putc(char c) {
                     } else {
                         switch (n) {
                             case 0: // reset
-                                vesa_bold = vesa_italic = vesa_underline = false;
+                                vesa_bold = vesa_italic = vesa_underline = vesa_strike = false;
                                 vfont_fg = RGB32(255, 255, 255);
                                 vfont_bg = RGB32(0, 0, 0);
+                                vesa_reversed = false;
                                 break;
                             case 1: // bold
                                 vesa_bold = true;
@@ -282,9 +286,15 @@ void vesa_putc(char c) {
                                 vesa_underline = true;
                                 break;
                             case 7: { // video invert
-                                rgb32_t orig_fg = vfont_fg;
-                                vfont_fg = vfont_bg;
-                                vfont_bg = orig_fg;
+                                if (!vesa_reversed) {
+                                    rgb32_t orig_fg = vfont_fg;
+                                    vfont_fg = vfont_bg;
+                                    vfont_bg = orig_fg;
+                                }
+                                break;
+                            }
+                            case 9: { // strikethrough
+                                vesa_strike = true;
                                 break;
                             }
                             case 22: // bold off
@@ -297,9 +307,15 @@ void vesa_putc(char c) {
                                 vesa_underline = false;
                                 break;
                             case 27: { // video invert off
-                                rgb32_t orig_fg = vfont_fg;
-                                vfont_fg = vfont_bg;
-                                vfont_bg = orig_fg;
+                                if (vesa_reversed) {
+                                    rgb32_t orig_fg = vfont_fg;
+                                    vfont_fg = vfont_bg;
+                                    vfont_bg = orig_fg;
+                                }
+                                break;
+                            }
+                            case 29: { // strikethrough off
+                                vesa_strike = false;
                                 break;
                             }
                             case 38: { // set foreground
