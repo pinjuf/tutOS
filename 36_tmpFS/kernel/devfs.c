@@ -406,7 +406,7 @@ size_t devfs_read_vesa(void * f, void * buf, size_t count) {
 
     // Little optimisation if we can ignore pitch
     if (bpob->vbe_mode_info.pitch == bpob->vbe_mode_info.width * bpob->vbe_mode_info.bpp/8) {
-        memcpy(buf, (void*)VESA_VIRT_FB, to_read);
+        memcpy(buf, (void*)(VESA_VIRT_FB + fh->curr), to_read);
         fh->curr += to_read;
         return to_read;
     }
@@ -449,7 +449,7 @@ size_t devfs_write_vesa(void * f, void * buf, size_t count) {
 
     // Little optimisation if we can ignore pitch
     if (bpob->vbe_mode_info.pitch == bpob->vbe_mode_info.width * bpob->vbe_mode_info.bpp/8) {
-        memcpy((void*)VESA_VIRT_FB, buf, to_write);
+        memcpy((void*)(VESA_VIRT_FB + fh->curr), buf, to_write);
         fh->curr += to_write;
         return to_write;
     }
