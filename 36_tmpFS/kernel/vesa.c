@@ -238,26 +238,51 @@ void vesa_putc(char c) {
 
                     break;
                 }
-                case 'T': {
+                case 'K': { // Erase in line
+                    uint16_t n = 0;
+                    if (vesa_csi_params_n) n = vesa_csi_params[0];
+                    switch (n) {
+                        case 0:
+                            // From cursor to end of line
+                            vesa_drawrect(vesa_x * vfont->width, vesa_y * vfont->height, vwidth - (vesa_x * vfont->width), vfont->height, vfont_bg);
+
+                            break;
+                        case 1:
+                            // From start of line to cursor
+                            vesa_drawrect(0, vesa_y * vfont->height, vesa_x * vfont->width, vfont->height, vfont_bg);
+
+                            break;
+                        case 2:
+                            // Entire line
+                            vesa_drawrect(vesa_x * vfont->width, vesa_y * vfont->height, vwidth - (vesa_x * vfont->width), vfont->height, vfont_bg);
+
+                            break;
+                        default:
+                            break;
+                    }
+
+                    break;
+                }
+                case 'T': { // Scroll down
                     uint16_t n = 1;
                     if (vesa_csi_params_n) n = vesa_csi_params[0];
 
                     vesa_scrolldown(n * vfont->height);
                     break;
                 }
-                case 's': {
+                case 's': { // Store cursor position
                     vesa_sco_x = vesa_x;
                     vesa_sco_y = vesa_y;
 
                     break;
                 }
-                case 'u': {
+                case 'u': { // Restore cursor position
                     vesa_x = vesa_sco_x;
                     vesa_y = vesa_sco_y;
 
                     break;
                 }
-                case 'm': {
+                case 'm': { // Set graphics rendition
                     uint16_t n = 0;
                     if (vesa_csi_params_n) n = vesa_csi_params[0];
 
