@@ -78,7 +78,7 @@ extern psf2_header_t * vfont;
 extern rgb32_t vfont_fg, vfont_bg;
 extern bool vesa_ready;
 extern uint32_t vesa_x, vesa_y;
-extern bool vesa_bold, vesa_italic, vesa_underline, vesa_strike;
+extern bool vesa_bold, vesa_italic, vesa_underline, vesa_dunderline, vesa_strike;
 extern uint8_t vesa_utf8_expected;
 extern uint32_t vesa_utf8_codepoint;
 
