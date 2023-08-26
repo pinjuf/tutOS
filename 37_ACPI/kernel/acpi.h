@@ -45,6 +45,12 @@ typedef struct xsdt_t {
     uint64_t sdt_ptrs[];
 } __attribute__((packed)) xsdt_t;
 
+typedef struct madt_t {
+    acpi_sdt_t sdt;
+    uint32_t lapic_addr;
+    uint32_t flags;
+} __attribute__((packed)) madt_t;
+
 extern rsdp_t * rsdp;
 extern xsdp_t * xsdp;
 
@@ -54,6 +60,7 @@ extern xsdt_t * xsdt;
 extern size_t acpi_sdt_count;
 
 void init_acpi(void);
+acpi_sdt_t * get_acpi_table(char * sign);
 
 #define RSDP_SEARCH_START 0x000E0000
 #define RSDP_SEARCH_END   0x00100000

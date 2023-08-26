@@ -19,6 +19,7 @@
 #include "fd.h"
 #include "pipe.h"
 #include "rnd.h"
+#include "acpi.h"
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
