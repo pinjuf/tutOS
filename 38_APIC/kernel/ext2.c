@@ -199,9 +199,12 @@ void ext2_read_inode(void * mn, ext2_inode_t * inode, void * buf) {
     }
 }
 
-void ext2_read_inodeblock(void * mn, ext2_inode_t * inode, void * buf, size_t n) {
-    mountpoint_t * mnt = mn;
-    ext2fs_t * fs      = mnt->internal_fs;
+void ext2_read_inodeblock(void * f, void * buf, size_t n) {
+    filehandle_t * fh      = f;
+    mountpoint_t * mnt     = &mountpoints[fh->mountpoint];
+    ext2fs_t * fs          = mnt->internal_fs;
+    ext2fs_file_t * intern = fh->internal_file;
+    ext2_inode_t * inode   = intern->inode;
 
     const size_t ptrs_per_block = fs->blocksize/sizeof(uint32_t);
 
@@ -268,8 +271,6 @@ void ext2_read_inodeblock(void * mn, ext2_inode_t * inode, void * buf, size_t n)
 
         uint32_t * tri_indirect = (uint32_t *) kmalloc(fs->blocksize);
         kreadat(mnt->file, inode->i_block[14] * fs->blocksize, tri_indirect, fs->blocksize);
-
-        //const uint32_t tri_offset = (n - 12 - ptrs_per_block - ptrs_per_block * ptrs_per_block)/(ptrs_per_block * ptrs_per_block);
 
         uint32_t tri_offset = n - 12 - ptrs_per_block - ptrs_per_block * ptrs_per_block;
         tri_offset /= ptrs_per_block * ptrs_per_block;
@@ -467,7 +468,7 @@ size_t ext2_readfile(void * f, void * buf, size_t count) {
 
     for (uint32_t i = 0; i < end_block - start_block; i++) {
         if (intern->cache_index != start_block + i) {
-            ext2_read_inodeblock(mnt, intern->inode, intern->cache, start_block + i);
+            ext2_read_inodeblock(fh, intern->cache, start_block + i);
             intern->cache_index = start_block + i;
         }
 

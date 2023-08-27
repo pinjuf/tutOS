@@ -77,6 +77,27 @@ typedef struct cpu_coreinfo_t {
     bool bsp;
 } cpu_coreinfo_t;
 
+// Standard ISA IRQs
+enum {
+    IRQ_PIT = 0,
+    IRQ_KBD,
+    IRQ_CASCADE,
+    IRQ_COM2,
+    IRQ_COM1,
+    IRQ_LPT2,
+    IRQ_DSP = 5,
+    IRQ_FLOPPY,
+    IRQ_LPT1,
+    IRQ_CMOS,
+    IRQ_FREE1,
+    IRQ_FREE2,
+    IRQ_FREE3,
+    IRQ_MOUSE,
+    IRQ_FPU,
+    IRQ_ATA_P,
+    IRQ_ATA_S,
+};
+
 extern cpu_coreinfo_t * coreinfos;
 extern size_t cpu_cores;
 

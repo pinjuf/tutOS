@@ -7,7 +7,7 @@ LD = ld
 LDFLAGS = -Tlinker.ld
 ASM = nasm
 
-OBJS = kentry.o main.o util.o gdt.o idt.o int.o isr.o pic.o paging.o mm.o kbd.o ata.o gpt.o syscall.o syscall_stub.o schedule.o ext2.o fat.o vfs.o vesa.o psf.o elf.o devfs.o ll.o dma.o sb16.o signal.o fd.o pipe.o rnd.o tmpfs.o acpi.o apic.o
+OBJS = kentry.o main.o util.o gdt.o idt.o int.o isr.o paging.o mm.o kbd.o ata.o gpt.o syscall.o syscall_stub.o schedule.o ext2.o fat.o vfs.o vesa.o psf.o elf.o devfs.o ll.o dma.o sb16.o signal.o fd.o pipe.o rnd.o tmpfs.o acpi.o apic.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

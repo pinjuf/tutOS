@@ -2,7 +2,6 @@
 #include "util.h"
 #include "acpi.h"
 #include "mm.h"
-#include "pic.h"
 
 cpu_coreinfo_t * coreinfos = NULL;
 size_t cpu_cores = 0;
@@ -101,9 +100,6 @@ void init_apic() {
                     redtbl |= IOAPIC_REDIR_DEST(bsp);
 
                     ioapic_write_redtbl((void*)(uint64_t)ioapic->ioapic_address, entry, redtbl);
-
-                    redtbl = ioapic_read_redtbl((void*)(uint64_t)ioapic->ioapic_address, entry);
-                    kprintf("REDTBL for IRQ %d: %x\n", ioapic->global_system_interrupt_base + entry, redtbl);
                 }
 
                 // Look for ISOs (Interrupt Source Overrides) affecting this I/O APIC
@@ -166,10 +162,10 @@ void init_apic() {
     *(uint32_t*)(APIC_BASE + 0xF0) |= 1 << 8 | 0xFF; // 0xFF is the spurious interrupt vector
 
     // Unmask used interrupts
-    ioapic_mask(PIC_PIT, false); // IRQ #0
-    ioapic_mask(PIC_KBD, false); // IRQ #1
-    ioapic_mask(PIC_MOUSE, false); // IRQ #1
-    ioapic_mask(PIC_DSP, false); // IRQ #1
+    ioapic_mask(IRQ_PIT, false);
+    ioapic_mask(IRQ_KBD, false);
+    ioapic_mask(IRQ_MOUSE, false);
+    ioapic_mask(IRQ_DSP, false);
 }
 
 void ioapic_mask(uint8_t irq, bool mask) {
@@ -219,8 +215,6 @@ void ioapic_mask(uint8_t irq, bool mask) {
 
             uint64_t redtbl = ioapic_read_redtbl((void*)(uint64_t)ioapic->ioapic_address, entry);
 
-            kprintf("Original REDTBL: %x\n", redtbl);
-
             if (mask) {
                 redtbl |= IOAPIC_REDIR_MASK;
             } else {
@@ -228,10 +222,6 @@ void ioapic_mask(uint8_t irq, bool mask) {
             }
 
             ioapic_write_redtbl((void*)(uint64_t)ioapic->ioapic_address, entry, redtbl);
-
-            redtbl = ioapic_read_redtbl((void*)(uint64_t)ioapic->ioapic_address, entry);
-
-            kprintf("New REDTBL: %x\n", redtbl);
 
             return;
         }

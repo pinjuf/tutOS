@@ -168,5 +168,5 @@ void ext2_closefile(void * f);
 size_t ext2_readfile(void * f, void * buf, size_t count);
 void * ext2_readdir(void * f);
 int del_ext2fs(void * m);
-void ext2_read_inodeblock(void * mn, ext2_inode_t * inode, void * buf, size_t n);
+void ext2_read_inodeblock(void * f, void * buf, size_t n);
 int ext2_exists(void * m, char * path);

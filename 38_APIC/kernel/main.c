@@ -4,7 +4,6 @@
 #include "idt.h"
 #include "gdt.h"
 #include "mm.h"
-#include "pic.h"
 #include "ata.h"
 #include "kbd.h"
 #include "gpt.h"

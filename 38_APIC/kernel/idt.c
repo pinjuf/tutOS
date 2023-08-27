@@ -1,5 +1,4 @@
 #include "idt.h"
-#include "pic.h"
 #include "apic.h"
 
 idtr_t kidtr;
@@ -38,12 +37,12 @@ void init_idt(void) {
         }
     }
 
-    fill_idt_desc(&kidt[IOAPIC_OFFSET+PIC_PIT], isr_irq0_stub, IDT_P | IDT_INT, 0x08);
-    fill_idt_desc(&kidt[IOAPIC_OFFSET+PIC_KBD], isr_irq1_stub, IDT_P | IDT_INT, 0x08);
-    fill_idt_desc(&kidt[IOAPIC_OFFSET+PIC_MOUSE], isr_irq12_stub, IDT_P | IDT_INT, 0x08);
+    fill_idt_desc(&kidt[IOAPIC_OFFSET+IRQ_PIT], isr_irq0_stub, IDT_P | IDT_INT, 0x08);
+    fill_idt_desc(&kidt[IOAPIC_OFFSET+IRQ_KBD], isr_irq1_stub, IDT_P | IDT_INT, 0x08);
+    fill_idt_desc(&kidt[IOAPIC_OFFSET+IRQ_MOUSE], isr_irq12_stub, IDT_P | IDT_INT, 0x08);
 
     // IRQ5 is both LPT2 and the SB16
-    fill_idt_desc(&kidt[IOAPIC_OFFSET+PIC_DSP], isr_irq5_stub, IDT_P | IDT_INT, 0x08);
+    fill_idt_desc(&kidt[IOAPIC_OFFSET+IRQ_DSP], isr_irq5_stub, IDT_P | IDT_INT, 0x08);
 
     fill_idt_desc(&kidt[SYSCALL_INT], isr_syscall_stub, IDT_P | IDT_INT | IDT_DPL, 0x08);
     fill_idt_desc(&kidt[DEBUGCALL_INT], isr_debugcall_stub, IDT_P | IDT_INT | IDT_DPL, 0x08);
