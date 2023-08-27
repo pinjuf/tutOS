@@ -1,6 +1,9 @@
 #include "pic.h"
 #include "util.h"
 
+// This has been replaced by our APIC implementation,
+// but we keep it around for legacy reasons
+
 void init_pic(void) {
     // ICW1
     outb(PIC1, ICW1_INIT | ICW1_ICW4);

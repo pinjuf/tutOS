@@ -12,6 +12,35 @@
 #define MADT_TYPE_NMI 4
 #define MADT_TYPE_LAPIC_OVERRIDE 5
 
+#define IOAPIC_REG_ID 0x00
+#define IOAPIC_REG_VERSION 0x01
+#define IOAPIC_REG_ARB 0x02
+#define IOAPIC_REG_REDIR(n) (0x10 + (n) * 2)
+
+#define IOAPIC_REDIR_VECTOR_MASK 0xFF
+#define IOAPIC_REDIR_VECTOR(n) ((n) & IOAPIC_REDIR_VECTOR_MASK)
+#define IOAPIC_REDIR_DMODE_MASK   (7 << 8)
+#define IOAPIC_REDIR_DMODE_FIXED  (0 << 8)
+#define IOAPIC_REDIR_DMODE_LOWEST (1 << 8)
+#define IOAPIC_REDIR_DMODE_SMI    (2 << 8)
+#define IOAPIC_REDIR_DMODE_NMI    (4 << 8)
+#define IOAPIC_REDIR_DMODE_INIT   (5 << 8)
+#define IOAPIC_REDIR_DMODE_EXTINT (7 << 8)
+#define IOAPIC_REDIR_DESTMODE_PHYSICAL (0 << 11)
+#define IOAPIC_REDIR_DESTMODE_LOGICAL  (1 << 11)
+#define IOAPIC_REDIR_DELIVERY_STANDBY (0 << 12)
+#define IOAPIC_REDIR_DELIVERY_PENDING (1 << 12)
+#define IOAPIC_REDIR_PINPOL_LOW  (0 << 13)
+#define IOAPIC_REDIR_PINPOL_HIGH (1 << 13)
+#define IOAPIC_REDIR_TRIGMODE_EDGE  (0 << 15)
+#define IOAPIC_REDIR_TRIGMODE_LEVEL (1 << 15)
+#define IOAPIC_REDIR_MASK   (1 << 16)
+#define IOAPIC_REDIR_UNMASK (0 << 16)
+#define IOAPIC_REDIR_DEST_MASK ((uint64_t)0xFF << 56)
+#define IOAPIC_REDIR_DEST(n) (((uint64_t)n) << 56)
+
+#define IOAPIC_OFFSET 0x20
+
 typedef struct madt_lapic_t {
     uint8_t type;
     uint8_t length;
@@ -48,11 +77,12 @@ typedef struct cpu_coreinfo_t {
     bool bsp;
 } cpu_coreinfo_t;
 
-extern void * ioapic_base;
 extern cpu_coreinfo_t * coreinfos;
 extern size_t cpu_cores;
 
 void init_apic();
 
-uint32_t ioapic_read(uint32_t reg);
-void ioapic_write(uint32_t reg, uint32_t val);
+uint32_t ioapic_read(void * ioapic_base, uint32_t reg);
+void ioapic_write(void * ioapic_base, uint32_t reg, uint32_t val);
+
+void ioapic_mask(uint8_t irq, bool mask);

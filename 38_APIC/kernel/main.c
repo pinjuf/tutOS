@@ -59,7 +59,6 @@ void _kmain() {
     init_8042ps2();
     kprintf("PS2 OK\n");
 
-    pic_setmask(pic_getmask() | (3<<14)); // Disable Both ATA interrupts
     for (uint8_t i = 0; i < 8; i++) {
         ata_resetdrive(i);
     }
@@ -126,16 +125,6 @@ void _kmain() {
     init_proc->fd_n = 3;
 
     proc_set_cwd(init_proc, "/");
-
-    int i, j, n;
-    for (i = 0; i < 11; i++) {
-        for (j = 0; j < 10; j++) {
-            n = 10 * i + j;
-            if (n > 108) break;
-            kprintf("\033[%dm %d\033[m", n, n);
-        }
-        kprintf("\n");
-    }
 
     do_scheduling = true;
     sti;
