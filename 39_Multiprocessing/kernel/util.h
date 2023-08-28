@@ -75,5 +75,9 @@ void cpuid(uint32_t code_a, uint32_t code_c, uint32_t * a, uint32_t * b, uint32_
 
 size_t chksum8(void * ptr, size_t count);
 
+size_t get_cpu_tps();
+uint64_t rdtsc();
+void usleep(size_t us);
+
 #define PS2_ACK 0xFA
 #define PS2_RESEND 0xFE

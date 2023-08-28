@@ -23,6 +23,8 @@
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
+size_t cpu_tps = 0;
+
 __attribute__((noreturn))
 void _kmain() {
     // Set up our stack
@@ -54,6 +56,10 @@ void _kmain() {
 
     init_pit0(PIT0_FREQ);
     kprintf("PIT OK\n");
+
+    sti; // We can now receive interrupts
+
+    cpu_tps = get_cpu_tps(); // Calibrate CPU TPS
 
     init_8042ps2();
     kprintf("PS2 OK\n");
@@ -126,7 +132,6 @@ void _kmain() {
     proc_set_cwd(init_proc, "/");
 
     do_scheduling = true;
-    sti;
 
     while (1);
 }

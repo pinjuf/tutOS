@@ -545,7 +545,9 @@ size_t devfs_write_hdd(void * f, void * buf, size_t count) {
 
 size_t devfs_read_pit0(void * f, void * buf, size_t count) {
     (void) f, (void) buf, (void) count;
-    memcpy(buf, &pit0_ticks, sizeof(pit0_ticks));
+
+    uint64_t ticks = pit0_ticks;
+    memcpy(buf, &ticks, sizeof(pit0_ticks));
 
     return sizeof(pit0_ticks); // yes, we force this, no, we won't tell you why
 }

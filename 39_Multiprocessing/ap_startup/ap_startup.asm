@@ -1,4 +1,4 @@
-[ORG 0x9000]
+[ORG 0xA000]
 [BITS 16]
 
 %define BPOB 0x7E00 ; "Boot Pass-On Block", stores data to be used by the kernel
@@ -241,7 +241,7 @@ start_lm:
     mov gs, ax
     mov ss, ax
 
-    jmp 0xB000
+    jmp 0xA000
 
 no_lm: ; No 64-bit message (only for VGA)
     mov eax, 0x0C4F0C4E

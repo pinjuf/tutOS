@@ -5,7 +5,8 @@ Memory layout:
     7E00   -   ???  | BPOB              | IDMAP
     9000   -  DOWN  | Boot/Stage2 Stack | IDMAP
     9000   -  A000  | Stage2            | IDMAP
-    A000   - 19000  | Kernel            | IDMAP
+    A000   -  9000  | AP Startup        | IDMAP
+    B000   - 19000  | Kernel            | IDMAP
     7D000  - 7FFFF  | PML4T/PDPT/PDT    | IDMAP
     110000 -  DOWN  | Int-Syscall stack | IDMAP
     120000 -  DOWN  | Kernel stack      | IDMAP

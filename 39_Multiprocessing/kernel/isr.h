@@ -19,7 +19,7 @@ void isr_schedule(int_regframe_t * regframe);
 
 void isr_spurious(void);
 
-extern uint64_t pit0_ticks;
+extern volatile uint64_t pit0_ticks;
 
 // All x86 standard ISA exceptions, error codes are marked with X
 enum X86_EXCEPTION {

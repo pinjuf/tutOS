@@ -15,8 +15,8 @@ debug: img c.img kernel/kernel.elf
 bochs: img c.img
 	bochs -q
 
-img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin
-	cat boot/boot.bin stage2/stage2.bin kernel/kernel.bin > img
+img: boot/boot.bin stage2/stage2.bin ap_startup/ap_startup.bin kernel/kernel.bin
+	cat boot/boot.bin stage2/stage2.bin ap_startup/ap_startup.bin kernel/kernel.bin > img
 
 c.img: .FORCE userland.img
 	./mkgpt.sh $@ userland.img
@@ -26,6 +26,9 @@ boot/boot.bin: boot/
 
 stage2/stage2.bin: stage2/
 	$(MAKE) -C stage2 stage2.bin
+
+ap_startup/ap_startup.bin: ap_startup/
+	$(MAKE) -C ap_startup ap_startup.bin
 
 kernel/kernel.bin: kernel/ lib/libtut_common.a
 	$(MAKE) -C kernel kernel.bin

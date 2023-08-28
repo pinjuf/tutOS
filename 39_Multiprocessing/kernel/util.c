@@ -3,6 +3,7 @@
 #include "mm.h"
 #include "util.h"
 #include "vesa.h"
+#include "isr.h"
 #include <stdarg.h>
 
 void outb(uint16_t port, uint8_t value) {
@@ -644,4 +645,35 @@ size_t chksum8(void * ptr, size_t count) {
     }
 
     return sum;
+}
+
+size_t get_cpu_tps() {
+    // Get CPU ticks per second, dependant on PIT0
+    const size_t pit_ticks = 10;
+
+    size_t start_pit = pit0_ticks;
+    uint64_t start_cpu = rdtsc();
+    while (start_pit + pit_ticks > pit0_ticks);
+    uint64_t end_cpu = rdtsc();
+
+    uint64_t delta = end_cpu - start_cpu;
+
+    return delta * PIT0_FREQ / pit_ticks;
+}
+
+uint64_t rdtsc() {
+    uint32_t lo, hi;
+    asm volatile ("rdtsc" : "=a" (lo), "=d" (hi));
+    return ((uint64_t)hi << 32) | lo;
+}
+
+void usleep(size_t us) {
+    if (cpu_tps == 0) {
+        kwarn(__FILE__,__func__,"cpu tps not calibrated");
+        return;
+    }
+
+    uint64_t start = rdtsc();
+    uint64_t end = start + us * (cpu_tps / 1000000);
+    while (rdtsc() < end);
 }
