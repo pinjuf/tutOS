@@ -107,3 +107,4 @@ uint32_t ioapic_read(void * ioapic_base, uint32_t reg);
 void ioapic_write(void * ioapic_base, uint32_t reg, uint32_t val);
 
 void ioapic_mask(uint8_t irq, bool mask);
+void apic_ipi(uint8_t apic_id, uint8_t vector, uint64_t flags);

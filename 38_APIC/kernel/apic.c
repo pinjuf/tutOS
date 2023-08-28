@@ -229,3 +229,13 @@ void ioapic_mask(uint8_t irq, bool mask) {
         curr = (void*)((size_t)curr + len);
     }
 }
+
+void apic_ipi(uint8_t apic_id, uint8_t vector, uint64_t flags) {
+    // Send an IPI (inter-processor interrupt) to the specified APIC ID
+    // Flags can be used to specify special targets (all, self, all excl. self etc.), SIPIs, etc. 
+
+    // The ICR (interrupt command register) is located at offset 0x300 and 0x310
+    // Writing to the low 32 bits of the ICR sends a fixed destination IPI, so set up the high 32 bits first
+    *(uint32_t*)(APIC_BASE + 0x310) = apic_id << 24 | (flags >> 32);
+    *(uint32_t*)(APIC_BASE + 0x300) = vector | (flags & 0xFFFFFFFF);
+}
