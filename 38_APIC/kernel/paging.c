@@ -149,7 +149,7 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
 
     // Does the needed PDPT exist?
     if (pml4t[pml4t_index] & PAGE_PRESENT) {
-        if (attr & PAGE_USER)
+        if (attr & PAGE_USER) // U/S needs to be set in all levels
             pml4t[pml4t_index] |= PAGE_USER;
 
         pdpt = (uint64_t *)(pml4t[pml4t_index] & ~0xFFF);
