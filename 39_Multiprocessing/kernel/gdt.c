@@ -6,7 +6,7 @@ gdtr_t kgdtr;
 tss_t ktss;
 
 void fill_gdt_entry(gdt_entry_t * entry, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags) {
-    entry->limit_low = limit & 0xFFFF;
+    entry->limit_low  = limit & 0xFFFF;
     entry->limit_high = (limit >> 16) & 0xF;
 
     entry->base_low    = base & 0xFFFF;

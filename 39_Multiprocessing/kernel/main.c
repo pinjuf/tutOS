@@ -20,6 +20,7 @@
 #include "rnd.h"
 #include "acpi.h"
 #include "apic.h"
+#include "ap.h"
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
@@ -82,6 +83,9 @@ void _kmain() {
     init_vesa();
     vesa_clear(vfont_bg);
     kprintf("VBE OK\n");
+
+    init_ap();
+    kprintf("AP OK\n");
 
     init_sb16();
     kprintf("SB16 OK\n");

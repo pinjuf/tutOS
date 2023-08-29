@@ -236,6 +236,22 @@ void apic_ipi(uint8_t apic_id, uint8_t vector, uint64_t flags) {
 
     // The ICR (interrupt command register) is located at offset 0x300 and 0x310
     // Writing to the low 32 bits of the ICR sends a fixed destination IPI, so set up the high 32 bits first
-    *(uint32_t*)(APIC_BASE + 0x310) = apic_id << 24 | (flags >> 32);
-    *(uint32_t*)(APIC_BASE + 0x300) = vector | (flags & 0xFFFFFFFF);
+    apic_write(0x310, (apic_read(0x310) & 0x00FFFFFF) | apic_id << 24 | (flags >> 32));
+    apic_write(0x300, (apic_read(0x300) & 0xFFF00000) | vector | (flags & 0xFFFFFFFF));
+}
+
+void apic_wait_ipi() {
+    do { __asm__ __volatile__ ("pause" : : : "memory"); }while(apic_read(0x300) & APIC_ICR_DELIVERY_PENDING);
+}
+
+void apic_clear_errors() {
+    apic_write(0x280, 0);
+}
+
+void apic_write(uint32_t reg, uint32_t val) {
+    *(volatile uint32_t*)((uint64_t)APIC_BASE + reg) = val;
+}
+
+uint32_t apic_read(uint32_t reg) {
+    return *(volatile uint32_t*)((uint64_t)APIC_BASE + reg);
 }

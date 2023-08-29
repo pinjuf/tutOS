@@ -41,6 +41,24 @@
 
 #define IOAPIC_OFFSET 0x20
 
+#define APIC_ICR_VECTOR_MASK 0xFF
+#define APIC_ICR_VECTOR(n) ((n) & APIC_ICR_VECTOR_MASK)
+#define APIC_ICR_DMODE_MASK        (7 << 8)
+#define APIC_ICR_DMODE_FIXED       (0 << 8)
+#define APIC_ICR_DMODE_LOWEST      (1 << 8)
+#define APIC_ICR_DMODE_SMI         (2 << 8)
+#define APIC_ICR_DMODE_NMI         (4 << 8)
+#define APIC_ICR_DMODE_INIT        (5 << 8)
+#define APIC_ICR_DMODE_SIPI        (6 << 8)
+#define APIC_ICR_DESTMODE_PHYSICAL (0 << 11)
+#define APIC_ICR_DESTMODE_LOGICAL  (1 << 11)
+#define APIC_ICR_DELIVERY_STANDBY  (0 << 12)
+#define APIC_ICR_DELIVERY_PENDING  (1 << 12)
+#define APIC_ICR_LEVEL_ASSERT      (1 << 14)
+#define APIC_ICR_LEVEL_DEASSERT    (0 << 14)
+#define APIC_ICR_TRIGMODE_EDGE     (0 << 15)
+#define APIC_ICR_TRIGMODE_LEVEL    (1 << 15)
+
 typedef struct madt_lapic_t {
     uint8_t type;
     uint8_t length;
@@ -107,4 +125,9 @@ uint32_t ioapic_read(void * ioapic_base, uint32_t reg);
 void ioapic_write(void * ioapic_base, uint32_t reg, uint32_t val);
 
 void ioapic_mask(uint8_t irq, bool mask);
+
 void apic_ipi(uint8_t apic_id, uint8_t vector, uint64_t flags);
+void apic_wait_ipi();
+void apic_clear_errors();
+void apic_write(uint32_t reg, uint32_t val);
+uint32_t apic_read(uint32_t reg);
