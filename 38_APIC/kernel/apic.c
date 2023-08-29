@@ -54,6 +54,10 @@ void init_apic() {
     coreinfos = (void*)kmalloc(sizeof(cpu_coreinfo_t) * MAX_CORES);
     madt_t * madt = (void*)(uint64_t)get_acpi_table("APIC");
 
+    if (madt == NULL) {
+        kwarn(__FILE__,__func__,"No MADT found");
+    }
+
     void * curr = (void*)((size_t)madt + sizeof(madt_t));
     while ((size_t)curr < (size_t)madt + madt->sdt.length) {
         uint8_t type = *(uint8_t*)curr;
@@ -78,6 +82,7 @@ void init_apic() {
             case MADT_TYPE_IOAPIC: {
                 madt_ioapic_t * ioapic = curr;
 
+                //kprintf("IOAPIC address: %x\n", ioapic->ioapic_address);
                 // Map the I/O APIC
                 mmap_page((void*)(uint64_t)ioapic->ioapic_address, (void*)(uint64_t)ioapic->ioapic_address, PAGE_PRESENT | PAGE_RW);
 
