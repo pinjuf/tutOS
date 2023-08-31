@@ -25,12 +25,6 @@ bpob_t * bpob = (void*)BPOB_ADDR;
 
 __attribute__((noreturn))
 void _kmain() {
-    // Set up our stack
-    asm volatile(" \
-        mov $0x120000, %rsp; \
-        mov %rsp, %rbp; \
-            "); 
-
     // I really like cool sounding logs
     kprintf("KRN OK\n");
 
