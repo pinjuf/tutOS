@@ -17,6 +17,8 @@ bochs: img c.img
 
 img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin
 	cat boot/boot.bin stage2/stage2.bin kernel/kernel.bin > img
+	# Add extra padding to make sure we get above the next 512 byte boundary (Bochs BIOS int 0x13 ah=0x42 won't load the last incomplete sector, but SeaBIOS will)
+	dd if=/dev/zero of=img conv=notrunc oflag=append bs=512 count=1
 
 c.img: .FORCE userland.img
 	./mkgpt.sh $@ userland.img
