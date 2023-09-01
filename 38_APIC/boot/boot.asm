@@ -41,8 +41,6 @@ boot_start:
     or al, 0b10
     out 0x92, al
 
-    sti
-
     ; Load first 64K
     mov dl, [bootdrive]
     mov ah, 0x42
@@ -60,7 +58,6 @@ boot_start:
     mov si, daps
     int 0x13
 
-
     jmp 0x9000
 
 bootdrive db 0
@@ -74,6 +71,5 @@ daps: ; Disk Address Packet Structure
     daps_lbal:  dd 0x1    ; Low 32 bits of LBA
     daps_lbah:  dd 0x0    ; High 32 bits of LBA
 
-
-times 510-($-$$) nop
-dw 0xAA55
+times 510-($-$$) nop ; Pad for 512 byte boot sector
+dw 0xAA55            ; Boot signature
