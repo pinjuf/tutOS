@@ -1,7 +1,9 @@
-Chapter 36 - Temporary file system
+Chapter 37 - Advanced Configuration and Power Interface
 
-A temporary file system is a file system that is mounted in memory. It is not connected to any persistant storage.
-Implementing file creation and deletion is much simpler with this than with a persistant file system, so
-let's try to implement it!
+I am not even going to pretend the ACPI is good. It may be modern and "advanced",
+but for the most part it's needlessly complex. If we ever want to turn off the
+computer, we'll have to use ACPI. But for now, we'll only use it to get some
+ACPI tables that inform us about the hardware (such as the APICs).
+If you wanna blame someone for this mess, blame Microsoft.
 
 FAQ:

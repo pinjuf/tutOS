@@ -1,7 +1,11 @@
-Chapter 36 - Temporary file system
+Chapter 38 - Advanced Programmable Interrupt Controller (APIC)
 
-A temporary file system is a file system that is mounted in memory. It is not connected to any persistant storage.
-Implementing file creation and deletion is much simpler with this than with a persistant file system, so
-let's try to implement it!
+The old 8259 PIC is, well, old. Because of this, it has been replaced by the modern
+APIC. The APIC is a much more advanced PIC, and is used in all modern computers. It
+is programmed via memory-mapped I/O, and has many more features than the 8259 PIC.
+Each processor has its own APIC. Furthermore, there is a number (generally 1) of
+I/O APICs, which are used to route interrupts from I/O devices to the processors.
+APICs, altough more modern, have already been replaced by xAPICs and x2APICs, but
+that is beyond the scope of this OS. Let's replace the 8259 PIC with the APIC!
 
 FAQ:
