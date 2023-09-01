@@ -10,7 +10,7 @@ size_t read(int file, void * buf, size_t size);
 size_t write(int file, void * buf, size_t size);
 int64_t seek(int file, int64_t offset, enum SEEKMODE mode);
 pid_t fork();
-int exec(char * file, char * argv[]);
+int execve(char * file, char * argv[], char * envp[]);
 void exit(int code);
 pid_t waitpid(pid_t pid, int * status, size_t options);
 pid_t getpid();

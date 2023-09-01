@@ -28,8 +28,8 @@ pid_t fork() {
     return syscall(57, 0, 0, 0, 0, 0, 0);
 }
 
-int exec(char * file, char * argv[]) {
-    return syscall(59, (uint64_t)file, (uint64_t)argv, 0, 0, 0, 0);
+int execve(char * file, char * argv[], char * envp[]) {
+    return syscall(59, (uint64_t)file, (uint64_t)argv, (uint64_t)envp, 0, 0, 0);
 }
 
 void exit(int code) {
@@ -89,7 +89,7 @@ int kill(pid_t pid, int sig) {
 int raise(int sig) {
     return kill(getpid(), sig);
     // note: it might be wise here to wait until the next jiffy
-    // to make sure the handler gets executed before this function returns
+    // to make sure the handler gets execveuted before this function returns
 }
 
 int signal(int sig, void (*func)(int)) {

@@ -24,7 +24,7 @@ int main(int argc, char * argv[]) {
         char * cur = cmd;
         memset(cmd, 0, CMDBUF_SZ);
 
-        getcwd(cwd, 0x100);
+        getcwd(cwd, sizeof(cwd));
 
         // TODO: printf for userland
         puts(cwd);
@@ -150,7 +150,7 @@ int main(int argc, char * argv[]) {
                 }
 
                 // Execute
-                exec(argv[0], argv);
+                execve(argv[0], argv, NULL);
             }
 
             // Move to the next command
