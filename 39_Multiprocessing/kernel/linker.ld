@@ -1,9 +1,9 @@
 ENTRY(_kentry)
 OUTPUT_FORMAT("binary")
 SECTIONS {
-    . = 0xA000;
+    . = 0xB000;
 
-    .kentry : AT(0xA000) {
+    .kentry : AT(0xB000) {
         *(.kentry)
     }
 

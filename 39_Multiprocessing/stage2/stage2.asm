@@ -241,7 +241,7 @@ start_lm:
     mov gs, ax
     mov ss, ax
 
-    jmp 0xA000
+    jmp 0xB000
 
 no_lm: ; No 64-bit message (only for VGA)
     mov eax, 0x0C4F0C4E

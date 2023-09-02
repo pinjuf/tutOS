@@ -15,8 +15,8 @@ debug: img c.img kernel/kernel.elf
 bochs: img c.img
 	bochs -unlock -q -log bochs.log
 
-img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin
-	cat boot/boot.bin stage2/stage2.bin kernel/kernel.bin > img
+img: boot/boot.bin stage2/stage2.bin ap_startup/ap_startup.bin kernel/kernel.bin
+	cat $^ > img
 	# Add extra padding to make sure we get above the next 512 byte boundary (Bochs BIOS int 0x13 ah=0x42 won't load the last incomplete sector, but SeaBIOS will)
 	dd if=/dev/zero of=img conv=notrunc oflag=append bs=512 count=1
 
@@ -28,6 +28,9 @@ boot/boot.bin: boot/
 
 stage2/stage2.bin: stage2/
 	$(MAKE) -C stage2 stage2.bin
+
+ap_startup/ap_startup.bin: ap_startup/
+	$(MAKE) -C ap_startup ap_startup.bin
 
 kernel/kernel.bin: kernel/ lib/libtut_common.a
 	$(MAKE) -C kernel kernel.bin
