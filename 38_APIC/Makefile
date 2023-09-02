@@ -13,7 +13,7 @@ debug: img c.img kernel/kernel.elf
 	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel/kernel.elf"
 
 bochs: img c.img
-	bochs -q -log bochs.log
+	bochs -unlock -q -log bochs.log
 
 img: boot/boot.bin stage2/stage2.bin kernel/kernel.bin
 	cat boot/boot.bin stage2/stage2.bin kernel/kernel.bin > img

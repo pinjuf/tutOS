@@ -2,7 +2,7 @@ boot: disk
 megs: 300
 
 panic: action=report
-#display_library: x, options="gui_debug"
+display_library: x, options="gui_debug"
 port_e9_hack: enabled=1
 
 ata0: enabled=1
