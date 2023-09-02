@@ -4,8 +4,6 @@
 #include "util.h"
 
 void init_ap() {
-    bpob->ap_hello = 0;
-
     // Shamelessly stolen from the OSDev wiki
     for (size_t i = 0; i < cpu_cores; i++) {
         cpu_coreinfo_t * core = &coreinfos[i];
@@ -30,6 +28,4 @@ void init_ap() {
             do { __asm__ __volatile__ ("pause" : : : "memory"); }while(*((volatile uint32_t*)(APIC_BASE + 0x300)) & (apic_id << 12)); // wait for delivery
         }
     }
-
-    kprintf("Started APs: %hu\n", bpob->ap_hello);
 }
