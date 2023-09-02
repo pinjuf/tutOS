@@ -5,7 +5,7 @@
 #include "util.h"
 #include "signal.h"
 
-uint64_t pit0_ticks = 0;
+volatile uint64_t pit0_ticks = 0;
 
 void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, uint64_t rsp, uint64_t ss) {
     (void)n;

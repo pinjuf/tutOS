@@ -60,10 +60,15 @@ endstruc
 struc bpob
     .vbe_info:      resb vbe_info_size      ; I know, I know, it could be cleaner and more efficient...
     .vbe_mode_info: resb vbe_mode_info_size
+    .ap_hello:      resw 1
 endstruc
 
 ap_start:
     cli
+
+    inc word [BPOB + bpob.ap_hello]
+
+    jmp $
 
 gdt:
     db 0, 0, 0, 0, 0, 0, 0, 0 ; Null descriptor

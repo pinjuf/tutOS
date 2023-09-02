@@ -75,5 +75,14 @@ void cpuid(uint32_t code_a, uint32_t code_c, uint32_t * a, uint32_t * b, uint32_
 
 size_t chksum8(void * ptr, size_t count);
 
+inline __attribute__((always_inline)) uint64_t rdtsc() {
+    uint32_t lo, hi;
+    asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
+    return ((uint64_t)hi << 32) | lo;
+}
+
+size_t get_cpu_tps();
+void usleep(size_t us);
+
 #define PS2_ACK 0xFA
 #define PS2_RESEND 0xFE

@@ -24,6 +24,8 @@
 
 bpob_t * bpob = (void*)BPOB_ADDR;
 
+size_t cpu_tps = 0;
+
 __attribute__((noreturn))
 void _kmain() {
     // I really like cool sounding logs
@@ -49,6 +51,10 @@ void _kmain() {
 
     init_pit0(PIT0_FREQ);
     kprintf("PIT OK\n");
+
+    sti;
+    cpu_tps = get_cpu_tps(); // Calibrate CPU Ticks per Second
+    cli;
 
     init_8042ps2();
     kprintf("PS2 OK\n");
@@ -125,6 +131,8 @@ void _kmain() {
 
     do_scheduling = true;
     sti;
+
+    kprintf("TPS: %llu\n", cpu_tps);
 
     while (1);
 }
