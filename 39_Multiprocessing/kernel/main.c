@@ -132,7 +132,5 @@ void _kmain() {
     do_scheduling = true;
     sti;
 
-    kprintf("TPS: %llu\n", cpu_tps);
-
     while (1);
 }

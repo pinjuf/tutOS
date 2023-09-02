@@ -244,3 +244,11 @@ void apic_ipi(uint8_t apic_id, uint8_t vector, uint64_t flags) {
     *(uint32_t*)(APIC_BASE + 0x310) = apic_id << 24 | (flags >> 32);
     *(uint32_t*)(APIC_BASE + 0x300) = vector | (flags & 0xFFFFFFFF);
 }
+
+void apic_write(uint32_t reg, uint32_t val) {
+    *(volatile uint32_t*)((uint64_t)APIC_BASE + reg) = val;
+}
+
+uint32_t apic_read(uint32_t reg) {
+    return *(volatile uint32_t*)((uint64_t)APIC_BASE + reg);
+}
