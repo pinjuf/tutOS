@@ -23,10 +23,10 @@ void init_ap() {
         apic_write(0x310, (apic_read(0x310) & 0x00FFFFFF) | (apic_id << 24)); // Select APIC ID
         apic_write(0x300, (apic_read(0x300) & 0xFFF00000) | 0x8500); // INIT IPI deassert
         while (apic_read(0x300) & (1 << 12)) {asm volatile ("pause" : : : "memory");}; // Wait for delivery
-        usleep(10000); // Let the AP wake up
+        usleep(20000); // Let the AP wake up (10 ms recommended, we'll do 20 ms)
 
         // Send 2 SIPIs
-        for(int j = 0; j < 2; j++) {
+        for(int j = 0; j < 2; j++) { // TODO: Repeat until AP is awake (sth. like bpob->awake_aps++ by the AP)
             apic_write(0x280, 0); // Clear errors
             apic_write(0x310, (apic_read(0x310) & 0x00FFFFFF) | (apic_id << 24)); // Select APIC ID
             apic_write(0x300, (apic_read(0x300) & 0xFFF0F800) | 0x600 | (AP_TRAMPOLINE / PAGE_SIZE)); // INIT IPI
@@ -49,6 +49,9 @@ void ap_entry() {
     }
 
     init_apgdt(core);
+
+    // We can use the IDT of the BSP (only the BSP gets IRQs)
+    asm volatile ("lidt %0" : : "m" (kidtr));
 
     while (1);
 }
