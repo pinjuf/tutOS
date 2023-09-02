@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "paging.h"
+#include "util.h"
 
 #define MM_CHUNKSIZE (PAGE_SIZE/(sizeof(uint16_t)*8))
 
@@ -10,7 +11,9 @@
 
 #define MM_MAGIC 0xFA7A5569 // Fatass 69
 
+// Big dumb memory bitmap system
 extern uint16_t * mm_bitmap;
+extern spinlock_t mm_bitmap_lock;
 
 void init_mm(void);
 

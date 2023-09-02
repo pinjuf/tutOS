@@ -2,9 +2,8 @@
 
 #include "util.h"
 
-// Note: pretty much none of these functions are task-switching-safe
-
 uint16_t * mm_bitmap = (uint16_t*) 0x140000;
+spinlock_t mm_bitmap_lock = 0; // Only used by the "core" functions: malloc and free
 
 void init_mm(void) {
     memset(mm_bitmap, 0, MM_SIZE);
@@ -87,8 +86,12 @@ size_t mm_first_free_chunk(void) {
 }
 
 void * kmalloc(size_t n) {
-    if (n == 0)
+    spinlock_acquire(&mm_bitmap_lock);
+
+    if (n == 0) {
+        spinlock_release(&mm_bitmap_lock);
         return NULL;
+    }
 
     n += 12; // Space for our header
 
@@ -123,12 +126,14 @@ void * kmalloc(size_t n) {
             *(size_t*)ptr = needed;
             ptr = (void*) ((uint64_t)ptr + sizeof(size_t));
 
+            spinlock_release(&mm_bitmap_lock);
             return ptr;
         }
 
         i++;
     }
 
+    spinlock_release(&mm_bitmap_lock);
     return NULL;
 }
 
@@ -139,8 +144,12 @@ void * kcalloc(size_t n) {
 }
 
 void kfree(void * ptr) {
-    if (!ptr)
+    spinlock_acquire(&mm_bitmap_lock);
+
+    if (!ptr) {
+        spinlock_release(&mm_bitmap_lock);
         return;
+    }
 
     ptr = (void*) ((uint64_t)ptr - sizeof(size_t));
     size_t n = *(uint64_t*)ptr;
@@ -161,6 +170,8 @@ void kfree(void * ptr) {
     for (size_t i = 0; i < n; i++) {
         mm_set_used(start + i, 0);
     }
+
+    spinlock_release(&mm_bitmap_lock);
 }
 
 void * krealloc(void * ptr, size_t n) {
