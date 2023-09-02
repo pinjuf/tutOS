@@ -1,5 +1,7 @@
 #include "gdt.h"
 #include "util.h"
+#include "mm.h"
+#include "apic.h"
 
 gdt_entry_t * kgdt = (gdt_entry_t *) GDT_BASE;
 gdtr_t kgdtr;
@@ -91,5 +93,80 @@ void init_kgdt() {
         pushq $next; \
         retfq; \
         next: \
+    ");
+}
+
+void init_apgdt(void * c) {
+    // Create a new GDT for an AP
+    cpu_coreinfo_t * core = c;
+
+    core->gdt = kcalloc(sizeof(gdt_entry_t) * GDT_ENTRIES);
+    core->gdtr.size = sizeof(gdt_entry_t) * GDT_ENTRIES - 1;
+    core->gdtr.offset  = (uint64_t)core->gdt;
+
+    void * ist = kmalloc(0x1000); // Stack for interrupts
+
+    core->tss = kcalloc(sizeof(tss_t));
+
+    for (size_t i = 0; i < 3; i++)
+        core->tss->rsp[i] = (uint64_t)ist + 0x1000;
+    for (size_t i = 0; i < 7; i++)
+        core->tss->ist[i] = (uint64_t)ist + 0x1000;
+
+    fill_gdt_entry(&core->gdt[1],
+            0,
+            0,
+            GDT_P | GDT_S | GDT_E | GDT_RW,
+            GDT_L
+    ); // kcode
+
+    fill_gdt_entry(&core->gdt[2],
+            0,
+            0,
+            GDT_P | GDT_S | GDT_DC | GDT_RW,
+            0
+    ); // kstack
+
+    fill_gdt_sysentry((gdt_sysentry_t*)&core->gdt[3],
+            (uint64_t)&ktss,
+            sizeof(tss_t)-1,
+            GDT_P | GDT_TSS64,
+            0
+    ); // ktss
+
+    fill_gdt_entry(&core->gdt[5],
+            0,
+            0,
+            GDT_P | GDT_DPL | GDT_S | GDT_DC | GDT_RW,
+            0
+    ); // ustack
+
+    fill_gdt_entry(&core->gdt[6],
+            0,
+            0,
+            GDT_P | GDT_DPL | GDT_S | GDT_E | GDT_RW,
+            GDT_L
+    ); // ucode
+
+    asm volatile ("lgdt %0" : : "m"(core->gdtr));
+    asm volatile ("ltr %%ax" : : "a"(3 * 0x8));
+
+    // Long mode essentially only uses CS (and sometimes SS)
+    asm volatile ("\
+            xor %ax, %ax; \
+            movw %ax, %ds; \
+            movw %ax, %es; \
+            movw %ax, %fs; \
+            movw %ax, %gs; \
+            mov $0x10, %ax; \
+            movw %ax, %ss; \
+    ");
+
+    // Far return
+    asm volatile ("\
+        pushq $0x08; \
+        pushq $apnext; \
+        retfq; \
+        apnext: \
     ");
 }

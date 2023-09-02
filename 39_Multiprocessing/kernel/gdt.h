@@ -69,3 +69,4 @@ void fill_gdt_entry(gdt_entry_t * entry, uint32_t base, uint32_t limit, uint8_t 
 void fill_gdt_sysentry(gdt_sysentry_t * entry, uint64_t base, uint32_t limit, uint8_t access, uint8_t flags);
 
 void init_kgdt();
+void init_apgdt(void * core);

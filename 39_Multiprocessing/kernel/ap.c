@@ -10,7 +10,7 @@ void init_ap() {
     // Shamelessly stolen from the OSDev wiki
     for (size_t i = 0; i < cpu_cores; i++) {
         cpu_coreinfo_t * core = &coreinfos[i];
-        if (core->bsp) continue; // Whatever is executing this very code IS the BSP
+        if (core->bsp || !core->available) continue; // Whatever is executing this very code IS the BSP
 
         bpob->ap_stack = (void*)((size_t)kmalloc(AP_STACKSZ) + AP_STACKSZ);
 
@@ -40,7 +40,15 @@ void init_ap() {
 
 void ap_entry() {
     // Application processors enter here after the trampoline
-    kprintf("AP %d started\n", get_lapic_id());
+    cpu_coreinfo_t * core = NULL;
+    for (size_t i = 0; i < cpu_cores; i++) {
+        if (coreinfos[i].apic_id == apic_read(0x20) >> 24) {
+            core = &coreinfos[i];
+            break;
+        }
+    }
+
+    init_apgdt(core);
 
     while (1);
 }

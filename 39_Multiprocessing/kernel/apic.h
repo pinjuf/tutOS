@@ -1,6 +1,8 @@
 #pragma once
 
 #include "types.h"
+#include "gdt.h"
+#include "idt.h"
 
 #define APIC_BASE 0xFEE00000
 
@@ -75,6 +77,11 @@ typedef struct cpu_coreinfo_t {
     uint8_t apic_id;
     bool available;
     bool bsp;
+
+    // We need a core-GDT because each core uses a different IST
+    gdtr_t gdtr;
+    gdt_entry_t * gdt;
+    tss_t * tss;
 } cpu_coreinfo_t;
 
 // Standard ISA IRQs
