@@ -2,12 +2,17 @@
 #include "apic.h"
 #include "main.h"
 #include "util.h"
+#include "mm.h"
 
 void init_ap() {
+    bpob->ap_entry = ap_entry;
+
     // Shamelessly stolen from the OSDev wiki
     for (size_t i = 0; i < cpu_cores; i++) {
         cpu_coreinfo_t * core = &coreinfos[i];
         if (core->bsp) continue; // Whatever is executing this very code IS the BSP
+
+        bpob->ap_stack = (void*)((size_t)kmalloc(AP_STACKSZ) + AP_STACKSZ);
 
         uint8_t apic_id = core->apic_id;
 
@@ -27,5 +32,14 @@ void init_ap() {
             usleep(200);                                                                                                        // wait 200 usec
             do { __asm__ __volatile__ ("pause" : : : "memory"); }while(*((volatile uint32_t*)(APIC_BASE + 0x300)) & (apic_id << 12)); // wait for delivery
         }
+
+        while (bpob->ap_stack); // AP takes the stack and sets that to NULL when it's ready
     }
+}
+
+void ap_entry() {
+    // Application processors enter here after the trampoline
+    kprintf("AP %d started\n", get_lapic_id());
+
+    while (1);
 }

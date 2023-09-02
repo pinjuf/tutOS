@@ -108,3 +108,9 @@ void ioapic_write(void * ioapic_base, uint32_t reg, uint32_t val);
 
 void ioapic_mask(uint8_t irq, bool mask);
 void apic_ipi(uint8_t apic_id, uint8_t vector, uint64_t flags);
+
+inline __attribute__((always_inline)) uint8_t get_lapic_id() {
+    uint8_t id;
+    asm volatile ("mov $1, %%eax; cpuid; shrl $24, %%ebx;" : "=b"(id) : : "eax", "ecx", "edx");
+    return id;
+}
