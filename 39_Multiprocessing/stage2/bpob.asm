@@ -57,6 +57,7 @@ endstruc
 struc bpob ; Needs to match kernel/main.h
     .vbe_info:      resb vbe_info_size      ; I know, I know, it could be cleaner and more efficient...
     .vbe_mode_info: resb vbe_mode_info_size
+    .ap_count:      resb 1
     .ap_stack:      resq 1
     .ap_entry:      resq 1
 endstruc

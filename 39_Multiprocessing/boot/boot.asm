@@ -58,6 +58,17 @@ boot_start:
     mov si, daps
     int 0x13
 
+    ; And the next 64K...
+    mov byte  [daps_sect], 0x80
+    mov word  [daps_offs], 0
+    mov word  [daps_sel],  0x2900
+    mov dword [daps_lbal], 0x101
+    mov dword [daps_lbah], 0x00
+    mov dl, [bootdrive]
+    mov ah, 0x42
+    mov si, daps
+    int 0x13
+
     jmp 0x9000
 
 bootdrive db 0

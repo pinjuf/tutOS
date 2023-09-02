@@ -8,6 +8,7 @@
 typedef struct bpob_t {
     vbe_info_t vbe_info;
     vbe_mode_info_t vbe_mode_info;
+    volatile uint8_t ap_count;
     volatile void * ap_stack;
     void (* ap_entry)();
 } __attribute__((packed)) bpob_t;

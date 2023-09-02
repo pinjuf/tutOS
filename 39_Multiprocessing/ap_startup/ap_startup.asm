@@ -69,7 +69,8 @@ ap_start_lm:
 
     mov qword rsp, [BPOB + bpob.ap_stack]
     mov rbp, rsp
-    mov qword [BPOB + bpob.ap_stack], 0
+
+    inc byte [BPOB + bpob.ap_count]
 
     jmp [BPOB + bpob.ap_entry]
 

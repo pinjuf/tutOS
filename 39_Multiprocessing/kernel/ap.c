@@ -6,13 +6,16 @@
 
 void init_ap() {
     bpob->ap_entry = ap_entry;
+    bpob->ap_count = 0;
 
     // Shamelessly stolen from the OSDev wiki
     for (size_t i = 0; i < cpu_cores; i++) {
+        kprintf("Waking up AP #%d\n", i);
+
         cpu_coreinfo_t * core = &coreinfos[i];
         if (core->bsp || !core->available) continue; // Whatever is executing this very code IS the BSP
 
-        bpob->ap_stack = (void*)((size_t)kmalloc(AP_STACKSZ) + AP_STACKSZ); // TODO: Find a way to not have to pray this alings with fxsave
+        bpob->ap_stack = (void*)((size_t)alloc_pages(AP_STACKSZ / PAGE_SIZE) + AP_STACKSZ);
 
         uint8_t apic_id = core->apic_id;
 
@@ -25,8 +28,10 @@ void init_ap() {
         while (apic_read(0x300) & (1 << 12)) {asm volatile ("pause" : : : "memory");}; // Wait for delivery
         usleep(20000); // Let the AP wake up (10 ms recommended, we'll do 20 ms)
 
-        // Send 2 SIPIs
-        for(int j = 0; j < 2; j++) { // TODO: Repeat until AP is awake (sth. like bpob->awake_aps++ by the AP)
+        uint8_t original_ap_count = bpob->ap_count;
+
+        // Send SIPIs until the AP wakes up
+        while (original_ap_count == bpob->ap_count) {
             apic_write(0x280, 0); // Clear errors
             apic_write(0x310, (apic_read(0x310) & 0x00FFFFFF) | (apic_id << 24)); // Select APIC ID
             apic_write(0x300, (apic_read(0x300) & 0xFFF0F800) | 0x600 | (AP_TRAMPOLINE / PAGE_SIZE)); // INIT IPI
@@ -34,7 +39,7 @@ void init_ap() {
             while (apic_read(0x300) & (1 << 12)) {asm volatile ("pause" : : : "memory");}; // Wait for delivery
         }
 
-        while (bpob->ap_stack); // AP takes the stack and sets that to NULL when it's ready
+        kprintf("AP #%d is online!\n", i);
     }
 }
 
