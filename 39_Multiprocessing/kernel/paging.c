@@ -104,7 +104,14 @@ void * virt_to_phys(void * virt) {
 }
 
 void mmap_page(void * virt, void * phys, uint64_t attr) {
-    // Note: We assume we are only using 4KiB-pages (not PS bits)
+    uint64_t * pml4t;
+    asm volatile("mov %%cr3, %0" : "=a" (pml4t));
+
+    // Anyone who calls _mmap_page should know what they are doing
+    if (((uint64_t)virt >= HEAP_VIRT) && ((uint64_t)virt < (HEAP_VIRT+HEAP_PTS*PAGE_ENTRIES*PAGE_SIZE))) {
+        kwarn(__FILE__,__func__,"refusing to remap heap virtual memory");
+        return;
+    }
 
     // Check if the virt address is valid
     if ((uint64_t)virt < 0x400000) {
@@ -112,10 +119,11 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
         return;
     }
 
-    if (((uint64_t)virt >= HEAP_VIRT) && ((uint64_t)virt < (HEAP_VIRT+HEAP_PTS*PAGE_ENTRIES*PAGE_SIZE))) {
-        kwarn(__FILE__,__func__,"refusing to remap heap virtual memory");
-        return;
-    }
+    _mmap_page(pml4t, virt, phys, attr);
+}
+
+void _mmap_page(uint64_t * pml4t, void * virt, void * phys, uint64_t attr) {
+    // Note: We assume we are only using 4KiB-pages (not PS bits)
 
     // Addresses must be cannonical in Long Mode (upper 17 bits must be the same)
     uint64_t upper = (uint64_t)virt >> 47;
@@ -137,12 +145,9 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
     uint16_t pdt_index   = ((uint64_t)virt >> 21) & 0x1FF;
     uint16_t pt_index    = ((uint64_t)virt >> 12) & 0x1FF;
 
-    uint64_t * pml4t;
     uint64_t * pdpt;
     uint64_t * pdt;
     uint64_t * pt;
-
-    asm volatile("mov %%cr3, %0" : "=a"(pml4t));
 
     if ((uint64_t)pml4t >= 0x400000)
         pml4t = (void*)((uint64_t)pml4t_index - HEAP_PHYS + HEAP_VIRT);
@@ -194,6 +199,78 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
     }
 
     pt[pt_index] = (uint64_t)phys | attr;
+
+    asm volatile("invlpg (%0)" : : "r"(virt));
+}
+
+void mmap_page_2mb(void * virt, void * phys, uint64_t attr) {
+    uint64_t * pml4t;
+    asm volatile("mov %%cr3, %0" : "=a" (pml4t));
+
+    // Anyone who calls _mmap_page should know what they are doing
+    if (((uint64_t)virt >= HEAP_VIRT) && ((uint64_t)virt < (HEAP_VIRT+HEAP_PTS*PAGE_ENTRIES*PAGE_SIZE))) {
+        kwarn(__FILE__,__func__,"refusing to remap heap virtual memory");
+        return;
+    }
+
+    // Check if the virt address is valid
+    if ((uint64_t)virt < 0x400000) {
+        kwarn(__FILE__,__func__,"refusing to remap kernel virtual memory");
+        return;
+    }
+
+    _mmap_page_2mb(pml4t, virt, phys, attr);
+}
+
+void _mmap_page_2mb(uint64_t * pml4t, void * virt, void * phys, uint64_t attr) {
+    uint16_t pml4t_index = ((uint64_t)virt >> 39) & 0x1FF;
+    uint16_t pdpt_index  = ((uint64_t)virt >> 30) & 0x1FF;
+    uint16_t pdt_index   = ((uint64_t)virt >> 21) & 0x1FF;
+    uint16_t pt_index    = ((uint64_t)virt >> 12) & 0x1FF;
+
+    if (pt_index) {
+        kwarn(__FILE__,__func__,"virtual address not 2MiB-aligned");
+        return;
+    }
+
+    uint64_t * pdpt;
+    uint64_t * pdt;
+
+    if ((uint64_t)pml4t >= 0x400000)
+        pml4t = (void*)((uint64_t)pml4t_index - HEAP_PHYS + HEAP_VIRT);
+
+    // Does the needed PDPT exist?
+    if (pml4t[pml4t_index] & PAGE_PRESENT) {
+        if (attr & PAGE_USER) // U/S needs to be set in all levels
+            pml4t[pml4t_index] |= PAGE_USER;
+
+        pdpt = (uint64_t *)(pml4t[pml4t_index] & ~0xFFF);
+
+        if ((uint64_t)pdpt >= 0x400000) { // If it is above kernel mem, it is part of the heap and must be translated to a virtual address
+            pdpt = (void*)((uint64_t)pdpt - HEAP_PHYS + HEAP_VIRT);
+        }
+    } else {
+        pdpt = calloc_pages(1);
+
+        pml4t[pml4t_index] = (uint64_t)virt_to_phys(pdpt) | attr;
+    }
+
+    if (pdpt[pdpt_index] & PAGE_PRESENT) {
+        if (attr & PAGE_USER)
+            pdpt[pdpt_index] |= PAGE_USER;
+
+        pdt = (uint64_t *)(pdpt[pdpt_index] & ~0xFFF);
+
+        if ((uint64_t)pdt >= 0x400000) {
+            pdt = (void*)((uint64_t)pdt - HEAP_PHYS + HEAP_VIRT);
+        }
+    } else {
+        pdt = calloc_pages(1);
+
+        pdpt[pdpt_index] = (uint64_t)virt_to_phys(pdt) | attr;
+    }
+
+    pdt[pdt_index] = (uint64_t)phys | attr;
 
     asm volatile("invlpg (%0)" : : "r"(virt));
 }

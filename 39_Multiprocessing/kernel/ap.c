@@ -53,5 +53,8 @@ void ap_entry() {
     // We can use the IDT of the BSP (only the BSP gets IRQs)
     asm volatile ("lidt %0" : : "m" (kidtr));
 
+    // Set up our own page tables
+    void * pml4 = kmalloc(PAGE_SIZE);
+
     while (1);
 }
