@@ -74,7 +74,7 @@ void ap_entry() {
     _mmap_page(pml4, (void*)APIC_BASE, (void*)APIC_BASE, PAGE_PRESENT | PAGE_RW);
 
     // Abandon the BSP page tables
-    asm volatile ("mov %0, %%cr3" : : "a" (pml4));
+    asm volatile ("mov %0, %%cr3" : : "a" (virt_to_phys(pml4)));
 
     while (1);
 }
