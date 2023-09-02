@@ -4,6 +4,7 @@
 #include "util.h"
 #include "vesa.h"
 #include "isr.h"
+#include "apic.h"
 #include <stdarg.h>
 
 void outb(uint16_t port, uint8_t value) {

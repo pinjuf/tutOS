@@ -78,8 +78,13 @@ void ap_entry() {
     // Map the APIC
     _mmap_page(pml4, (void*)APIC_BASE, (void*)APIC_BASE, PAGE_PRESENT | PAGE_RW);
 
+    void * x = get_pml4t();
+    memcpy(x, pml4, PAGE_SIZE);
+
     // Abandon the BSP page tables
     asm volatile ("mov %0, %%cr3" : : "a" (virt_to_phys(pml4)));
+
+    kprintf("AP #%d is ready!\n", core->apic_id);
 
     while (1);
 }
