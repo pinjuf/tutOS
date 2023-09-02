@@ -52,7 +52,7 @@ void * virt_to_phys(void * virt) {
     asm volatile("mov %%cr3, %0" : "=a" (pml4t));
 
     if ((uint64_t)pml4t >= 0x400000)
-        pml4t = (void*)((uint64_t)pml4t_index - HEAP_PHYS + HEAP_VIRT);
+        pml4t = (void*)((uint64_t)pml4t - HEAP_PHYS + HEAP_VIRT);
 
     if (pml4t[pml4t_index] & PAGE_PRESENT) {
         if (pml4t[pml4t_index] & PAGE_PS) {
@@ -119,6 +119,9 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
         return;
     }
 
+    if ((uint64_t)pml4t >= 0x400000)
+        pml4t = (void*)((uint64_t)pml4t - HEAP_PHYS + HEAP_VIRT);
+
     _mmap_page(pml4t, virt, phys, attr);
 }
 
@@ -148,9 +151,6 @@ void _mmap_page(uint64_t * pml4t, void * virt, void * phys, uint64_t attr) {
     uint64_t * pdpt;
     uint64_t * pdt;
     uint64_t * pt;
-
-    if ((uint64_t)pml4t >= 0x400000)
-        pml4t = (void*)((uint64_t)pml4t_index - HEAP_PHYS + HEAP_VIRT);
 
     // Does the needed PDPT exist?
     if (pml4t[pml4t_index] & PAGE_PRESENT) {
@@ -219,6 +219,9 @@ void mmap_page_2mb(void * virt, void * phys, uint64_t attr) {
         return;
     }
 
+    if ((uint64_t)pml4t >= 0x400000)
+        pml4t = (void*)((uint64_t)pml4t - HEAP_PHYS + HEAP_VIRT);
+
     _mmap_page_2mb(pml4t, virt, phys, attr);
 }
 
@@ -235,9 +238,6 @@ void _mmap_page_2mb(uint64_t * pml4t, void * virt, void * phys, uint64_t attr) {
 
     uint64_t * pdpt;
     uint64_t * pdt;
-
-    if ((uint64_t)pml4t >= 0x400000)
-        pml4t = (void*)((uint64_t)pml4t_index - HEAP_PHYS + HEAP_VIRT);
 
     // Does the needed PDPT exist?
     if (pml4t[pml4t_index] & PAGE_PRESENT) {
@@ -270,7 +270,7 @@ void _mmap_page_2mb(uint64_t * pml4t, void * virt, void * phys, uint64_t attr) {
         pdpt[pdpt_index] = (uint64_t)virt_to_phys(pdt) | attr;
     }
 
-    pdt[pdt_index] = (uint64_t)phys | attr;
+    pdt[pdt_index] = (uint64_t)phys | attr | PAGE_PS;
 
     asm volatile("invlpg (%0)" : : "r"(virt));
 }

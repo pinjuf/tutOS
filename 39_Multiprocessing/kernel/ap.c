@@ -12,7 +12,7 @@ void init_ap() {
         cpu_coreinfo_t * core = &coreinfos[i];
         if (core->bsp || !core->available) continue; // Whatever is executing this very code IS the BSP
 
-        bpob->ap_stack = (void*)((size_t)kmalloc(AP_STACKSZ) + AP_STACKSZ);
+        bpob->ap_stack = (void*)((size_t)kmalloc(AP_STACKSZ) + AP_STACKSZ); // TODO: Find a way to not have to pray this alings with fxsave
 
         uint8_t apic_id = core->apic_id;
 
@@ -50,11 +50,31 @@ void ap_entry() {
 
     init_apgdt(core);
 
+    char * test = kmalloc(128);
+    strcpy(test, "Hello from AP #");
+    itoa(core->apic_id, test + strlen(test), 10);
+    kprintf("%s\n", test);
+
     // We can use the IDT of the BSP (only the BSP gets IRQs)
     asm volatile ("lidt %0" : : "m" (kidtr));
 
     // Set up our own page tables
-    void * pml4 = kmalloc(PAGE_SIZE);
+    void * pml4 = calloc_pages(1);
+
+    // Map the kernel from 0x0 to 0x400000
+    _mmap_page_2mb(pml4, (void*)NULL, (void*)NULL, PAGE_PRESENT | PAGE_RW);
+    _mmap_page_2mb(pml4, (void*)0x200000, (void*)0x200000, PAGE_PRESENT | PAGE_RW);
+
+    // Map the heap
+    for (size_t i = 0; i < HEAP_PTS; i++) {
+        _mmap_page_2mb(pml4, (void*)(HEAP_VIRT + i * PAGE_SIZE * PAGE_ENTRIES), (void*)(HEAP_PHYS + i * PAGE_SIZE * PAGE_ENTRIES), HEAP_FLAGS);
+    }
+
+    // Map the APIC
+    _mmap_page(pml4, (void*)APIC_BASE, (void*)APIC_BASE, PAGE_PRESENT | PAGE_RW);
+
+    // Abandon the BSP page tables
+    asm volatile ("mov %0, %%cr3" : : "a" (pml4));
 
     while (1);
 }
