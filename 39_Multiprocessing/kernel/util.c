@@ -672,3 +672,15 @@ void usleep(size_t us) {
     uint64_t end = start + us * (cpu_tps / 1000000);
     while (rdtsc() < end);
 }
+
+void spinlock_acquire(spinlock_t * lock) {
+    while (__sync_lock_test_and_set(lock, 1));
+}
+
+void spinlock_acquireid(spinlock_t * lock, uint16_t id) {
+    while (__sync_lock_test_and_set(lock, id));
+}
+
+void spinlock_release(spinlock_t * lock) {
+    __sync_lock_release(lock);
+}

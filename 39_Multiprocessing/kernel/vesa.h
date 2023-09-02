@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "psf.h"
+#include "util.h"
 
 typedef struct vbe_info_t {
 	char signature[4];
@@ -72,6 +73,8 @@ void vesa_clear(rgb32_t c);
 void vesa_drawrect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, rgb32_t c);
 void vesa_drawcircle(uint32_t x, uint32_t y, int r, rgb32_t c);
 void vesa_scrolldown(uint32_t n);
+
+extern spinlock_t vesa_lock;
 
 extern uint32_t vheight, vwidth;
 extern psf2_header_t * vfont;

@@ -84,5 +84,10 @@ inline __attribute__((always_inline)) uint64_t rdtsc() {
 size_t get_cpu_tps();
 void usleep(size_t us);
 
+typedef volatile uint16_t spinlock_t;
+void spinlock_acquire(spinlock_t * lock);
+void spinlock_acquireid(spinlock_t * lock, uint16_t id);
+void spinlock_release(spinlock_t * lock);
+
 #define PS2_ACK 0xFA
 #define PS2_RESEND 0xFE

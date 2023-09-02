@@ -7,6 +7,8 @@
 #include "mm.h"
 #include "kbd.h"
 
+spinlock_t vesa_lock = 0;
+
 bool vesa_ready = false; // kputs etc. should know when it is ok to write to VESA
 uint32_t vheight, vwidth;
 psf2_header_t * vfont;
@@ -122,6 +124,8 @@ void vesa_scrolldown(uint32_t n) {
 }
 
 void vesa_putc(char c) {
+    spinlock_acquire(&vesa_lock); // Writing a character should be pseudo-atomic
+
     const uint32_t vesa_cols = vwidth / vfont->width;
     const uint32_t vesa_rows = vheight / vfont->height;
 
@@ -470,6 +474,8 @@ void vesa_putc(char c) {
         vesa_y = vesa_rows - 1;
         vesa_scrolldown(vfont->height);
     }
+
+    spinlock_release(&vesa_lock);
 }
 
 void vesa_puts(char * s) {
