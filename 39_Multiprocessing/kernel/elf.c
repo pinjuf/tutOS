@@ -28,7 +28,7 @@ int elf_load(process_t * out, void * buf, size_t stack_pages, bool kmode) {
     out->stack_heap = alloc_pages(stack_pages);
     out->regs.rbp = out->regs.rsp;
 
-    asm volatile ("mov %%cr3, %0" : "=a" (out->regs.cr3));
+    out->regs.cr3 = (uint64_t)get_pml4t();
     out->regs.rflags = 0x202; // IF
     out->regs.cs = kmode ? (1*8) : ((6*8) | 3);
     out->regs.ss = kmode ? (2*8) : ((5*8) | 3);

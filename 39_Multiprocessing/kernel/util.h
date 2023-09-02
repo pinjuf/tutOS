@@ -81,6 +81,13 @@ inline __attribute__((always_inline)) uint64_t rdtsc() {
     return ((uint64_t)hi << 32) | lo;
 }
 
+inline __attribute__((always_inline)) uint64_t * get_pml4t() {
+    // Warning: returns a PHYSICAL address
+    uint64_t * pml4t;
+    asm volatile("mov %%cr3, %0" : "=r"(pml4t));
+    return (uint64_t*)((uint64_t)pml4t & ~0xFFF);
+}
+
 size_t get_cpu_tps();
 void usleep(size_t us);
 

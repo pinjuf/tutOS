@@ -4,8 +4,7 @@
 #include "util.h"
 
 void init_paging(void) {
-    uint64_t * pml4t;
-    asm volatile("mov %%cr3, %0" : "=a" (pml4t));
+    uint64_t * pml4t = get_pml4t();
 
     // stage2 has already set up 4 Mibs of ID-mapped memory for the kernel, we only set up the HEAP
     // When using 0xB000000 as the virtual heap, we need to use PDPT we already have
@@ -44,12 +43,10 @@ void * virt_to_phys(void * virt) {
     uint16_t pdt_index   = ((uint64_t)virt >> 21) & 0x1FF;
     uint16_t pt_index    = ((uint64_t)virt >> 12) & 0x1FF;
 
-    uint64_t * pml4t;
+    uint64_t * pml4t = get_pml4t();
     uint64_t * pdpt;
     uint64_t * pdt;
     uint64_t * pt;
-
-    asm volatile("mov %%cr3, %0" : "=a" (pml4t));
 
     if ((uint64_t)pml4t >= 0x400000)
         pml4t = (void*)((uint64_t)pml4t - HEAP_PHYS + HEAP_VIRT);
@@ -104,8 +101,7 @@ void * virt_to_phys(void * virt) {
 }
 
 void mmap_page(void * virt, void * phys, uint64_t attr) {
-    uint64_t * pml4t;
-    asm volatile("mov %%cr3, %0" : "=a" (pml4t));
+    uint64_t * pml4t = get_pml4t();
 
     // Anyone who calls _mmap_page should know what they are doing
     if (((uint64_t)virt >= HEAP_VIRT) && ((uint64_t)virt < (HEAP_VIRT+HEAP_PTS*PAGE_ENTRIES*PAGE_SIZE))) {
@@ -204,8 +200,7 @@ void _mmap_page(uint64_t * pml4t, void * virt, void * phys, uint64_t attr) {
 }
 
 void mmap_page_2mb(void * virt, void * phys, uint64_t attr) {
-    uint64_t * pml4t;
-    asm volatile("mov %%cr3, %0" : "=a" (pml4t));
+    uint64_t * pml4t = get_pml4t();
 
     // Anyone who calls _mmap_page should know what they are doing
     if (((uint64_t)virt >= HEAP_VIRT) && ((uint64_t)virt < (HEAP_VIRT+HEAP_PTS*PAGE_ENTRIES*PAGE_SIZE))) {
