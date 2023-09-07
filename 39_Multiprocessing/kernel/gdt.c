@@ -102,16 +102,16 @@ void init_apgdt(void * c) {
 
     core->gdt = kcalloc(sizeof(gdt_entry_t) * GDT_ENTRIES);
     core->gdtr.size = sizeof(gdt_entry_t) * GDT_ENTRIES - 1;
-    core->gdtr.offset  = (uint64_t)core->gdt;
+    core->gdtr.offset = (uint64_t)core->gdt;
 
-    void * ist = kmalloc(0x1000); // Stack for interrupts
+    void * ist = calloc_pages((AP_IST_SZ + PAGE_SIZE - 1) / PAGE_SIZE); // Stack for interrupts, needs to be aligned for fxsave
 
     core->tss = kcalloc(sizeof(tss_t));
 
     for (size_t i = 0; i < 3; i++)
-        core->tss->rsp[i] = (uint64_t)ist + 0x1000;
+        core->tss->rsp[i] = (uint64_t)ist + AP_IST_SZ;
     for (size_t i = 0; i < 7; i++)
-        core->tss->ist[i] = (uint64_t)ist + 0x1000;
+        core->tss->ist[i] = (uint64_t)ist + AP_IST_SZ;
 
     fill_gdt_entry(&core->gdt[1],
             0,
@@ -128,7 +128,7 @@ void init_apgdt(void * c) {
     ); // kstack
 
     fill_gdt_sysentry((gdt_sysentry_t*)&core->gdt[3],
-            (uint64_t)&ktss,
+            (uint64_t)core->tss,
             sizeof(tss_t)-1,
             GDT_P | GDT_TSS64,
             0

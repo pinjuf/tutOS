@@ -65,6 +65,8 @@ extern tss_t ktss;
 #define GDT_TSS64 (0x9)     // 64-bit TSS
 #define GDT_LDT   (0x2)     // LDT
 
+#define AP_IST_SZ 0x1000
+
 void fill_gdt_entry(gdt_entry_t * entry, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags);
 void fill_gdt_sysentry(gdt_sysentry_t * entry, uint64_t base, uint32_t limit, uint8_t access, uint8_t flags);
 

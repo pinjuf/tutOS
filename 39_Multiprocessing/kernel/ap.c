@@ -39,15 +39,19 @@ void init_ap() {
     }
 }
 
-void ap_entry() {
-    // Application processors enter here after the trampoline
-    cpu_coreinfo_t * core = NULL;
+cpu_coreinfo_t * get_core() {
     for (size_t i = 0; i < cpu_cores; i++) {
         if (coreinfos[i].apic_id == apic_read(0x20) >> 24) {
-            core = &coreinfos[i];
-            break;
+            return &coreinfos[i];
         }
     }
+
+    return NULL; // Should never happen
+}
+
+void ap_entry() {
+    // Application processors enter here after the trampoline
+    cpu_coreinfo_t * core = get_core();
 
     init_apgdt(core);
 
@@ -74,13 +78,15 @@ void ap_entry() {
     size_t fb_pages = fb_size / PAGE_SIZE;
     if (fb_size % PAGE_SIZE) fb_pages++;
     for (size_t i = 0; i < fb_pages; i++) {
-        _mmap_page(pml4, (void*)(VESA_VIRT_FB + i * PAGE_SIZE), (void*)(size_t)bpob->vbe_mode_info.framebuffer + i * PAGE_SIZE, PAGE_PRESENT | PAGE_RW);
+        _mmap_page(pml4, (void*)(VESA_VIRT_FB + i * PAGE_SIZE), (void*)((size_t)bpob->vbe_mode_info.framebuffer + i * PAGE_SIZE), PAGE_PRESENT | PAGE_RW);
     }
 
     // TODO: Did we forget to mmap anything else?
 
     // Abandon the BSP page tables
     asm volatile ("mov %0, %%cr3" : : "a" (virt_to_phys(pml4)));
+
+    *((uint32_t*)0xFFFFFFFF80000000) = 0xdeadbeef; // Fuck shit up
 
     while (1);
 }
