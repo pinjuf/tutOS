@@ -75,7 +75,6 @@ typedef struct madt_iso_t {
 typedef struct cpu_coreinfo_t {
     uint8_t processor_id;
     uint8_t apic_id;
-    bool available;
     bool bsp;
 
     // We need a core-GDT because each core uses a different IST

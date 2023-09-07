@@ -11,7 +11,7 @@ void init_ap() {
     // Shamelessly stolen from the OSDev wiki
     for (size_t i = 0; i < cpu_cores; i++) {
         cpu_coreinfo_t * core = &coreinfos[i];
-        if (core->bsp || !core->available) continue; // Whatever is executing this very code IS the BSP
+        if (core->bsp) continue; // Whatever is executing this very code IS the BSP
 
         bpob->ap_stack = (void*)((size_t)alloc_pages(AP_STACKSZ / PAGE_SIZE) + AP_STACKSZ);
 
@@ -85,8 +85,6 @@ void ap_entry() {
 
     // Abandon the BSP page tables
     asm volatile ("mov %0, %%cr3" : : "a" (virt_to_phys(pml4)));
-
-    *((uint32_t*)0xFFFFFFFF80000000) = 0xdeadbeef; // Fuck shit up
 
     while (1);
 }

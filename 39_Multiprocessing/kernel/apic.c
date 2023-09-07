@@ -67,9 +67,13 @@ void init_apic() {
             case MADT_TYPE_LAPIC: {
                 madt_lapic_t * lapic = curr;
 
+                // If the processor is unavailable, ignore it
+                if (!(lapic->flags & 1 ? true : (lapic->flags & 2 ? true : false))) {
+                    break;
+                }
+
                 coreinfos[cpu_cores].processor_id = lapic->acpi_processor_id;
                 coreinfos[cpu_cores].apic_id      = lapic->apic_id;
-                coreinfos[cpu_cores].available    = lapic->flags & 1 ? true : (lapic->flags & 2 ? true : false);
 
                 if (bsp == lapic->acpi_processor_id) {
                     coreinfos[cpu_cores].bsp = true;
