@@ -5,7 +5,7 @@ panic: action=report
 display_library: x, options="gui_debug"
 port_e9_hack: enabled=1
 
-cpu: count=2
+cpu: count=4
 
 ata0: enabled=1
 ata0-master: type=disk, path="img", mode=flat, cylinders=10, heads=16, spt=63
