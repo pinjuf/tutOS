@@ -44,7 +44,7 @@ ap_start_prot:
     mov cr3, edi
 
     mov eax, cr4
-    or eax, 1 << 4 | 1 << 5 ; Enable PSE and PAE
+    or eax, 1 << 4 | 1 << 5 | 1 << 7 ; Enable PSE, PAE and PGE
     mov cr4, eax
 
     mov ecx, 0xC0000080

@@ -10,8 +10,6 @@ void init_ap() {
 
     // Shamelessly stolen from the OSDev wiki
     for (size_t i = 0; i < cpu_cores; i++) {
-        kprintf("Waking up AP #%d\n", i);
-
         cpu_coreinfo_t * core = &coreinfos[i];
         if (core->bsp || !core->available) continue; // Whatever is executing this very code IS the BSP
 
@@ -38,8 +36,6 @@ void init_ap() {
             usleep(200); // wait 200 usec
             while (apic_read(0x300) & (1 << 12)) {asm volatile ("pause" : : : "memory");}; // Wait for delivery
         }
-
-        kprintf("AP #%d is online!\n", i);
     }
 }
 
@@ -55,16 +51,11 @@ void ap_entry() {
 
     init_apgdt(core);
 
-    char * test = kmalloc(128);
-    strcpy(test, "Hello from AP #");
-    itoa(core->apic_id, test + strlen(test), 10);
-    kprintf("%s\n", test);
-
     // We can use the IDT of the BSP (only the BSP gets IRQs)
     asm volatile ("lidt %0" : : "m" (kidtr));
 
     // Set up our own page tables
-    void * pml4 = calloc_pages(1);
+    uint64_t * pml4 = calloc_pages(1);
 
     // Map the kernel from 0x0 to 0x400000
     _mmap_page_2mb(pml4, (void*)NULL, (void*)NULL, PAGE_PRESENT | PAGE_RW);
@@ -78,13 +69,18 @@ void ap_entry() {
     // Map the APIC
     _mmap_page(pml4, (void*)APIC_BASE, (void*)APIC_BASE, PAGE_PRESENT | PAGE_RW);
 
-    void * x = get_pml4t();
-    memcpy(x, pml4, PAGE_SIZE);
+    // Map the VESA framebuffer (like vesa.c)
+    size_t fb_size = bpob->vbe_mode_info.height * bpob->vbe_mode_info.pitch;
+    size_t fb_pages = fb_size / PAGE_SIZE;
+    if (fb_size % PAGE_SIZE) fb_pages++;
+    for (size_t i = 0; i < fb_pages; i++) {
+        _mmap_page(pml4, (void*)(VESA_VIRT_FB + i * PAGE_SIZE), (void*)(size_t)bpob->vbe_mode_info.framebuffer + i * PAGE_SIZE, PAGE_PRESENT | PAGE_RW);
+    }
+
+    // TODO: Did we forget to mmap anything else?
 
     // Abandon the BSP page tables
     asm volatile ("mov %0, %%cr3" : : "a" (virt_to_phys(pml4)));
-
-    kprintf("AP #%d is ready!\n", core->apic_id);
 
     while (1);
 }

@@ -119,6 +119,8 @@ void mmap_page(void * virt, void * phys, uint64_t attr) {
         pml4t = (void*)((uint64_t)pml4t - HEAP_PHYS + HEAP_VIRT);
 
     _mmap_page(pml4t, virt, phys, attr);
+
+    asm volatile("invlpg (%0)" : : "r"(virt));
 }
 
 void _mmap_page(uint64_t * pml4t, void * virt, void * phys, uint64_t attr) {
@@ -195,8 +197,6 @@ void _mmap_page(uint64_t * pml4t, void * virt, void * phys, uint64_t attr) {
     }
 
     pt[pt_index] = (uint64_t)phys | attr;
-
-    asm volatile("invlpg (%0)" : : "r"(virt));
 }
 
 void mmap_page_2mb(void * virt, void * phys, uint64_t attr) {
@@ -218,6 +218,8 @@ void mmap_page_2mb(void * virt, void * phys, uint64_t attr) {
         pml4t = (void*)((uint64_t)pml4t - HEAP_PHYS + HEAP_VIRT);
 
     _mmap_page_2mb(pml4t, virt, phys, attr);
+
+    asm volatile("invlpg (%0)" : : "r"(virt));
 }
 
 void _mmap_page_2mb(uint64_t * pml4t, void * virt, void * phys, uint64_t attr) {
@@ -266,8 +268,6 @@ void _mmap_page_2mb(uint64_t * pml4t, void * virt, void * phys, uint64_t attr) {
     }
 
     pdt[pdt_index] = (uint64_t)phys | attr | PAGE_PS;
-
-    asm volatile("invlpg (%0)" : : "r"(virt));
 }
 
 void mmap_pages(void * virt, void * phys, uint64_t attr, size_t count) {

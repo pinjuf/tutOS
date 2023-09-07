@@ -157,9 +157,9 @@ reload_cs:
     add edi, 8
     mov DWORD [edi], 0x200000 | 0b11 | 1<<7
 
-    ; Step 3: Enable PSE and PAE
+    ; Step 3: Enable PSE, PAE and PGE
     mov eax, cr4
-    or eax, 1 << 4 | 1 << 5
+    or eax, 1 << 4 | 1 << 5 | 1 << 7
     mov cr4, eax
 
     ; Step 4: Enable Long Mode, putting us into IA-32 mode
