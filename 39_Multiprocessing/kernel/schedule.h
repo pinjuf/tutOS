@@ -80,10 +80,14 @@ typedef struct pagemap_t {
 
 #define SIGQUEUE_SZ 8
 
+#define PROCESS_CORE_NONE UINT8_MAX // No core executing this process
+
 typedef struct process_t {
     pid_t pid;
 
     volatile PROCESS_STATE state;
+
+    volatile uint8_t core; // Core this process is CURRENTLY running on (UINT8_MAX means none)
 
     void * stack_heap;  // The STARTING LOW position of the stack in heap memory (it is mapped to sth like ELF_DEF_RSP)
     size_t stack_pages;

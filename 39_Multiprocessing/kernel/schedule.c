@@ -41,6 +41,7 @@ void schedule(void * regframe_ptr) {
     // Get the next or the current process
     // This will loop indefinetly if there is nothing to run!
     do {
+        core->current_process->core = PROCESS_CORE_NONE;
         core->current_process = ll_nextla(processes, core->current_process);
 
         if (!IS_ALIVE(core->current_process))
@@ -64,7 +65,8 @@ void schedule(void * regframe_ptr) {
             core->current_process->state = PROCESS_RUNNING;
         }
 
-    } while (core->current_process->state != PROCESS_RUNNING);
+    } while (core->current_process->state != PROCESS_RUNNING \
+          || core->current_process->core  != PROCESS_CORE_NONE); // Only execute running processes that are not already running on a core
 
     write_proc_regs(core->current_process, rf);
 
@@ -215,6 +217,8 @@ void schedule(void * regframe_ptr) {
             true_sigqueue_index++;
         }
     }
+
+    core->current_process->core = core->apic_id;
 }
 
 void proc_set_args(process_t * proc, int argc, char * argv[]) {
