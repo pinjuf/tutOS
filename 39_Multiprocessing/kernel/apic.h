@@ -83,6 +83,8 @@ typedef struct cpu_coreinfo_t {
     gdt_entry_t * gdt;
     tss_t * tss;
 
+    uint64_t * pml4t;
+
     process_t * current_process;
 } cpu_coreinfo_t;
 

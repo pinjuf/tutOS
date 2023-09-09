@@ -13,6 +13,7 @@ ll_head * processes;
 bool do_scheduling = false;
 pid_t pid_counter = INIT_PID;
 volatile uint64_t schedule_ticks = 0;
+spinlock_t procchoice_lock = 0; // Lock during process choice
 
 void init_scheduling() {
     processes = create_ll(sizeof(process_t));
@@ -40,8 +41,11 @@ void schedule(void * regframe_ptr) {
 
     // Get the next or the current process
     // This will loop indefinetly if there is nothing to run!
+    core->current_process->core = PROCESS_CORE_NONE;
+
+    spinlock_acquire(&procchoice_lock);
+
     do {
-        core->current_process->core = PROCESS_CORE_NONE;
         core->current_process = ll_nextla(processes, core->current_process);
 
         if (!IS_ALIVE(core->current_process))
@@ -68,8 +72,15 @@ void schedule(void * regframe_ptr) {
     } while (core->current_process->state != PROCESS_RUNNING \
           || core->current_process->core  != PROCESS_CORE_NONE); // Only execute running processes that are not already running on a core
 
+    core->current_process->core = core->apic_id; // Make sure no other core takes this process
+
+    spinlock_release(&procchoice_lock);
+
+    core->current_process->regs.cr3 = (uint64_t)core->pml4t; // Different core, different page tables
+
     write_proc_regs(core->current_process, rf);
 
+    // Map the processes memory
     for (size_t i = 0; i < core->current_process->pagemaps_n; i++) {
         mmap_pages(core->current_process->pagemaps[i].virt,
                    core->current_process->pagemaps[i].phys,
@@ -89,6 +100,7 @@ void schedule(void * regframe_ptr) {
         child->pid = core->current_process->latest_child;
         child->latest_child = 0;
         child->parent = core->current_process->pid;
+        child->core = PROCESS_CORE_NONE;
 
         child->sigactions = ll_copy(core->current_process->sigactions);
 
@@ -217,8 +229,6 @@ void schedule(void * regframe_ptr) {
             true_sigqueue_index++;
         }
     }
-
-    core->current_process->core = core->apic_id;
 }
 
 void proc_set_args(process_t * proc, int argc, char * argv[]) {
@@ -253,6 +263,8 @@ process_t * add_process() {
     out->pid = pid_counter++;
     out->sigactions = create_ll(sizeof(struct sigaction));
     sigemptyset(&out->sigmask);
+
+    out->core = PROCESS_CORE_NONE;
 
     out->fds = create_ll(sizeof(fd_t));
 

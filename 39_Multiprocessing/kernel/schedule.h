@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "ll.h"
+#include "util.h"
 
 #include "../lib/signal.h"
 
@@ -132,6 +133,8 @@ typedef struct process_t {
 extern ll_head * processes;
 extern bool do_scheduling;
 extern pid_t pid_counter;
+
+extern spinlock_t procchoice_lock;
 
 void init_scheduling(void);
 void schedule(void * regframe_ptr);

@@ -79,6 +79,8 @@ void init_apic() {
                     coreinfos[cpu_cores].bsp = true;
                 }
 
+                coreinfos[cpu_cores].pml4t = get_pml4t();
+
                 coreinfos[cpu_cores].current_process = NULL;
 
                 cpu_cores++;
