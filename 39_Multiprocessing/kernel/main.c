@@ -130,7 +130,7 @@ void _kmain() {
     proc_set_cwd(init_proc, "/");
 
     do_scheduling = true;
-    sti;
 
+    sti;
     while (1);
 }

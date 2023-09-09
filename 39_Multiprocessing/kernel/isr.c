@@ -91,7 +91,15 @@ void isr_irq0(int_regframe_t * regframe) {
 
     if (!(pit0_ticks % TICKS_PER_SCHEDULE) && do_scheduling) {
         schedule_ticks++;
-        schedule(regframe);
+
+        // Every scheduling tick, a core is chosen to reschedule
+        cpu_coreinfo_t * core = &coreinfos[schedule_ticks % cpu_cores];
+
+        if (core->bsp) { // Only the BSP catches an IRQ0
+            schedule(regframe);
+        } else {
+            apic_ipi(core->apic_id, 0x82, 0);
+        }
     }
 
     if (!(pit0_ticks % PROC_CLEANER_TICKS) && do_scheduling) {

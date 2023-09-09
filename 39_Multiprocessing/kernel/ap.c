@@ -86,6 +86,9 @@ void ap_entry() {
     // Abandon the BSP page tables
     asm volatile ("mov %0, %%cr3" : : "a" (virt_to_phys(core->pml4t)));
 
+    // Enable the APIC
+    apic_write(0xF0, apic_read(0xF0) | 1 << 8 | 0xFF);
+
     sti; // Now we wait
     while (1);
 }

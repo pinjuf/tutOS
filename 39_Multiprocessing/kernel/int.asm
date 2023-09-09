@@ -243,6 +243,8 @@ isr_schedule_stub:
 
     POP_ALL
 
+    APIC_EOI
+
     iretq
 
 isr_spurious_stub:
@@ -251,8 +253,6 @@ isr_spurious_stub:
     call isr_spurious
 
     POP_ALL
-
-    APIC_EOI
 
     iretq
 

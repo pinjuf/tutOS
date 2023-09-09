@@ -76,7 +76,7 @@ void schedule(void * regframe_ptr) {
 
     spinlock_release(&procchoice_lock);
 
-    core->current_process->regs.cr3 = (uint64_t)core->pml4t; // Different core, different page tables
+    core->current_process->regs.cr3 = (uint64_t)virt_to_phys(core->pml4t); // Different core, different page tables
 
     write_proc_regs(core->current_process, rf);
 

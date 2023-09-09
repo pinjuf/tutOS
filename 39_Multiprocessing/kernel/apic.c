@@ -172,7 +172,7 @@ void init_apic() {
 
     // Enable the APIC by setting the APIC enable bit in the spurious interrupt vector register
     mmap_page((void*)APIC_BASE, (void*)APIC_BASE, PAGE_PRESENT | PAGE_RW);
-    *(uint32_t*)(APIC_BASE + 0xF0) |= 1 << 8 | 0xFF; // 0xFF is the spurious interrupt vector
+    apic_write(0xF0, apic_read(0xF0) | 1 << 8 | 0xFF);
 
     // Unmask used interrupts
     ioapic_mask(IRQ_PIT, false);
