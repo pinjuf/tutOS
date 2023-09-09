@@ -50,6 +50,7 @@ cpu_coreinfo_t * get_core() {
     return NULL; // Should never happen
 }
 
+__attribute__((noreturn))
 void ap_entry() {
     // Application processors enter here after the trampoline
     cpu_coreinfo_t * core = get_core();
