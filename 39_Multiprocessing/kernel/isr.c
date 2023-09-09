@@ -5,6 +5,7 @@
 #include "util.h"
 #include "signal.h"
 #include "apic.h"
+#include "ap.h"
 
 volatile uint64_t pit0_ticks = 0;
 
@@ -16,19 +17,19 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
     (void)rsp;
     (void)ss;
 
-    uint8_t core = get_lapic_id();
+    cpu_coreinfo_t * core = get_core();
 
-    if (current_process && (cs & 3)) {
+    if (core->current_process && (cs & 3)) {
         // This was caused by a process
         // that will now have to answer
         // for its crimes
 
-        kprintf(" < PEXC %u (SIG=%d) AT 0x%x BY PID#%u (core #%u)>\n", n, EXCEPTION_SIGNALS[n], rip, current_process->pid, core);
+        kprintf(" < PEXC %u (SIG=%d) AT 0x%x BY PID#%u (core #%u)>\n", n, EXCEPTION_SIGNALS[n], rip, core->current_process->pid, core->apic_id);
 
-        push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
+        push_proc_sig(core->current_process, EXCEPTION_SIGNALS[n]);
 
         // Trigger a manual schedule
-        current_process = NULL;
+        core->current_process = NULL;
         asm volatile ("int $0x82");
     }
 
@@ -47,19 +48,19 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
     (void)rsp;
     (void)ss;
 
-    uint8_t core = get_lapic_id();
+    cpu_coreinfo_t * core = get_core();
 
-    if (current_process && (cs & 3)) {
+    if (core->current_process && (cs & 3)) {
         // This was caused by a process
         // that will now have to answer
         // for its crimes
 
-        kprintf(" < PEXC %u (ERR=0x%x, SIG=%d) AT 0x%x BY PID#%u (core #%u)>\n", n, err, EXCEPTION_SIGNALS[n], rip, current_process->pid, core);
+        kprintf(" < PEXC %u (ERR=0x%x, SIG=%d) AT 0x%x BY PID#%u (core #%u)>\n", n, err, EXCEPTION_SIGNALS[n], rip, core->current_process->pid, core);
 
-        push_proc_sig(current_process, EXCEPTION_SIGNALS[n]);
+        push_proc_sig(core->current_process, EXCEPTION_SIGNALS[n]);
 
         // Trigger a manual schedule
-        current_process = NULL;
+        core->current_process = NULL;
         asm volatile ("int $0x82");
     }
 

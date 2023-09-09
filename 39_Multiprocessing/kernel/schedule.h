@@ -126,7 +126,6 @@ typedef struct process_t {
 #define MAX_PROCESSES 256
 
 extern ll_head * processes;
-extern process_t * current_process;
 extern bool do_scheduling;
 extern pid_t pid_counter;
 

@@ -6,9 +6,10 @@
 #include "isr.h"
 #include "fd.h"
 #include "vfs.h"
+#include "apic.h"
+#include "ap.h"
 
 ll_head * processes;
-process_t * current_process = NULL;
 bool do_scheduling = false;
 pid_t pid_counter = INIT_PID;
 volatile uint64_t schedule_ticks = 0;
@@ -20,124 +21,126 @@ void init_scheduling() {
 void schedule(void * regframe_ptr) {
     int_regframe_t * rf = (int_regframe_t*)regframe_ptr;
 
-    if (!current_process) { // First time loading in? / Last process killed?
+    cpu_coreinfo_t * core = get_core();
+
+    if (!core->current_process) { // First time loading in? / Last process killed?
         if (!ll_len(processes)) {
             kwarn(__FILE__,__func__,"process list empty (halting)");
             while (1);
         }
 
-        current_process = ll_get(processes, 0);
+        core->current_process = ll_get(processes, 0);
     } else {
         // Save current process, given that it is not about to undergo a context change
-        if (!current_process->to_exec)
-            read_proc_regs(current_process, rf);
+        if (!core->current_process->to_exec)
+            read_proc_regs(core->current_process, rf);
         else
-            current_process->to_exec = false;
+            core->current_process->to_exec = false;
     }
 
     // Get the next or the current process
     // This will loop indefinetly if there is nothing to run!
     do {
-        current_process = ll_nextla(processes, current_process);
+        core->current_process = ll_nextla(processes, core->current_process);
 
-        if (!IS_ALIVE(current_process))
+        if (!IS_ALIVE(core->current_process))
             continue;
 
         // Note: If the signal queue is full, no SIGCONT will be able to be delivered!
-        size_t sigstop_prio   = proc_has_sig(current_process, SIGSTOP);
-        size_t sigtstp_prio   = proc_has_sig(current_process, SIGTSTP);
-        struct sigaction * sa = get_proc_sigaction(current_process, SIGTSTP);
+        size_t sigstop_prio   = proc_has_sig(core->current_process, SIGSTOP);
+        size_t sigtstp_prio   = proc_has_sig(core->current_process, SIGTSTP);
+        struct sigaction * sa = get_proc_sigaction(core->current_process, SIGTSTP);
         if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
             sigstop_prio = MAX(sigstop_prio, sigtstp_prio);
         }
 
-        if ((current_process->state == PROCESS_RUNNING) && sigstop_prio) {
-            current_process->state = PROCESS_STOPPED;
+        if ((core->current_process->state == PROCESS_RUNNING) && sigstop_prio) {
+            core->current_process->state = PROCESS_STOPPED;
         }
 
         // Is there a more RECENT SIGCONT in the queue?
-        size_t sigcont_prio = proc_has_sig(current_process, SIGCONT);
-        if ((current_process->state == PROCESS_STOPPED) && (sigcont_prio > sigstop_prio)) {
-            current_process->state = PROCESS_RUNNING;
+        size_t sigcont_prio = proc_has_sig(core->current_process, SIGCONT);
+        if ((core->current_process->state == PROCESS_STOPPED) && (sigcont_prio > sigstop_prio)) {
+            core->current_process->state = PROCESS_RUNNING;
         }
 
-    } while (current_process->state != PROCESS_RUNNING);
+    } while (core->current_process->state != PROCESS_RUNNING);
 
-    write_proc_regs(current_process, rf);
+    write_proc_regs(core->current_process, rf);
 
-    for (size_t i = 0; i < current_process->pagemaps_n; i++) {
-        mmap_pages(current_process->pagemaps[i].virt,
-                   current_process->pagemaps[i].phys,
-                   current_process->pagemaps[i].attr,
-                   current_process->pagemaps[i].n);
+    for (size_t i = 0; i < core->current_process->pagemaps_n; i++) {
+        mmap_pages(core->current_process->pagemaps[i].virt,
+                   core->current_process->pagemaps[i].phys,
+                   core->current_process->pagemaps[i].attr,
+                   core->current_process->pagemaps[i].n);
     }
 
-    if (current_process->to_fork) {
-        current_process->to_fork = false;
+    if (core->current_process->to_fork) {
+        core->current_process->to_fork = false;
 
         process_t * child = add_process();
 
-        current_process->latest_child = child->pid;
+        core->current_process->latest_child = child->pid;
 
-        memcpy(child, current_process, sizeof(process_t));
+        memcpy(child, core->current_process, sizeof(process_t));
 
-        child->pid = current_process->latest_child;
+        child->pid = core->current_process->latest_child;
         child->latest_child = 0;
-        child->parent = current_process->pid;
+        child->parent = core->current_process->pid;
 
-        child->sigactions = ll_copy(current_process->sigactions);
+        child->sigactions = ll_copy(core->current_process->sigactions);
 
-        child->fds        = copy_fds(current_process);
+        child->fds        = copy_fds(core->current_process);
 
         child->pagemaps = kmalloc(child->pagemaps_n * sizeof(pagemap_t));
         for (size_t i = 0; i < child->pagemaps_n; i++) {
-            child->pagemaps[i].virt = current_process->pagemaps[i].virt;
-            child->pagemaps[i].n    = current_process->pagemaps[i].n;
-            child->pagemaps[i].attr = current_process->pagemaps[i].attr;
+            child->pagemaps[i].virt = core->current_process->pagemaps[i].virt;
+            child->pagemaps[i].n    = core->current_process->pagemaps[i].n;
+            child->pagemaps[i].attr = core->current_process->pagemaps[i].attr;
 
-            void * buf = alloc_pages(current_process->pagemaps[i].n);
+            void * buf = alloc_pages(core->current_process->pagemaps[i].n);
 
             child->pagemaps[i].phys = virt_to_phys(buf);
 
-            memcpy(buf, current_process->pagemaps[i].virt, current_process->pagemaps[i].n * PAGE_SIZE);
+            memcpy(buf, core->current_process->pagemaps[i].virt, core->current_process->pagemaps[i].n * PAGE_SIZE);
         }
 
         child->cwd = NULL;
-        proc_set_cwd(child, current_process->cwd);
+        proc_set_cwd(child, core->current_process->cwd);
 
         child->sigqueue_sz = 0; // Pending signals are not inherited
     }
 
-    if (current_process->to_sigreturn) {
-        current_process->sighandling  = false;
-        current_process->to_sigreturn = false;
+    if (core->current_process->to_sigreturn) {
+        core->current_process->sighandling  = false;
+        core->current_process->to_sigreturn = false;
 
         // Mark the stack as unused
-        current_process->altstack.ss_flags &= ~(SS_ONSTACK);
+        core->current_process->altstack.ss_flags &= ~(SS_ONSTACK);
 
-        write_proc_regs(current_process, rf);
+        write_proc_regs(core->current_process, rf);
     }
 
-    if (current_process->alarm && (pit0_ticks >= current_process->alarm)) {
-        current_process->alarm = 0;
-        push_proc_sig(current_process, SIGALRM);
+    if (core->current_process->alarm && (pit0_ticks >= core->current_process->alarm)) {
+        core->current_process->alarm = 0;
+        push_proc_sig(core->current_process, SIGALRM);
     }
 
     // Check if there are signals to handle
     // Signals that are unhandleable, defaulted or ignored are handled immediately. Handlers are queued.
-    size_t og_sigqueue_sz      = current_process->sigqueue_sz;
+    size_t og_sigqueue_sz      = core->current_process->sigqueue_sz;
     size_t true_sigqueue_index = 0; // Elements in the queue may be deleted
 
     for (size_t i = 0; i < og_sigqueue_sz; i++) {
-        int signum            = current_process->sigqueue[true_sigqueue_index]; // We cannot be sure this signal will be taken care of, so don't handle it
-        struct sigaction * sa = get_proc_sigaction(current_process, signum);
+        int signum            = core->current_process->sigqueue[true_sigqueue_index]; // We cannot be sure this signal will be taken care of, so don't handle it
+        struct sigaction * sa = get_proc_sigaction(core->current_process, signum);
 
         // Unavoidable signals
         if (signum == SIGKILL) {
-            del_proc_sig(current_process, true_sigqueue_index);
+            del_proc_sig(core->current_process, true_sigqueue_index);
 
-            kill_process(current_process, UINT8_MAX);
-            current_process = NULL;
+            kill_process(core->current_process, UINT8_MAX);
+            core->current_process = NULL;
 
             // Just run the scheduler over everything again
             schedule(rf);
@@ -145,16 +148,16 @@ void schedule(void * regframe_ptr) {
         }
 
         // Is the signal masked?
-        if (sigismember(&current_process->sigmask, signum)) {
+        if (sigismember(&core->current_process->sigmask, signum)) {
             true_sigqueue_index++;
             continue;
         }
 
         // A signal has actually been caught
-        current_process->pausing = false;
+        core->current_process->pausing = false;
 
         if (!sa || ((uint64_t)sa->sa_handler == SIG_DFL)) {
-            del_proc_sig(current_process, true_sigqueue_index);
+            del_proc_sig(core->current_process, true_sigqueue_index);
 
             // Default handler
             switch (signum) {
@@ -164,8 +167,8 @@ void schedule(void * regframe_ptr) {
                 case SIGFPE:
                 case SIGSEGV:
                 case SIGTRAP:
-                    kill_process(current_process, UINT8_MAX);
-                    current_process = NULL;
+                    kill_process(core->current_process, UINT8_MAX);
+                    core->current_process = NULL;
 
                     // Just run the scheduler over everything again
                     schedule(rf);
@@ -176,35 +179,35 @@ void schedule(void * regframe_ptr) {
             }
 
         } else if ((uint64_t)sa->sa_handler == SIG_IGN) {
-            del_proc_sig(current_process, true_sigqueue_index);
+            del_proc_sig(core->current_process, true_sigqueue_index);
 
-        } else if (!current_process->sighandling) {
-            del_proc_sig(current_process, true_sigqueue_index);
+        } else if (!core->current_process->sighandling) {
+            del_proc_sig(core->current_process, true_sigqueue_index);
 
             // A handler has been registered by the program and must now be jumped to
-            current_process->sighandling  = true;
-            current_process->to_sigreturn = false;
+            core->current_process->sighandling  = true;
+            core->current_process->to_sigreturn = false;
 
             // Just copy pretty much the entire context
-            memcpy(&current_process->sigregs, &current_process->regs, sizeof(int_regframe_t));
+            memcpy(&core->current_process->sigregs, &core->current_process->regs, sizeof(int_regframe_t));
 
             // If a program is running in usermode, all of its handlers are too!
-            current_process->sigregs.cs = current_process->kmode ? (1*8) : ((6*8) | 3);
-            current_process->sigregs.ss = current_process->kmode ? (2*8) : ((5*8) | 3);
+            core->current_process->sigregs.cs = core->current_process->kmode ? (1*8) : ((6*8) | 3);
+            core->current_process->sigregs.ss = core->current_process->kmode ? (2*8) : ((5*8) | 3);
 
             // Install the sigaltstack if demanded and possible
-            if ((sa->sa_flags & SA_ONSTACK) && !(current_process->altstack.ss_flags & SS_DISABLE) && !(current_process->altstack.ss_flags & SS_ONSTACK)) {
-                current_process->sigregs.rsp = (uint64_t)current_process->altstack.ss_sp \
-                                             + current_process->altstack.ss_size;
-                current_process->sigregs.rbp = current_process->sigregs.rsp;
+            if ((sa->sa_flags & SA_ONSTACK) && !(core->current_process->altstack.ss_flags & SS_DISABLE) && !(core->current_process->altstack.ss_flags & SS_ONSTACK)) {
+                core->current_process->sigregs.rsp = (uint64_t)core->current_process->altstack.ss_sp \
+                                             + core->current_process->altstack.ss_size;
+                core->current_process->sigregs.rbp = core->current_process->sigregs.rsp;
 
-                current_process->altstack.ss_flags |= SS_ONSTACK;
+                core->current_process->altstack.ss_flags |= SS_ONSTACK;
             }
 
-            current_process->sigregs.rip = (uint64_t)sa->sa_handler;
-            current_process->sigregs.rdi = signum;
+            core->current_process->sigregs.rip = (uint64_t)sa->sa_handler;
+            core->current_process->sigregs.rdi = signum;
 
-            write_proc_regs(current_process, rf);
+            write_proc_regs(core->current_process, rf);
 
             // Other signals later in the queue will be handled too unless they require a handler (no break)
         } else {

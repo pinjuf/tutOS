@@ -3,6 +3,7 @@
 #include "types.h"
 #include "gdt.h"
 #include "idt.h"
+#include "schedule.h"
 
 #define APIC_BASE 0xFEE00000
 
@@ -81,6 +82,8 @@ typedef struct cpu_coreinfo_t {
     gdtr_t gdtr;
     gdt_entry_t * gdt;
     tss_t * tss;
+
+    process_t * current_process;
 } cpu_coreinfo_t;
 
 // Standard ISA IRQs
