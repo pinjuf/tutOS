@@ -24,7 +24,7 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
         // that will now have to answer
         // for its crimes
 
-        kprintf(" < PEXC %u (SIG=%d) AT 0x%x BY PID#%u (core #%u)>\n", n, EXCEPTION_SIGNALS[n], rip, core->current_process->pid, core->apic_id);
+        kprintf(" < PEXC %u (SIG=%d) AT 0x%x BY PID#%u (core #%hhu)>\n", n, EXCEPTION_SIGNALS[n], rip, core->current_process->pid, core->apic_id);
 
         push_proc_sig(core->current_process, EXCEPTION_SIGNALS[n]);
 
@@ -34,7 +34,7 @@ void isr_noerr_exception(uint8_t n, uint64_t rip, uint64_t cs, uint64_t rflags, 
     }
 
     // Kernel error with no process running
-    kprintf(" < KEXC %u AT 0x%x (core #%u)>\n", n, rip, core);
+    kprintf(" < KEXC %u AT 0x%x (core #%hhu)>\n", n, rip, core);
 
     while (1);
 }
@@ -55,7 +55,7 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
         // that will now have to answer
         // for its crimes
 
-        kprintf(" < PEXC %u (ERR=0x%x, SIG=%d) AT 0x%x BY PID#%u (core #%u)>\n", n, err, EXCEPTION_SIGNALS[n], rip, core->current_process->pid, core);
+        kprintf(" < PEXC %u (ERR=0x%x, SIG=%d) AT 0x%x BY PID#%u (core #%hhu)>\n", n, err, EXCEPTION_SIGNALS[n], rip, core->current_process->pid, core);
 
         push_proc_sig(core->current_process, EXCEPTION_SIGNALS[n]);
 
@@ -65,7 +65,7 @@ void isr_err_exception(uint8_t n, uint64_t err, uint64_t rip, uint64_t cs, uint6
     }
 
     // Kernel error with no process running
-    kprintf(" < KEXC %u (ERR=0x%x) AT 0x%x (core #%u)>\n", n, err, rip, core);
+    kprintf(" < KEXC %u (ERR=0x%x) AT 0x%x (core #%hhu)>\n", n, err, rip, core);
 
     while (1);
 }

@@ -3,6 +3,7 @@
 #include "main.h"
 #include "util.h"
 #include "mm.h"
+#include "syscall.h"
 
 void init_ap() {
     bpob->ap_entry = ap_entry;
@@ -88,6 +89,9 @@ void ap_entry() {
 
     // Enable the APIC
     apic_write(0xF0, apic_read(0xF0) | 1 << 8 | 0xFF);
+
+    // Enable syscalls (MSRs are per-core)
+    init_syscalls();
 
     sti; // Now we wait
     while (1);
