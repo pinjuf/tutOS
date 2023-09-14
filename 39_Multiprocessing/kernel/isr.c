@@ -96,7 +96,7 @@ void isr_irq0(int_regframe_t * regframe) {
         cpu_coreinfo_t * core = &coreinfos[schedule_ticks % cpu_cores];
 
         if (core->bsp) { // Only the BSP catches an IRQ0
-            schedule(regframe);
+            //schedule(regframe);
         } else {
             apic_ipi(core->apic_id, 0x82, 0);
         }

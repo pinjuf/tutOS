@@ -20,8 +20,6 @@ void init_scheduling() {
 }
 
 void schedule(void * regframe_ptr) {
-    spinlock_acquire(&procchoice_lock);
-
     int_regframe_t * rf = (int_regframe_t*)regframe_ptr;
 
     cpu_coreinfo_t * core = get_core();
@@ -45,6 +43,7 @@ void schedule(void * regframe_ptr) {
     // This will loop indefinetly if there is nothing to run!
     core->current_process->core = PROCESS_CORE_NONE;
 
+    spinlock_acquire(&procchoice_lock);
 
     do {
         core->current_process = ll_nextla(processes, core->current_process);
@@ -76,6 +75,8 @@ void schedule(void * regframe_ptr) {
     core->current_process->core = core->apic_id; // Make sure no other core takes this process
 
     core->current_process->regs.cr3 = (uint64_t)virt_to_phys(core->pml4t); // Different core, different page tables
+
+    spinlock_release(&procchoice_lock);
 
     write_proc_regs(core->current_process, rf);
 
@@ -156,7 +157,6 @@ void schedule(void * regframe_ptr) {
             core->current_process = NULL;
 
             // Just run the scheduler over everything again
-            spinlock_release(&procchoice_lock);
             schedule(rf);
             return;
         }
@@ -185,7 +185,6 @@ void schedule(void * regframe_ptr) {
                     core->current_process = NULL;
 
                     // Just run the scheduler over everything again
-                    spinlock_release(&procchoice_lock);
                     schedule(rf);
                     return;
 
@@ -230,8 +229,6 @@ void schedule(void * regframe_ptr) {
             true_sigqueue_index++;
         }
     }
-
-    spinlock_release(&procchoice_lock);
 }
 
 void proc_set_args(process_t * proc, int argc, char * argv[]) {
