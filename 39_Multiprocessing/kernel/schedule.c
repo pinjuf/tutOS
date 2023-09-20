@@ -37,12 +37,12 @@ void schedule(void * regframe_ptr) {
             read_proc_regs(core->current_process, rf);
         else
             core->current_process->to_exec = false;
+
+        core->current_process->core = PROCESS_CORE_NONE;
     }
 
     // Get the next or the current process
     // This will loop indefinetly if there is nothing to run!
-    core->current_process->core = PROCESS_CORE_NONE;
-
     spinlock_acquire(&procchoice_lock);
 
     do {
@@ -68,7 +68,6 @@ void schedule(void * regframe_ptr) {
         if ((core->current_process->state == PROCESS_STOPPED) && (sigcont_prio > sigstop_prio)) {
             core->current_process->state = PROCESS_RUNNING;
         }
-
     } while ((core->current_process->state != PROCESS_RUNNING) \
           || (core->current_process->core  != PROCESS_CORE_NONE)); // Only execute running processes that are not already running on a core
 
