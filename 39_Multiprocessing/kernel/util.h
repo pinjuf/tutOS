@@ -2,11 +2,13 @@
 
 #include "types.h"
 
-#define sti asm("sti")
-#define cli asm("cli")
+#define sti asm volatile ("sti")
+#define cli asm volatile ("cli")
 
 #define MAX(x, y) (x > y ? x : y)
 #define MIN(x, y) (x > y ? y : x)
+
+#define bochs_bp asm volatile ("xchg %bx, %bx")
 
 void outb(uint16_t port, uint8_t value);
 uint8_t inb(uint16_t port);
